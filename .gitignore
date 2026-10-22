@@ -20,3 +20,6 @@ npm-debug.log*
 .DS_Store
 .idea/
 .vscode/
+
+# segredos locais do wrangler (NÃO versionar)
+.dev.vars

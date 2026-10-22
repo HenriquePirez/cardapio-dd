@@ -5,7 +5,7 @@
  */
 import type { APIRoute } from 'astro';
 import { contarUsuarios, criarUsuario, obterUsuario } from '../../../lib/db';
-import { db } from '../../../lib/env';
+import { db, pepperObrigatorio } from '../../../lib/env';
 import { hashSenha, validarSenha } from '../../../lib/auth';
 import { criarSessao } from '../../../lib/session';
 
@@ -57,7 +57,10 @@ export const POST: APIRoute = async (ctx) => {
   }
 
   const id = crypto.randomUUID();
-  await criarUsuario(d1, { id, email, nome, senha_hash: await hashSenha(senha) });
+  // Exige o pepper ANTES de gravar: uma conta criada sem ele nasceria mais
+  // fraca e não teria como reforçar depois sem a senha em mãos.
+  const pepper = pepperObrigatorio();
+  await criarUsuario(d1, { id, email, nome, senha_hash: await hashSenha(senha, pepper) });
   await criarSessao(ctx, { id, email, nome });
 
   return ctx.redirect('/admin', 303);

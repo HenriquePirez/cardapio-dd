@@ -68,14 +68,74 @@ npm run build        # build de produção
 
 1. Acesse `http://localhost:4321/admin` → redireciona para **Criar conta** (só funciona
    enquanto não existe nenhum usuário).
-2. Defina nome, e-mail e senha (mínimo 6 caracteres).
+2. Defina nome, e-mail e senha (**mínimo 10 caracteres** — ver "Autenticação" abaixo).
 3. Pronto: a partir daí é só **Entrar** com essas credenciais.
 
 > Conta **única** (o dono cria e compartilha com até 2 pessoas de confiança).
-> A senha é guardada apenas como hash **PBKDF2-SHA256** (Web Crypto).
+> A senha é guardada apenas como hash **PBKDF2-SHA256** (Web Crypto), com **pepper**.
 
 **Proteções:** 5 tentativas erradas → bloqueio de 10 min · exigência de mesma origem
-(CSRF) nas escritas · sem sessão em `/admin/*` → redirect para login (ou 401 em escritas).
+(CSRF) nas escritas · sem sessão em `/admin/*` → redirect para login (ou 401 em escritas)
+· login com e-mail inexistente gasta o mesmo tempo de CPU de um hash real (não revela
+se a conta existe).
+
+---
+
+## Autenticação (PBKDF2 + pepper)
+
+**Por que 40.000 iterações?** Porque há dois tetos rígidos no runtime:
+
+1. `workerd` limita `crypto.subtle.deriveBits` a **100.000** iterações — acima disso
+   lança `NotSupportedError: iteration counts above 100000 are not supported`.
+2. Workers Free documenta **10 ms de CPU** por requisição.
+
+Medido em produção (2026-10, versão `7205fb88`): o crypto do workerd é ~4x mais lento
+que o Node — 40k iterações custam ~12 ms de CPU (pico de ~70 ms na requisição fria).
+20 logins seguidos rodaram sem erro, então o limite de CPU do free é macio (com folga
+de estouro), mas mesmo assim ficamos em 40k, que é ~12 ms: acima do documentado e
+abaixo de qualquer risco.
+
+O OWASP recomenda 600k para SHA-256, inalcançável aqui. Compensamos com:
+
+| Camada       | Como                                                        |
+| ------------ | ----------------------------------------------------------- |
+| **Pepper**   | Segredo `AUTH_PEPPER` guardado como *secret* do Worker — **fora do banco**. Um atacante que só roubar o D1 não tem o material pra derivar as senhas. |
+| Senha forte  | Mínimo de 10 caracteres (`validarSenha`)                     |
+| Rate-limit   | 5 falhas → bloqueio de 10 min (`login-guard.ts`)             |
+
+O hash é gravado como `pbkdf2p$<iteracoes>$<salt>$<hash>`. Como a iteração fica dentro
+do valor, dá pra subir os parâmetros sem quebrar nada: o login verifica com o que está
+gravado e **regrava sozinho** com os valores atuais. (Um hash legado `pbkdf2$...`, sem
+pepper, também verifica e é promovido no primeiro login.)
+
+### Configurar o pepper
+
+```bash
+# produção — interativo (cole um valor aleatório forte de 64+ caracteres)
+npx wrangler secret put AUTH_PEPPER
+
+# local — o wrangler lê .dev.vars (já está no .gitignore)
+printf 'AUTH_PEPPER=%s\n' 'SEU_SEGREDO_LOCAL' >> .dev.vars
+```
+
+O `astro preview` **não** injeta `.dev.vars` no Worker (só no `process.env` do build),
+então rode o ambiente local com `npx wrangler dev`, que lê o arquivo corretamente.
+
+> ⚠️ **Guarde o valor no seu gerenciador de senhas.** Ele não está no Git nem no banco.
+
+### Se o pepper for perdido
+
+Sem o pepper ninguém consegue entrar (e criar conta não é possível, porque já existe
+usuário). Recuperação — apaga a conta e recria a sua:
+
+```bash
+npx wrangler d1 execute cardapio-dd --remote --command "DELETE FROM usuarios"
+# limpa as sessões abertas
+npx wrangler kv key list --namespace-id 1037359e715941369e59d52a83501428 --remote
+npx wrangler kv key delete --namespace-id 1037359e715941369e59d52a83501428 --remote <chave>
+```
+
+Depois acesse `/admin` e crie a conta de novo. Produtos, categorias e mídias ficam intactos.
 
 ---
 
@@ -140,8 +200,15 @@ apagados do KV — importante porque o plano free guarda só **1 GB** no total.
 ### 3. Link de compra
 
 Cada produto tem um campo **Link de compra (app)** — é para onde o botão **Comprar**
-redireciona. Os dados de exemplo usam `https://app.exemplo.com/...`: **troque pelo link real**
-no painel (`/admin/produtos`).
+redireciona. O seed e o banco de produção apontam todos para `https://donadora.com.br`.
+Edite no painel (`/admin/produtos`) se quiser mudar um produto — não precisa de deploy.
+
+> O `donadora.com.br` hoje responde **301 → `https://donadoradelivery.mandarpedido.com/site`**,
+> e essa página está dando **404** (a raiz `https://donadoradelivery.mandarpedido.com/`
+> responde 200). Isso é configuração do Apache/MandarPedido — o domínio não passa pelo
+> proxy do Cloudflare (sem header `cf-ray`), então não é problema deste projeto. Enquanto
+> o destino não for corrigido lá, o botão leva a uma página inexistente. Basta corrigir
+> o `comprar_url` no painel (uma linha no D1) quando o destino estiver certo.
 
 ---
 
@@ -261,7 +328,8 @@ src/
 
 | Limite            | Mitigação                                                |
 | ----------------- | -------------------------------------------------------- |
-| 10 ms de CPU/req  | Cache da edge (30s) no `/` — a maioria das visitas não executa SSR |
+| 10 ms de CPU/req  | Cache da edge (30s) no `/` — a maioria das visitas não executa SSR. O login (PBKDF2) roda ~12 ms mesmo assim: o limite é macio, e login é uma ação rara. |
 | 100 MB de corpo   | Vídeo vai como corpo bruto direto ao KV (sem multipart)  |
 | 100k requisições/dia | mídia com `Cache-Control: immutable` e CSS/JS cached   |
 | 1 GB de KV        | otimização de foto no navegador + apagar mídia sem uso   |
+| PBKDF2: 100k iterações (API) | 40k iterações + **pepper** + senha de 10+ chars + rate-limit. Ver "Autenticação". |

@@ -6,9 +6,16 @@
  * - Proteção CSRF: exige Origin da mesma origem
  */
 import type { APIRoute } from 'astro';
-import { obterUsuario, contarUsuarios } from '../../../lib/db';
-import { conferirSenha } from '../../../lib/auth';
-import { db } from '../../../lib/env';
+import { obterUsuario, contarUsuarios, trocarSenha } from '../../../lib/db';
+import {
+  conferirSenha,
+  hashSenha,
+  hashDummy,
+  lerIteracoes,
+  hashComPepper,
+  ITERACOES,
+} from '../../../lib/auth';
+import { db, pepper } from '../../../lib/env';
 import { criarSessao } from '../../../lib/session';
 import {
   verificarBloqueio,
@@ -59,11 +66,18 @@ export const POST: APIRoute = async (ctx) => {
   }
 
   const usuario = await obterUsuario(d1, email);
-  const ok = usuario ? await conferirSenha(senha, usuario.senha_hash) : false;
+  // pepper() pode ser null só se a conta foi criada antes de definir o segredo;
+  // conferirSenha lança nesse caso (melhor que devolver "senha incorreta").
+  const pimenta = usuario ? pepper() : null;
+  const ok =
+    usuario !== null && (await conferirSenha(senha, usuario.senha_hash, pimenta ?? undefined));
 
-  if (!ok) {
-    // Sem o mesmo tempo de resposta quando o e-mail não existe (evita enumeração)
-    if (!usuario) await conferirSenha(senha, 'pbkdf2$1$AAAA$AAAA');
+  // `!usuario` junto do `!ok` não muda o comportamento (ok só é true com
+  // usuário), mas é o que dá ao TypeScript o narrowing pros blocos seguintes.
+  if (!ok || !usuario) {
+    // Mesmo custo de CPU de um hash real, senão o tempo de resposta
+    // denunciaria que o e-mail não existe (enumeração).
+    if (!usuario) await conferirSenha(senha, hashDummy(pepper() ?? undefined));
     const estado = await registrarTentativaFalha(d1, email);
     if (estado.bloqueado) {
       return redirecionar('/admin/login?erro=bloqueado&min=10');
@@ -72,6 +86,21 @@ export const POST: APIRoute = async (ctx) => {
   }
 
   await limparTentativas(d1, email);
+
+  // Upgrade transparente: se o hash gravado usa menos iterações que o código
+  // atual (ou ficou sem pepper depois de o segredo ser definido), regrava já
+  // que a senha está em mãos. O formato guarda a iteração, então o que está
+  // gravado continua verificável.
+  const it = lerIteracoes(usuario.senha_hash);
+  if (it === null || it < ITERACOES || (!hashComPepper(usuario.senha_hash) && pimenta)) {
+    try {
+      await trocarSenha(d1, usuario.email, await hashSenha(senha, pimenta ?? undefined));
+      console.log(`[auth] hash de ${usuario.email} atualizado (${it ?? '?'} -> ${ITERACOES} it)`);
+    } catch (erro) {
+      // Não bloqueia o login por causa do upgrade
+      console.error('[auth] falha ao atualizar hash:', erro);
+    }
+  }
 
   await criarSessao(ctx, {
     id: usuario!.id,

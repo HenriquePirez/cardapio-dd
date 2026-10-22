@@ -40,6 +40,8 @@ interface EnvBindings {
   DB?: D1Like;
   MEDIA?: KvLike;
   MEDIA_PUBLIC_BASE?: string;
+  /** Segredo do pepper do hash de senha (`wrangler secret put AUTH_PEPPER`). */
+  AUTH_PEPPER?: string;
   [k: string]: unknown;
 }
 
@@ -67,6 +69,33 @@ export function kvMidia(): KvLike {
     );
   }
   return b;
+}
+
+/**
+ * Segredo do pepper, exigido para verificar/criar hashes de senha.
+ *
+ * Definido como SECRET (não como var): `wrangler secret put AUTH_PEPPER`.
+ * Localmente vai em `.dev.vars` (gitignored).
+ *
+ * Retorna null em vez de lançar quando ausente — quem chama decide se é
+ * erro de configuração (login de conta existente) ou se segue sem pepper
+ * (primeira criação de conta, onde o pepper ainda não foi definido).
+ */
+export function pepper(): string | null {
+  const p = bindings().AUTH_PEPPER;
+  return typeof p === 'string' && p.length > 0 ? p : null;
+}
+
+/** Exige o pepper — usado onde prosseguir sem ele corromperia a autenticação. */
+export function pepperObrigatorio(): string {
+  const p = pepper();
+  if (!p) {
+    throw new Error(
+      'Segredo AUTH_PEPPER ausente. Rode `npx wrangler secret put AUTH_PEPPER` ' +
+        '(produção) ou crie `.dev.vars` (local). Ver README.',
+    );
+  }
+  return p;
 }
 
 // ---------------------------------------------------------------------------

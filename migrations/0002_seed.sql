@@ -10,25 +10,29 @@ INSERT OR REPLACE INTO categorias (id, nome, ordem, icone, descricao) VALUES
   ('porcoes', 'Porções', 3, '🍟', 'Batatas, frango e petiscos para compartilhar');
 
 -- Produtos --------------------------------------------------
+-- comprar_url: o botão "Comprar" leva ao pedido no app. Hoje todos os
+-- produtos apontam para a mesma página do site da Donadora Delivery.
+-- É editável no painel (/admin/produtos) sem precisar de redeploy.
 INSERT OR REPLACE INTO produtos
   (id, nome, preco, categoria_id, descricao, destaque, ordem, comprar_url, disponivel)
 VALUES
   ('x-burger-classico', 'X-Burger Clássico', 28.9, 'lanches',
    'Pão brioche, blend 180g, queijo prato, alface, tomate e nosso molho especial.',
-   1, 1, 'https://app.exemplo.com/comprar?produto=x-burger-classico', 1),
+   1, 1, 'https://donadora.com.br', 1),
   ('x-bacon-duplo', 'X-Bacon Duplo', 36.9, 'lanches',
    'Dois blends de 180g, cheddar cremoso, bacon crocante e cebola caramelizada.',
-   1, 2, 'https://app.exemplo.com/comprar?produto=x-bacon-duplo', 1),
+   1, 2, 'https://donadora.com.br', 1),
   ('milkshake-ovomaltine', 'Milkshake Ovomaltine', 19.9, 'bebidas',
    'Milkshake cremoso de Ovomaltine com chantilly e raspas.',
-   1, 1, 'https://app.exemplo.com/comprar?produto=milkshake-ovomaltine', 1),
+   1, 1, 'https://donadora.com.br', 1),
   ('batata-frita-grande', 'Batata Frita Grande', 22.9, 'porcoes',
    'Batata rústica crocante com sal e alecrim. Serve 2 pessoas.',
-   0, 1, 'https://app.exemplo.com/comprar?produto=batata-frita-grande', 1);
+   0, 1, 'https://donadora.com.br', 1);
 
 -- Mídia -----------------------------------------------------
--- Os arquivos em /public/media são PLACEHOLDERS de dev.
--- Em produção aponte para os arquivos no R2 (via MEDIA_PUBLIC_BASE).
+-- Os arquivos citados aqui são PLACEHOLDERS de dev. Em produção as mídias
+-- são enviadas pelo painel e ficam no KV (binding MEDIA), servidas por
+-- /media/<chave>. Ver src/lib/midia.ts.
 DELETE FROM produto_midia;
 
 INSERT INTO produto_midia (produto_id, tipo, url, full, poster, alt, ordem) VALUES
