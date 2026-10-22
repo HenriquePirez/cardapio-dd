@@ -118,8 +118,10 @@ npx wrangler secret put AUTH_PEPPER
 printf 'AUTH_PEPPER=%s\n' 'SEU_SEGREDO_LOCAL' >> .dev.vars
 ```
 
-O `astro preview` **não** injeta `.dev.vars` no Worker (só no `process.env` do build),
-então rode o ambiente local com `npx wrangler dev`, que lê o arquivo corretamente.
+O `npm run dev` (astro dev) lê `.dev.vars` normalmente. Já o `npm run preview`
+(**astro preview**) **não** injeta `.dev.vars` no Worker — só no `process.env` do
+build —, então ele reclama de `AUTH_PEPPER` ausente. Para testar o build pronto
+localmente use `npx wrangler dev`, que lê o arquivo e serve o `dist/`.
 
 > ⚠️ **Guarde o valor no seu gerenciador de senhas.** Ele não está no Git nem no banco.
 
