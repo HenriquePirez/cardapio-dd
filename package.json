@@ -1,0 +1,30 @@
+{
+  "name": "cardapio-dd",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "check": "astro check",
+    "preview": "astro preview",
+    "astro": "astro",
+    "db:apply:local": "wrangler d1 execute cardapio-dd --local --file=./migrations/0001_init.sql && wrangler d1 execute cardapio-dd --local --file=./migrations/0002_seed.sql",
+    "db:apply:remote": "wrangler d1 execute cardapio-dd --remote --file=./migrations/0001_init.sql && wrangler d1 execute cardapio-dd --remote --file=./migrations/0002_seed.sql",
+    "types": "wrangler types"
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "^14.4.2",
+    "astro": "^7.4.2"
+  },
+  "allowScripts": {
+    "workerd@1.20261012.1": true,
+    "workerd@1.20261019.1": true,
+    "esbuild@0.28.2": true
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.12",
+    "@types/node": "^26.6.5",
+    "typescript": "^6.0.3"
+  }
+}

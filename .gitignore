@@ -1,0 +1,22 @@
+# build
+dist/
+.astro/
+
+# deps
+node_modules/
+
+# estado local do wrangler (D1/R2/KV de dev — não versionar)
+.wrangler/
+
+# env
+.env
+.env.*
+
+# logs
+*.log
+npm-debug.log*
+
+# editor / OS
+.DS_Store
+.idea/
+.vscode/

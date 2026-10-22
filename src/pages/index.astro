@@ -1,0 +1,364 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProductCard from '../components/ProductCard.astro';
+import Gallery from '../components/Gallery.astro';
+import { db, urlMidia } from '../lib/env';
+import { cardapioCompleto } from '../lib/db';
+import { formatarPreco, SITE } from '../config';
+
+// Cardápio lido do D1 em runtime (SSR), com cache na edge (ver middleware).
+const { categorias, produtos } = await cardapioCompleto(db());
+
+const destaques = produtos.filter((p) => p.destaque === 1);
+
+// Agrupa produtos por categoria, preservando a ordem das categorias
+const porCategoria = new Map<string, typeof produtos>();
+for (const cat of categorias) {
+  const lista = produtos.filter((p) => p.categoria_id === cat.id);
+  if (lista.length) porCategoria.set(cat.id, lista);
+}
+
+// Payload de galerias para o lightbox (URLs já resolvidas)
+const galerias: Record<
+  string,
+  {
+    nome: string;
+    comprarUrl: string;
+    itens: Array<{
+      tipo: 'imagem' | 'video';
+      src: string;
+      full?: string;
+      poster?: string;
+      alt?: string;
+    }>;
+  }
+> = {};
+
+for (const p of produtos) {
+  galerias[p.id] = {
+    nome: p.nome,
+    comprarUrl: p.comprar_url,
+    itens: p.midia.map((m) =>
+      m.tipo === 'imagem'
+        ? {
+            tipo: 'imagem' as const,
+            src: urlMidia(m.url),
+            full: urlMidia(m.full || m.url),
+            alt: m.alt || '',
+          }
+        : {
+            tipo: 'video' as const,
+            src: urlMidia(m.url),
+            poster: urlMidia(m.poster || ''),
+            alt: m.alt || '',
+          },
+    ),
+  };
+}
+
+// Capa do card (thumbnail). Para vídeo, usa o poster.
+function capaDe(p: (typeof produtos)[number]) {
+  const m = p.midia[0];
+  if (!m) return undefined;
+  if (m.tipo === 'imagem') {
+    return { url: urlMidia(m.url), alt: m.alt || p.nome, tipo: 'imagem' as const };
+  }
+  return {
+    url: urlMidia(m.poster || m.url),
+    poster: urlMidia(m.poster || ''),
+    alt: m.alt || p.nome,
+    tipo: 'video' as const,
+  };
+}
+---
+
+<BaseLayout>
+  <header class="topo">
+    <div class="container topo-inner">
+      <div>
+        <h1 class="topo-titulo">{SITE.nome}</h1>
+        <p class="topo-sub">Toque nas fotos para ver em alta qualidade</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navegação rápida por categoria -->
+  <nav class="atalhos" aria-label="Categorias">
+    <div class="container atalhos-scroll">
+      {categorias.map((cat) => (
+        <a class="atalho" href={`#${cat.id}`}>
+          {cat.icone && <span aria-hidden="true">{cat.icone}</span>}
+          {cat.nome}
+        </a>
+      ))}
+    </div>
+  </nav>
+
+  <main class="container">
+    {produtos.length === 0 && (
+      <div class="vazio">
+        <p>Cardápio em construção. Volte em breve! 🍔</p>
+      </div>
+    )}
+
+    <!-- Destaques -->
+    {destaques.length > 0 && (
+      <section class="secao" aria-labelledby="destaques-h">
+        <h2 class="secao-titulo" id="destaques-h">Destaques</h2>
+        <div class="destaque-scroll">
+          {destaques.map((p) => {
+            const capa = capaDe(p);
+            return (
+              <button
+                class="destaque"
+                type="button"
+                data-abrir-galeria={p.id}
+                aria-label={`Ver ${p.nome}`}
+              >
+                <img
+                  src={capa?.url}
+                  alt={capa?.alt || p.nome}
+                  loading="lazy"
+                  decoding="async"
+                  width="480"
+                  height="480"
+                />
+                <span class="destaque-info">
+                  <span class="destaque-nome">{p.nome}</span>
+                  <span class="destaque-preco">{formatarPreco(p.preco)}</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+    )}
+
+    <!-- Categorias + produtos -->
+    {categorias.map((cat) => {
+      const lista = porCategoria.get(cat.id);
+      if (!lista?.length) return null;
+      return (
+        <section class="secao" id={cat.id} aria-labelledby={`h-${cat.id}`}>
+          <div class="secao-cab">
+            <h2 class="secao-titulo" id={`h-${cat.id}`}>
+              {cat.icone && <span aria-hidden="true">{cat.icone}</span>}
+              {cat.nome}
+            </h2>
+            {cat.descricao && <p class="secao-desc">{cat.descricao}</p>}
+          </div>
+          <div class="grade">
+            {lista.map((p) => (
+              <ProductCard
+                id={p.id}
+                nome={p.nome}
+                preco={p.preco}
+                descricao={p.descricao ?? undefined}
+                capa={capaDe(p)}
+                totalMidia={p.midia.length}
+                comprarUrl={p.comprar_url}
+              />
+            ))}
+          </div>
+        </section>
+      );
+    })}
+  </main>
+
+  <footer class="rodape">
+    <div class="container">
+      <p>{SITE.nome} · Cardápio digital</p>
+    </div>
+  </footer>
+
+  <Gallery galerias={galerias} />
+</BaseLayout>
+
+<style>
+  .topo {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(15, 17, 21, 0.9);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .topo-inner {
+    padding-top: calc(14px + env(safe-area-inset-top));
+    padding-bottom: 14px;
+  }
+
+  .topo-titulo {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .topo-sub {
+    margin: 2px 0 0;
+    font-size: 0.82rem;
+    color: var(--text-dim);
+  }
+
+  .atalhos {
+    position: sticky;
+    top: 68px;
+    z-index: 40;
+    background: rgba(15, 17, 21, 0.9);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .atalhos-scroll {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    scrollbar-width: none;
+  }
+
+  .atalhos-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .atalho {
+    flex-shrink: 0;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: var(--bg-elev);
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+    scroll-margin-top: 130px;
+  }
+
+  .atalho:active {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .secao {
+    padding-top: 26px;
+    scroll-margin-top: 128px;
+  }
+
+  .secao-cab {
+    margin-bottom: 14px;
+  }
+
+  .secao-titulo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+
+  .secao-desc {
+    margin: 4px 0 0;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+
+  .destaque-scroll {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    margin-top: 14px;
+    padding-bottom: 6px;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .destaque-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .destaque {
+    position: relative;
+    flex: 0 0 74%;
+    max-width: 300px;
+    aspect-ratio: 1 / 1;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--bg-elev);
+    scroll-snap-align: start;
+  }
+
+  .destaque img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .destaque-info {
+    position: absolute;
+    inset: auto 0 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 26px 12px 12px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.85), transparent);
+    color: #fff;
+    text-align: left;
+  }
+
+  .destaque-nome {
+    font-weight: 700;
+    font-size: 0.95rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .destaque-preco {
+    flex-shrink: 0;
+    font-weight: 800;
+    font-size: 0.95rem;
+    color: var(--accent);
+  }
+
+  .grade {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .vazio {
+    padding: 70px 0;
+    text-align: center;
+    color: var(--text-dim);
+  }
+
+  .vazio p {
+    margin: 0;
+    font-size: 1.05rem;
+  }
+
+  .rodape {
+    margin-top: 40px;
+    padding: 26px 0 calc(30px + env(safe-area-inset-bottom));
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    color: var(--text-dim);
+    font-size: 0.82rem;
+    text-align: center;
+  }
+
+  @media (min-width: 560px) {
+    .grade {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .destaque {
+      flex-basis: 46%;
+    }
+  }
+</style>

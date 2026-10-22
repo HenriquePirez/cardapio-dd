@@ -1,0 +1,354 @@
+---
+/**
+ * Lightbox de tela cheia.
+ * - Fotos: swipe lateral, imagem full-res carregada só ao abrir.
+ * - Vídeo: preload="none" + poster, só baixa ao dar play.
+ * Recebe os dados das galerias via JSON injetado e abre com [data-abrir-galeria="<id>"].
+ */
+interface Props {
+  galerias: Record<
+    string,
+    {
+      nome: string;
+      comprarUrl: string;
+      itens: Array<{
+        tipo: 'imagem' | 'video';
+        src: string;
+        full?: string;
+        poster?: string;
+        alt?: string;
+      }>;
+    }
+  >;
+}
+
+const { galerias } = Astro.props;
+---
+
+<div
+  class="lightbox"
+  id="lightbox"
+  hidden
+  role="dialog"
+  aria-modal="true"
+  aria-label="Galeria do produto"
+>
+  <button class="lb-fechar" type="button" aria-label="Fechar">&times;</button>
+
+  <div class="lb-stage">
+    <button class="lb-nav lb-antes" type="button" aria-label="Anterior">&#10094;</button>
+    <div class="lb-track" id="lb-track"></div>
+    <button class="lb-nav lb-prox" type="button" aria-label="Próxima">&#10095;</button>
+  </div>
+
+  <div class="lb-barra">
+    <div class="lb-textos">
+      <p class="lb-nome" id="lb-nome"></p>
+      <p class="lb-contador" id="lb-contador"></p>
+    </div>
+    <a class="lb-comprar" id="lb-comprar" href="#" target="_blank" rel="noopener noreferrer">
+      Comprar
+    </a>
+  </div>
+</div>
+
+<script type="application/json" id="lb-dados" set:html={JSON.stringify(galerias)} />
+
+<style>
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    background: rgba(6, 7, 10, 0.97);
+    backdrop-filter: blur(4px);
+    animation: lb-fade 0.18s ease;
+  }
+
+  .lightbox[hidden] {
+    display: none;
+  }
+
+  @keyframes lb-fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .lb-fechar {
+    position: absolute;
+    top: max(12px, env(safe-area-inset-top));
+    right: 14px;
+    z-index: 3;
+    width: 42px;
+    height: 42px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    font-size: 1.7rem;
+    line-height: 1;
+    display: grid;
+    place-items: center;
+  }
+
+  .lb-stage {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  .lb-track {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .lb-track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .lb-slide {
+    flex: 0 0 100%;
+    width: 100%;
+    height: 100%;
+    scroll-snap-align: center;
+    display: grid;
+    place-items: center;
+    padding: 8px;
+  }
+
+  .lb-slide img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 8px;
+  }
+
+  .lb-slide video {
+    width: 100%;
+    max-height: 100%;
+    border-radius: 8px;
+    background: #000;
+  }
+
+  .lb-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    width: 46px;
+    height: 46px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    font-size: 1.2rem;
+    display: grid;
+    place-items: center;
+  }
+
+  .lb-antes {
+    left: 8px;
+  }
+
+  .lb-prox {
+    right: 8px;
+  }
+
+  .lb-barra {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 14px 16px calc(16px + env(safe-area-inset-bottom));
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+  }
+
+  .lb-textos {
+    min-width: 0;
+  }
+
+  .lb-nome {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .lb-contador {
+    margin: 2px 0 0;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+  }
+
+  .lb-comprar {
+    flex-shrink: 0;
+    padding: 12px 22px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+
+  @media (max-width: 420px) {
+    .lb-nav {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  interface ItemGaleria {
+    tipo: 'imagem' | 'video';
+    src: string;
+    full?: string;
+    poster?: string;
+    alt?: string;
+  }
+  interface Galeria {
+    nome: string;
+    comprarUrl: string;
+    itens: ItemGaleria[];
+  }
+
+  const dados = JSON.parse(
+    document.getElementById('lb-dados')?.textContent || '{}',
+  ) as Record<string, Galeria>;
+  const lb = document.getElementById('lightbox') as HTMLElement | null;
+  const track = document.getElementById('lb-track') as HTMLElement | null;
+  const nomeEl = document.getElementById('lb-nome');
+  const contadorEl = document.getElementById('lb-contador');
+  const comprarEl = document.getElementById('lb-comprar') as HTMLAnchorElement | null;
+  const btnFechar = lb?.querySelector<HTMLElement>('.lb-fechar');
+  const btnAntes = lb?.querySelector<HTMLElement>('.lb-antes');
+  const btnProx = lb?.querySelector<HTMLElement>('.lb-prox');
+  let atual = 0;
+  let total = 0;
+  let scrollTimer: ReturnType<typeof setTimeout> | undefined;
+
+  function slideIndex() {
+    if (!track) return 0;
+    return Math.round(track.scrollLeft / track.clientWidth);
+  }
+
+  function atualizarContador() {
+    if (contadorEl) contadorEl.textContent = `${atual + 1} / ${total}`;
+  }
+
+  function pararVideos() {
+    track?.querySelectorAll('video').forEach((v) => v.pause());
+  }
+
+  function montar(id: string) {
+    const g = dados[id];
+    if (!g || !track) return false;
+    track.innerHTML = '';
+    g.itens.forEach((item) => {
+      const slide = document.createElement('div');
+      slide.className = 'lb-slide';
+      if (item.tipo === 'imagem') {
+        const img = document.createElement('img');
+        img.src = item.full || item.src;
+        img.alt = item.alt || g.nome;
+        img.decoding = 'async';
+        slide.appendChild(img);
+      } else {
+        const video = document.createElement('video');
+        video.src = item.src;
+        if (item.poster) video.poster = item.poster;
+        video.controls = true;
+        video.playsInline = true;
+        video.preload = 'none';
+        video.setAttribute('webkit-playsinline', '');
+        slide.appendChild(video);
+      }
+      track.appendChild(slide);
+    });
+    total = g.itens.length;
+    atual = 0;
+    track.scrollLeft = 0;
+    if (nomeEl) nomeEl.textContent = g.nome;
+    if (comprarEl) comprarEl.href = g.comprarUrl || '#';
+    atualizarContador();
+    return true;
+  }
+
+  function abrir(id: string) {
+    if (!lb || !montar(id)) return;
+    lb.hidden = false;
+    document.body.style.overflow = 'hidden';
+    btnFechar?.focus();
+  }
+
+  function fechar() {
+    if (!lb) return;
+    pararVideos();
+    lb.hidden = true;
+    document.body.style.overflow = '';
+    if (track) track.innerHTML = '';
+  }
+
+  function irPara(delta: number) {
+    if (!track || total <= 1) return;
+    const alvo = Math.min(Math.max(slideIndex() + delta, 0), total - 1);
+    track.scrollTo({ left: alvo * track.clientWidth, behavior: 'smooth' });
+  }
+
+  // Delegação: qualquer elemento com data-abrir-galeria abre o lightbox
+  document.addEventListener('click', (e) => {
+    const alvo = e.target instanceof Element ? e.target : null;
+    const gatilho = alvo?.closest('[data-abrir-galeria]');
+    const idGat = gatilho?.getAttribute('data-abrir-galeria');
+    if (idGat) abrir(idGat);
+  });
+
+  btnFechar?.addEventListener('click', fechar);
+  btnAntes?.addEventListener('click', () => irPara(-1));
+  btnProx?.addEventListener('click', () => irPara(1));
+
+  // Clique fora da mídia (fundo) fecha
+  lb?.addEventListener('click', (e) => {
+    const alvo = e.target;
+    if (!(alvo instanceof Element)) return;
+    if (alvo === lb || alvo.classList.contains('lb-stage')) fechar();
+  });
+
+  // Atualiza contador durante o swipe e pausa vídeo ao sair do slide
+  track?.addEventListener(
+    'scroll',
+    () => {
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(() => {
+        atual = slideIndex();
+        atualizarContador();
+        track.querySelectorAll('video').forEach((v, i) => {
+          if (i !== atual) v.pause();
+        });
+      }, 90);
+    },
+    { passive: true },
+  );
+
+  // Teclado
+  document.addEventListener('keydown', (e) => {
+    if (lb?.hidden) return;
+    if (e.key === 'Escape') fechar();
+    if (e.key === 'ArrowLeft') irPara(-1);
+    if (e.key === 'ArrowRight') irPara(1);
+  });
+</script>

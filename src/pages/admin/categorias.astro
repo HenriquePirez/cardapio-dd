@@ -1,0 +1,166 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { db } from '../../lib/env';
+import { listarCategorias, listarProdutos } from '../../lib/db';
+
+const d1 = db();
+const categorias = await listarCategorias(d1);
+const produtos = await listarProdutos(d1);
+
+const edicao = Astro.url.searchParams.get('editar');
+const mensagem = Astro.url.searchParams.get('msg');
+
+const alvo = edicao ? categorias.find((c) => c.id === edicao) : null;
+
+const contagem = (id: string) => produtos.filter((p) => p.categoria_id === id).length;
+---
+
+<AdminLayout titulo="Categorias">
+  <div class="barra-acoes">
+    <div>
+      <h1 class="admin-h1">Categorias</h1>
+      <p class="admin-sub">Seções do cardápio (ex: Lanches, Bebidas).</p>
+    </div>
+    <a href="/admin" class="btn btn-secundario">← Painel</a>
+  </div>
+
+  {mensagem === 'ok' && <div class="aviso aviso-ok">Alterações salvas.</div>}
+  {mensagem === 'excluida' && <div class="aviso aviso-ok">Categoria excluída.</div>}
+
+  <div class="duas-colunas">
+    <!-- Formulário -->
+    <section class="cartao">
+      <h2>{alvo ? `Editar: ${alvo.nome}` : 'Nova categoria'}</h2>
+
+      <form method="post" action="/admin/api/categorias/salvar">
+        <input type="hidden" name="id_original" value={alvo?.id ?? ''} />
+
+        <div class="campo">
+          <label for="id">Identificador (slug)</label>
+          <input
+            id="id"
+            name="id"
+            type="text"
+            required
+            pattern="[a-z0-9\-]+"
+            title="Somente letras minúsculas, números e hífen"
+            value={alvo?.id ?? ''}
+            placeholder="ex: lanches"
+          />
+          <small>Usado nas URLs e no banco. Sem espaços/acentos.</small>
+        </div>
+
+        <div class="campo">
+          <label for="nome">Nome exibido</label>
+          <input id="nome" name="nome" type="text" required value={alvo?.nome ?? ''} placeholder="ex: Lanches" />
+        </div>
+
+        <div class="grade-campos">
+          <div class="campo">
+            <label for="icone">Ícone (emoji)</label>
+            <input id="icone" name="icone" type="text" value={alvo?.icone ?? ''} placeholder="🍔" />
+          </div>
+          <div class="campo">
+            <label for="ordem">Ordem</label>
+            <input id="ordem" name="ordem" type="number" value={alvo?.ordem ?? categorias.length + 1} />
+            <small>Menor aparece primeiro.</small>
+          </div>
+        </div>
+
+        <div class="campo">
+          <label for="descricao">Descrição (opcional)</label>
+          <textarea id="descricao" name="descricao" placeholder="Texto curto exibido no topo da seção">
+            {alvo?.descricao ?? ''}
+          </textarea>
+        </div>
+
+        <div class="acoes-form">
+          <button class="btn btn-primario" type="submit">Salvar</button>
+          {alvo && <a href="/admin/categorias" class="btn btn-secundario">Cancelar</a>}
+        </div>
+      </form>
+    </section>
+
+    <!-- Lista -->
+    <section class="cartao">
+      <h2>Cadastradas ({categorias.length})</h2>
+
+      {categorias.length === 0 ? (
+        <p class="vazio">Nenhuma categoria ainda.</p>
+      ) : (
+        <div>
+          {categorias.map((c) => (
+            <div class="linha-lista">
+              <span class="miniatura icone" aria-hidden="true">{c.icone ?? '📁'}</span>
+              <div class="cresce">
+                <div class="titulo">{c.nome}</div>
+                <div class="sub">{c.id} · {contagem(c.id)} produto(s)</div>
+              </div>
+              <div class="acoes">
+                <a href={`/admin/categorias?editar=${encodeURIComponent(c.id)}`} class="btn btn-secundario btn-sm">
+                  Editar
+                </a>
+                <form
+                  method="post"
+                  action="/admin/api/categorias/excluir"
+                  data-excluir
+                >
+                  <input type="hidden" name="id" value={c.id} />
+                  <button type="submit" class="btn btn-perigo btn-sm">Excluir</button>
+                </form>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  </div>
+
+  <script>
+    // Confirma antes de excluir; avisa se a categoria ainda tem produtos.
+    document.addEventListener('submit', (e) => {
+      const form = e.target;
+      if (!(form instanceof HTMLFormElement) || !form.matches('[data-excluir]')) return;
+      const linha = form.closest('.linha-lista');
+      const sub = linha?.querySelector('.sub')?.textContent ?? '';
+      const temProdutos = !/\b0 produto/.test(sub);
+      const nome = linha?.querySelector('.titulo')?.textContent ?? 'esta categoria';
+      const msg = temProdutos
+        ? `Excluir "${nome}"? ATENÇÃO: ela tem produtos vinculados.`
+        : `Excluir "${nome}"?`;
+      if (!confirm(msg)) e.preventDefault();
+    });
+  </script>
+</AdminLayout>
+
+<style>
+  .duas-colunas {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+    align-items: start;
+  }
+
+  @media (min-width: 760px) {
+    .duas-colunas {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .acoes-form {
+    display: flex;
+    gap: 10px;
+    margin-top: 6px;
+  }
+
+  .acoes form {
+    margin: 0;
+  }
+
+  .icone {
+    display: grid;
+    place-items: center;
+    font-size: 1.4rem;
+    background: #f3f4f6;
+  }
+</style>

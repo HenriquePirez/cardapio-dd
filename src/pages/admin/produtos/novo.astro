@@ -1,0 +1,27 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import ProductForm from '../../../components/ProductForm.astro';
+import { db } from '../../../lib/env';
+import { listarCategorias } from '../../../lib/db';
+
+const categorias = await listarCategorias(db());
+---
+
+<AdminLayout titulo="Novo produto">
+  <div class="barra-acoes">
+    <div>
+      <h1 class="admin-h1">Novo produto</h1>
+      <p class="admin-sub">Preencha os dados e envie as fotos/vídeos.</p>
+    </div>
+    <a href="/admin/produtos" class="btn btn-secundario">← Produtos</a>
+  </div>
+
+  {categorias.length === 0 && (
+    <div class="aviso aviso-erro">
+      Você precisa de ao menos <strong>uma categoria</strong> antes de cadastrar produtos.
+      <a href="/admin/categorias"> Criar categoria →</a>
+    </div>
+  )}
+
+  <ProductForm categorias={categorias} />
+</AdminLayout>

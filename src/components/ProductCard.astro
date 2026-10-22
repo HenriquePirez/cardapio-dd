@@ -1,0 +1,213 @@
+---
+import { urlMidia } from '../lib/env';
+import { formatarPreco } from '../config';
+
+interface Props {
+  id: string;
+  nome: string;
+  preco: number;
+  descricao?: string | undefined;
+  // Mídia de capa (primeira imagem) e total de itens da galeria
+  capa?: { url: string; alt: string; tipo: 'imagem' | 'video'; poster?: string } | undefined;
+  totalMidia: number;
+  comprarUrl: string;
+}
+
+const { id, nome, preco, descricao, capa, totalMidia, comprarUrl } = Astro.props;
+
+// Para vídeo, mostra o poster como capa (não baixa o arquivo de vídeo)
+const capaSrc = capa
+  ? capa.tipo === 'video'
+    ? urlMidia(capa.poster || capa.url)
+    : urlMidia(capa.url)
+  : '';
+const temVideo = capa?.tipo === 'video';
+---
+
+<article class="card" data-produto={id}>
+  <button class="card-midia" type="button" data-abrir-galeria={id} aria-label={`Ver fotos de ${nome}`}>
+    {capaSrc ? (
+      <img
+        src={capaSrc}
+        alt={capa?.alt || nome}
+        loading="lazy"
+        decoding="async"
+        width="800"
+        height="800"
+      />
+    ) : (
+      <div class="card-sem-img" aria-hidden="true">Sem foto</div>
+    )}
+
+    {temVideo && (
+      <span class="badge-video" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        Vídeo
+      </span>
+    )}
+
+    {totalMidia > 1 && (
+      <span class="badge-fotos" aria-hidden="true">{totalMidia} mídias</span>
+    )}
+
+    <span class="card-zoom" aria-hidden="true">Ampliar</span>
+  </button>
+
+  <div class="card-corpo">
+    <div class="card-info">
+      <h3 class="card-nome">{nome}</h3>
+      {descricao && <p class="card-desc">{descricao}</p>}
+      <span class="card-preco">{formatarPreco(preco)}</span>
+    </div>
+
+    <a
+      class="btn-comprar"
+      href={comprarUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={`Comprar ${nome}`}
+    >
+      Comprar
+    </a>
+  </div>
+</article>
+
+<style>
+  .card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+
+  .card-midia {
+    position: relative;
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: var(--bg-elev);
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+  }
+
+  .card-midia img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.35s ease;
+  }
+
+  .card-midia:active img {
+    transform: scale(1.03);
+  }
+
+  .card-sem-img {
+    display: grid;
+    place-items: center;
+    height: 100%;
+    color: var(--text-dim);
+    font-size: 0.85rem;
+  }
+
+  .badge-video,
+  .badge-fotos {
+    position: absolute;
+    top: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.62);
+    backdrop-filter: blur(6px);
+  }
+
+  .badge-video {
+    left: 10px;
+  }
+
+  .badge-fotos {
+    right: 10px;
+  }
+
+  .card-zoom {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(6px);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .card-midia:focus-visible .card-zoom {
+    opacity: 1;
+  }
+
+  .card-corpo {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .card-info {
+    min-width: 0;
+  }
+
+  .card-nome {
+    margin: 0 0 4px;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .card-desc {
+    margin: 0 0 8px;
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .card-preco {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--accent);
+  }
+
+  .btn-comprar {
+    flex-shrink: 0;
+    padding: 11px 18px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-align: center;
+    white-space: nowrap;
+    transition: transform 0.15s, filter 0.15s;
+  }
+
+  .btn-comprar:active {
+    transform: scale(0.96);
+  }
+
+  @media (min-width: 560px) {
+    .card-midia {
+      aspect-ratio: 4 / 3;
+    }
+  }
+</style>

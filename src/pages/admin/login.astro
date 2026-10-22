@@ -1,0 +1,140 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { contarUsuarios } from '../../lib/db';
+import { db } from '../../lib/env';
+
+const erro = Astro.url.searchParams.get('erro');
+const prox = Astro.url.searchParams.get('prox') ?? '';
+const restam = Astro.url.searchParams.get('restam');
+const min = Astro.url.searchParams.get('min');
+
+// Primeiro uso -> leva direto para a criação da conta inicial
+let precisaCriar = false;
+try {
+  precisaCriar = (await contarUsuarios(db())) === 0;
+} catch {
+  // Bindings ausentes em dev sem wrangler: mostra o formulário mesmo
+}
+
+const mensagens: Record<string, string> = {
+  campos: 'Preencha o e-mail e a senha.',
+  senha: `E-mail ou senha incorretos.${restam ? ` Tentativas restantes: ${restam}.` : ''}`,
+  bloqueado: `Muitas tentativas erradas. Tente novamente em ${min ?? 10} min.`,
+  criado: 'Conta criada! Entre com seus dados.',
+  logout: 'Você saiu do painel.',
+};
+const msg = erro ? mensagens[erro] : null;
+---
+
+{precisaCriar ? (
+  <AdminLayout titulo="Criar conta">
+    <div class="caixa-login">
+      <h1 class="login-titulo">Criar conta de acesso</h1>
+      <p class="login-sub">Primeiro uso: defina o login do painel.</p>
+      <a class="btn btn-primario" href="/admin/criar-conta">Criar conta</a>
+    </div>
+  </AdminLayout>
+) : (
+  <AdminLayout titulo="Entrar">
+    <div class="caixa-login">
+      <div class="login-marca">⚙️</div>
+      <h1 class="login-titulo">Entrar no painel</h1>
+      <p class="login-sub">Gerencie categorias, produtos e mídias do cardápio.</p>
+
+      {msg && <div class="aviso aviso-erro" role="alert">{msg}</div>}
+
+      <form method="post" action="/admin/api/login" class="login-form">
+        {prox && <input type="hidden" name="prox" value={prox} />}
+
+        <div class="campo">
+          <label for="email">E-mail</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autocomplete="username"
+            required
+            inputmode="email"
+            placeholder="voce@exemplo.com"
+          />
+        </div>
+
+        <div class="campo">
+          <label for="senha">Senha</label>
+          <input
+            id="senha"
+            name="senha"
+            type="password"
+            autocomplete="current-password"
+            required
+            placeholder="••••••••"
+          />
+        </div>
+
+        <button class="btn btn-primario login-btn" type="submit">Entrar</button>
+      </form>
+
+      <p class="login-rodape">
+        <a href="/">← Ver cardápio público</a>
+      </p>
+    </div>
+  </AdminLayout>
+)}
+
+<style>
+  .caixa-login {
+    max-width: 400px;
+    margin: 6vh auto 0;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 30px 26px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+    text-align: center;
+  }
+
+  .login-marca {
+    font-size: 2.2rem;
+    margin-bottom: 6px;
+  }
+
+  .login-titulo {
+    margin: 0 0 6px;
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .login-sub {
+    margin: 0 0 22px;
+    color: #6b7280;
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+
+  .login-form {
+    text-align: left;
+  }
+
+  .login-btn {
+    width: 100%;
+    margin-top: 6px;
+    padding-top: 13px;
+    padding-bottom: 13px;
+  }
+
+  .login-rodape {
+    margin: 20px 0 0;
+    font-size: 0.86rem;
+  }
+
+  .login-rodape a {
+    color: #ff5e1a;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .login-rodape a:hover {
+    text-decoration: underline;
+  }
+</style>

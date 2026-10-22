@@ -1,0 +1,210 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { db } from '../../../lib/env';
+import { listarCategorias, listarProdutos } from '../../../lib/db';
+import { urlMidia } from '../../../lib/env';
+
+const d1 = db();
+const categorias = await listarCategorias(d1);
+const produtos = await listarProdutos(d1);
+
+const filtro = Astro.url.searchParams.get('filtro') ?? '';
+const busca = (Astro.url.searchParams.get('q') ?? '').trim().toLowerCase();
+const msg = Astro.url.searchParams.get('msg');
+
+let lista = produtos;
+if (filtro === 'destaque') lista = lista.filter((p) => p.destaque === 1);
+if (filtro === 'indisponivel') lista = lista.filter((p) => p.disponivel === 0);
+if (filtro === 'sem-midia') lista = lista.filter((p) => p.midia.length === 0);
+if (filtro) {
+  const cat = categorias.find((c) => c.id === filtro);
+  if (cat) lista = lista.filter((p) => p.categoria_id === cat.id);
+}
+if (busca) {
+  lista = lista.filter(
+    (p) => p.nome.toLowerCase().includes(busca) || p.id.includes(busca),
+  );
+}
+
+const nomeCat = (id: string) => categorias.find((c) => c.id === id)?.nome ?? id;
+---
+
+<AdminLayout titulo="Produtos">
+  <div class="barra-acoes">
+    <div>
+      <h1 class="admin-h1">Produtos</h1>
+      <p class="admin-sub">{produtos.length} cadastrado(s).</p>
+    </div>
+    <div class="acoes">
+      <a href="/admin/produtos/novo" class="btn btn-primario">+ Novo produto</a>
+      <a href="/admin" class="btn btn-secundario">← Painel</a>
+    </div>
+  </div>
+
+  {msg === 'ok' && <div class="aviso aviso-ok">Produto salvo.</div>}
+  {msg === 'excluido' && <div class="aviso aviso-ok">Produto excluído.</div>}
+
+  <!-- Busca e filtros -->
+  <section class="cartao filtros">
+    <form method="get" action="/admin/produtos" class="busca-form">
+      <input
+        type="search"
+        name="q"
+        value={Astro.url.searchParams.get('q') ?? ''}
+        placeholder="Buscar por nome…"
+        aria-label="Buscar produto"
+      />
+      <select name="filtro" aria-label="Filtrar">
+        <option value="">Todos</option>
+        <option value="destaque" selected={filtro === 'destaque'}>Destaques</option>
+        <option value="indisponivel" selected={filtro === 'indisponivel'}>Indisponíveis</option>
+        <option value="sem-midia" selected={filtro === 'sem-midia'}>Sem mídia</option>
+        {categorias.map((c) => (
+          <option value={c.id} selected={filtro === c.id}>{c.nome}</option>
+        ))}
+      </select>
+      <button class="btn btn-secundario" type="submit">Filtrar</button>
+      {(filtro || busca) && <a href="/admin/produtos" class="btn btn-secundario">Limpar</a>}
+    </form>
+  </section>
+
+  <section class="cartao">
+    {lista.length === 0 ? (
+      <p class="vazio">
+        {produtos.length === 0 ? (
+          <>Nenhum produto ainda. <a href="/admin/produtos/novo">Cadastre o primeiro →</a></>
+        ) : (
+          'Nenhum produto encontrado com esses critérios.'
+        )}
+      </p>
+    ) : (
+      <div>
+        {lista.map((p) => {
+          const capa = p.midia[0];
+          const src = capa
+            ? capa.tipo === 'video'
+              ? urlMidia(capa.poster || capa.url)
+              : urlMidia(capa.url)
+            : '';
+          return (
+            <div class="linha-lista">
+              {src ? (
+                <img class="miniatura" src={src} alt="" loading="lazy" decoding="async" />
+              ) : (
+                <span class="miniatura sem" aria-hidden="true">🖼</span>
+              )}
+
+              <div class="cresce">
+                <div class="titulo">
+                  {p.nome}
+                  {p.destaque === 1 && <span class="tag tag-destaque">destaque</span>}
+                  {p.disponivel === 0 && <span class="tag tag-oculto">oculto</span>}
+                </div>
+                <div class="sub">
+                  {nomeCat(p.categoria_id)} · R$ {p.preco.toFixed(2).replace('.', ',')} ·
+                  {' '}{p.midia.length} mídia(s)
+                </div>
+              </div>
+
+              <div class="acoes">
+                <a href={`/admin/produtos/${p.id}`} class="btn btn-secundario btn-sm">Editar</a>
+                <form method="post" action="/admin/api/produtos/excluir" data-excluir>
+                  <input type="hidden" name="id" value={p.id} />
+                  <button type="submit" class="btn btn-perigo btn-sm">Excluir</button>
+                </form>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    )}
+  </section>
+
+  <script>
+    document.addEventListener('submit', (e) => {
+      const form = e.target;
+      if (!(form instanceof HTMLFormElement) || !form.matches('[data-excluir]')) return;
+      const nome = form.closest('.linha-lista')?.querySelector('.titulo')?.textContent?.trim();
+      if (!confirm(`Excluir o produto "${nome}"? As mídias também serão removidas da lista.`)) {
+        e.preventDefault();
+      }
+    });
+  </script>
+</AdminLayout>
+
+<style>
+  .filtros {
+    padding: 14px;
+  }
+
+  .busca-form {
+    display: flex;
+    gap: 9px;
+    flex-wrap: wrap;
+  }
+
+  .busca-form input[type='search'] {
+    flex: 1;
+    min-width: 180px;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 9px;
+    font-size: 15px;
+    font-family: inherit;
+    box-sizing: border-box;
+  }
+
+  .busca-form select {
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 9px;
+    font-size: 15px;
+    font-family: inherit;
+    background: #fff;
+  }
+
+  .busca-form input:focus,
+  .busca-form select:focus {
+    outline: 2px solid #ff7a3d;
+    outline-offset: 1px;
+    border-color: transparent;
+  }
+
+  .acoes form {
+    margin: 0;
+  }
+
+  .tag {
+    display: inline-block;
+    margin-left: 7px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    font-size: 0.66rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    vertical-align: middle;
+  }
+
+  .tag-destaque {
+    background: #fef3c7;
+    color: #b45309;
+  }
+
+  .tag-oculto {
+    background: #f3f4f6;
+    color: #6b7280;
+  }
+
+  .miniatura.sem {
+    display: grid;
+    place-items: center;
+    font-size: 1.2rem;
+    background: #f3f4f6;
+  }
+
+  .vazio a {
+    color: #ff5e1a;
+    font-weight: 600;
+  }
+</style>

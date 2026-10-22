@@ -1,0 +1,29 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import ProductForm from '../../../components/ProductForm.astro';
+import { db } from '../../../lib/env';
+import { listarCategorias, obterProduto } from '../../../lib/db';
+
+const { id } = Astro.params;
+
+const d1 = db();
+const produto = id ? await obterProduto(d1, id) : null;
+
+if (!produto) {
+  return Astro.redirect('/admin/produtos?msg=nao-encontrado');
+}
+
+const categorias = await listarCategorias(d1);
+---
+
+<AdminLayout titulo={`Editar: ${produto.nome}`}>
+  <div class="barra-acoes">
+    <div>
+      <h1 class="admin-h1">Editar produto</h1>
+      <p class="admin-sub">Altere os dados, a galeria e o link de compra.</p>
+    </div>
+    <a href="/admin/produtos" class="btn btn-secundario">← Produtos</a>
+  </div>
+
+  <ProductForm produto={produto} categorias={categorias} />
+</AdminLayout>

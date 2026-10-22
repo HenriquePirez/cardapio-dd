@@ -1,0 +1,769 @@
+---
+/**
+ * Formulário de produto (novo ou edição).
+ * - Dados básicos + link de compra
+ * - Galeria: lista as mídias, permite excluir/reordenar,
+ *   e faz upload (fotos otimizadas no navegador / vídeo direto no R2)
+ */
+import type { Categoria, Midia, Produto } from '../lib/db';
+
+interface Props {
+  produto?: Produto & { midia: Midia[] };
+  categorias: Categoria[];
+}
+
+const { produto, categorias } = Astro.props;
+
+const modoEdicao = !!produto;
+const acao = modoEdicao
+  ? `/admin/api/produtos/salvar`
+  : `/admin/api/produtos/salvar`;
+
+// Dados de galeria em JSON para o script da página (upload/reordenar)
+const galeria = (produto?.midia ?? []).map((m) => ({
+  id: m.id,
+  tipo: m.tipo,
+  url: m.url,
+  full: m.full ?? '',
+  poster: m.poster ?? '',
+  alt: m.alt ?? '',
+  ordem: m.ordem,
+}));
+---
+
+<form
+  method="post"
+  action={acao}
+  class="form-produto"
+  id="form-produto"
+  enctype="multipart/form-data"
+>
+  {modoEdicao && <input type="hidden" name="id" value={produto!.id} />}
+
+  <!-- Galeria (estado serializado) -->
+  <input type="hidden" name="galeria_json" id="galeria-json" value={JSON.stringify(galeria)} />
+
+  <div class="duas-colunas">
+    <!-- Dados -->
+    <section class="cartao">
+      <h2>Dados do produto</h2>
+
+      <div class="campo">
+        <label for="nome">Nome</label>
+        <input id="nome" name="nome" type="text" required value={produto?.nome ?? ''}
+          placeholder="ex: X-Burger Clássico" />
+      </div>
+
+      <div class="campo">
+        <label for="id">Identificador (slug)</label>
+        <input id="id" name="id" type="text" required pattern="[a-z0-9\-]+"
+          title="Somente letras minúsculas, números e hífen"
+          value={produto?.id ?? ''} placeholder="ex: x-burger-classico"
+          readonly={modoEdicao} />
+        <small>{modoEdicao ? 'Não é possível mudar após a criação.' : 'Usado nas URLs. Sem espaços.'}</small>
+      </div>
+
+      <div class="grade-campos">
+        <div class="campo">
+          <label for="preco">Preço (R$)</label>
+          <input id="preco" name="preco" type="number" step="0.01" min="0" required
+            inputmode="decimal" value={produto?.preco ?? ''} placeholder="28,90" />
+        </div>
+        <div class="campo">
+          <label for="categoria">Categoria</label>
+          <select id="categoria" name="categoria" required>
+            <option value="">Escolha…</option>
+            {categorias.map((c) => (
+              <option value={c.id} selected={produto?.categoria_id === c.id}>
+                {c.icone ? `${c.icone} ` : ''}{c.nome}
+              </option>
+            ))}
+          </select>
+          {categorias.length === 0 && (
+            <small><a href="/admin/categorias">Crie uma categoria primeiro →</a></small>
+          )}
+        </div>
+      </div>
+
+      <div class="campo">
+        <label for="descricao">Descrição</label>
+        <textarea id="descricao" name="descricao" placeholder="Ingredientes, tamanho, etc."
+        >{produto?.descricao ?? ''}</textarea>
+      </div>
+
+      <div class="campo">
+        <label for="comprar_url">Link de compra (app)</label>
+        <input id="comprar_url" name="comprar_url" type="url" required
+          value={produto?.comprar_url ?? ''} placeholder="https://app.exemplo.com/comprar?produto=…" />
+        <small>Ao tocar em “Comprar”, o cliente é levado para este link.</small>
+      </div>
+
+      <div class="grade-campos">
+        <div class="campo">
+          <label for="ordem">Ordem</label>
+          <input id="ordem" name="ordem" type="number" value={produto?.ordem ?? 1} />
+          <small>Menor aparece primeiro na categoria.</small>
+        </div>
+        <div class="campo">
+          <label for="preco2">Opções</label>
+          <label class="check">
+            <input type="checkbox" name="destaque" value="1" checked={produto?.destaque === 1} />
+            ⭐ Destaque (carrossel do topo)
+          </label>
+          <label class="check">
+            <input type="checkbox" name="disponivel" value="1" checked={produto ? produto.disponivel === 1 : true} />
+            👁 Disponível no cardápio
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- Galeria -->
+    <section class="cartao">
+      <h2>Galeria (fotos e vídeo)</h2>
+
+      <div class="campo">
+        <label for="arquivos">Adicionar mídia</label>
+        <input id="arquivos" name="arquivos" type="file" accept="image/*,video/*" multiple />
+        <small>
+          <strong>Fotos:</strong> são otimizadas no navegador (até 1600px / WebP) antes de subir.<br />
+          <strong>Vídeo:</strong> vai direto ao armazenamento. Prefira arquivos leves (&lt; 8 MB).
+        </small>
+      </div>
+
+      <div class="barra-upload" id="barra-upload" hidden>
+        <div class="barra-fill" id="barra-fill"></div>
+        <span class="barra-txt" id="barra-txt">Enviando…</span>
+      </div>
+
+      <ul class="galeria" id="galeria" aria-live="polite"></ul>
+
+      <p class="dica-galeria">
+        Arraste para reordenar, ou use as setas. A <strong>primeira mídia</strong> vira a capa do card.
+      </p>
+    </section>
+  </div>
+
+  <div class="barra-salvar">
+    <button class="btn btn-primario" type="submit">Salvar produto</button>
+    <a href="/admin/produtos" class="btn btn-secundario">Cancelar</a>
+    {modoEdicao && (
+      <a href="/" target="_blank" rel="noopener" class="btn btn-secundario">Ver cardápio ↗</a>
+    )}
+  </div>
+</form>
+
+<script>
+  // ===================================================================
+  // Galeria: estado + UI (adicionar, reordenar, excluir, upload)
+  // - Fotos: processadas no navegador (resize -> WebP) e enviadas ao worker
+  // - Vídeo: enviado direto ao R2 via URL pré-assinada
+  // ===================================================================
+  interface ItemGaleria {
+    id: number | string;
+    tipo: 'imagem' | 'video';
+    url: string;
+    full: string;
+    poster: string;
+    alt: string;
+    ordem: number;
+    novo?: boolean;
+    // arquivo local pendente de envio
+    arquivo?: File;
+    thumbArquivo?: File;
+    posterArquivo?: File;
+  }
+
+  const inputJson = document.getElementById('galeria-json') as HTMLInputElement;
+  const lista = document.getElementById('galeria') as HTMLUListElement;
+  const inputArquivos = document.getElementById('arquivos') as HTMLInputElement;
+  const barra = document.getElementById('barra-upload') as HTMLDivElement;
+  const barraFill = document.getElementById('barra-fill') as HTMLDivElement;
+  const barraTxt = document.getElementById('barra-txt') as HTMLSpanElement;
+
+  const ehEdicao = !!(document.querySelector('input[name="id"][readonly]'));
+
+  let galeria: ItemGaleria[] = inputJson.value ? JSON.parse(inputJson.value) : [];
+  let proxId = 1;
+
+  function sincronizar() {
+    galeria.forEach((m, i) => (m.ordem = i));
+    // Envia só o estado serializado (arquivos vão em separado)
+    const paraJson = galeria.map(({ arquivo, thumbArquivo, posterArquivo, ...resto }) => resto);
+    inputJson.value = JSON.stringify(paraJson);
+  }
+
+  function emoji(tipo: string) {
+    return tipo === 'video' ? '🎬' : '🖼';
+  }
+
+  function fonte(item: ItemGaleria): string {
+    if (item.tipo === 'video') {
+      if (item.posterArquivo) return URL.createObjectURL(item.posterArquivo);
+      return item.poster ? resolver(item.poster) : '';
+    }
+    if (item.arquivo) return URL.createObjectURL(item.arquivo);
+    return resolver(item.full || item.url);
+  }
+
+  function resolver(caminho: string): string {
+    if (!caminho) return '';
+    if (/^(https?:)?\/\//.test(caminho) || caminho.startsWith('/')) return caminho;
+    return `/media/${caminho}`;
+  }
+
+  function desenhar() {
+    lista.innerHTML = '';
+    galeria.forEach((item, i) => {
+      const li = document.createElement('li');
+      li.className = 'item-galeria';
+      li.draggable = true;
+      li.dataset.idx = String(i);
+
+      const src = fonte(item);
+      li.innerHTML = `
+        ${
+          src
+            ? `<img class="g-thumb" src="${src}" alt="" loading="lazy" decoding="async" />`
+            : `<span class="g-thumb g-vazio" aria-hidden="true">${emoji(item.tipo)}</span>`
+        }
+        <div class="g-info">
+          <span class="g-tipo">${emoji(item.tipo)} ${item.tipo === 'video' ? 'Vídeo' : 'Foto'}</span>
+          <span class="g-nome" title="${item.url}">${item.url || 'novo arquivo'}</span>
+          ${item.novo ? '<span class="g-badge">não salvo</span>' : ''}
+        </div>
+        <div class="g-acoes">
+          <button type="button" class="g-btn" data-acao="subir" title="Mover para cima" ${i === 0 ? 'disabled' : ''}>↑</button>
+          <button type="button" class="g-btn" data-acao="descer" title="Mover para baixo" ${i === galeria.length - 1 ? 'disabled' : ''}>↓</button>
+          <button type="button" class="g-btn g-btn-perigo" data-acao="excluir" title="Remover">✕</button>
+        </div>`;
+      lista.appendChild(li);
+    });
+    sincronizar();
+  }
+
+  // ---- Ações da lista -------------------------------------------------
+  /** Troca a posição de dois itens (o de cima com o de baixo). */
+  function trocar(a: number, b: number) {
+    const itemA = galeria[a];
+    const itemB = galeria[b];
+    if (!itemA || !itemB) return;
+    galeria[a] = itemB;
+    galeria[b] = itemA;
+  }
+
+  lista.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLElement>('button[data-acao]');
+    if (!btn) return;
+    const li = btn.closest('.item-galeria') as HTMLLIElement;
+    const idx = Number(li.dataset.idx);
+    const acao = btn.dataset.acao;
+
+    if (acao === 'excluir') {
+      if (!confirm('Remover esta mídia da galeria?')) return;
+      galeria.splice(idx, 1);
+    } else if (acao === 'subir' && idx > 0) {
+      trocar(idx - 1, idx);
+    } else if (acao === 'descer' && idx < galeria.length - 1) {
+      trocar(idx + 1, idx);
+    }
+    desenhar();
+  });
+
+  // ---- Arrastar para reordenar ---------------------------------------
+  let arrastando: number | null = null;
+  lista.addEventListener('dragstart', (e) => {
+    const li = (e.target as HTMLElement).closest<HTMLElement>('.item-galeria');
+    if (!li) return;
+    arrastando = Number(li.dataset.idx);
+    li.classList.add('arrastando');
+  });
+  lista.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    const li = (e.target as HTMLElement).closest<HTMLElement>('.item-galeria');
+    if (li) li.classList.add('sobre');
+  });
+  lista.addEventListener('dragleave', (e) => {
+    const li = (e.target as HTMLElement).closest<HTMLElement>('.item-galeria');
+    if (li) li.classList.remove('sobre');
+  });
+  lista.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const li = (e.target as HTMLElement).closest<HTMLElement>('.item-galeria');
+    if (!li || arrastando === null) return;
+    const destino = Number(li.dataset.idx);
+    if (destino !== arrastando) {
+      const [mov] = galeria.splice(arrastando, 1);
+      if (mov) galeria.splice(destino, 0, mov);
+    }
+    arrastando = null;
+    desenhar();
+  });
+  lista.addEventListener('dragend', () => {
+    arrastando = null;
+    lista.querySelectorAll('.arrastando, .sobre').forEach((el) => {
+      el.classList.remove('arrastando', 'sobre');
+    });
+  });
+
+  // ---- Otimização de foto no navegador --------------------------------
+  const MAX_FOTO = 1600;
+  const MAX_FULL = 1920;
+
+  async function redimensionar(
+    arquivo: File,
+    maxLado: number,
+    formato: 'image/webp' | 'image/jpeg',
+    qualidade: number,
+  ): Promise<File> {
+    const bitmap = await criarBitmap(arquivo);
+    const escala = Math.min(1, maxLado / Math.max(bitmap.width, bitmap.height));
+    const w = Math.round(bitmap.width * escala);
+    const h = Math.round(bitmap.height * escala);
+
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Canvas indisponível');
+    ctx.drawImage(bitmap, 0, 0, w, h);
+
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, formato, qualidade),
+    );
+    if (!blob) throw new Error('Falha ao converter a imagem');
+
+    const ext = formato === 'image/webp' ? 'webp' : 'jpg';
+    const base = arquivo.name.replace(/\.[^.]+$/, '');
+    return new File([blob], `${base}.${ext}`, { type: formato });
+  }
+
+  async function criarBitmap(arquivo: File): Promise<ImageBitmap | HTMLImageElement> {
+    if ('createImageBitmap' in window) {
+      try {
+        return await createImageBitmap(arquivo, { imageOrientation: 'from-image' });
+      } catch {
+        /* cai para a imagem comum */
+      }
+    }
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error('Não consegui ler a imagem'));
+      img.src = URL.createObjectURL(arquivo);
+    });
+  }
+
+  // ---- Envio -----------------------------------------------------------
+  function progresso(pct: number, texto: string) {
+    barra.hidden = false;
+    barraFill.style.width = `${Math.max(0, Math.min(100, pct))}%`;
+    barraTxt.textContent = texto;
+  }
+
+  function esconderBarra() {
+    setTimeout(() => {
+      barra.hidden = true;
+      barraFill.style.width = '0%';
+    }, 700);
+  }
+
+  inputArquivos?.addEventListener('change', async () => {
+    const arquivos = Array.from(inputArquivos.files ?? []);
+    if (!arquivos.length) return;
+    inputArquivos.value = '';
+
+    try {
+      let feitos = 0;
+      for (const arquivo of arquivos) {
+        feitos++;
+        progresso(
+          ((feitos - 1) / arquivos.length) * 100,
+          `Processando ${feitos}/${arquivos.length}…`,
+        );
+
+        if (arquivo.type.startsWith('image/')) {
+          await enviarFoto(arquivo);
+        } else if (arquivo.type.startsWith('video/')) {
+          await enviarVideo(arquivo);
+        } else {
+          alert(`"${arquivo.name}" não é uma imagem nem um vídeo.`);
+        }
+      }
+      progresso(100, 'Concluído ✓');
+      esconderBarra();
+      desenhar();
+    } catch (err) {
+      barra.hidden = true;
+      alert('Falha no envio: ' + (err instanceof Error ? err.message : err));
+    }
+  });
+
+  async function enviarFoto(arquivo: File) {
+    // Otimiza: thumbnail (card) + full (lightbox)
+    const thumb = await redimensionar(arquivo, MAX_FOTO, 'image/webp', 0.82);
+    const full = await redimensionar(arquivo, MAX_FULL, 'image/jpeg', 0.85);
+
+    const fd = new FormData();
+    fd.append('arquivo', thumb, thumb.name);
+    fd.append('full', full, full.name);
+    fd.append('alt', arquivo.name.replace(/\.[^.]+$/, ''));
+
+    const res = await fetch('/admin/api/midia/upload', {
+      method: 'POST',
+      body: fd,
+      credentials: 'same-origin',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+    });
+    if (!res.ok) throw new Error(await res.text());
+
+    const dados = (await res.json()) as { url: string; full: string; alt: string };
+    galeria.push({
+      id: `novo-${proxId++}`,
+      tipo: 'imagem',
+      url: dados.url,
+      full: dados.full,
+      poster: '',
+      alt: dados.alt || arquivo.name,
+      ordem: galeria.length,
+      novo: true,
+    });
+  }
+
+  async function enviarVideo(arquivo: File) {
+    // 1) tenta URL pré-assinada (envio DIRETO ao R2, ideal p/ vídeo)
+    const pedir = await fetch('/admin/api/midia/presign', {
+      method: 'POST',
+      body: nomeSeguro(arquivo.name),
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'text/plain',
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+    });
+
+    let chave = '';
+    let posterKey = '';
+
+    if (pedir.ok) {
+      const { uploadUrl, key, posterKey: pk } = (await pedir.json()) as {
+        uploadUrl: string;
+        key: string;
+        posterKey: string;
+      };
+      // 2) o arquivo vai direto ao R2, sem passar pelo worker
+      await progressoXhr(uploadUrl, arquivo, (pct) =>
+        progresso(pct, `Enviando vídeo… ${Math.round(pct)}%`),
+      );
+      chave = key;
+      posterKey = pk;
+    } else {
+      // Fallback: sobe pelo worker (sem credenciais S3 configuradas)
+      const fd = new FormData();
+      fd.append('arquivo', arquivo, arquivo.name);
+      fd.append('alt', arquivo.name.replace(/\.[^.]+$/, ''));
+      const res = await fetch('/admin/api/midia/upload', {
+        method: 'POST',
+        body: fd,
+        credentials: 'same-origin',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const d = (await res.json()) as { url: string };
+      chave = d.url;
+      posterKey = chave.replace(/\.[a-z0-9]+$/i, '') + '-poster.webp';
+    }
+
+    // 3) gera o poster no navegador e envia junto (mesmo nos dois caminhos)
+    let posterUrl = '';
+    try {
+      const posterFile = await gerarPoster(arquivo);
+      if (posterFile) {
+        const fd = new FormData();
+        fd.append('arquivo', posterFile, posterFile.name);
+        fd.append('chave', posterKey);
+        const subir = await fetch('/admin/api/midia/upload', {
+          method: 'POST',
+          body: fd,
+          credentials: 'same-origin',
+          headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        });
+        if (subir.ok) {
+          const d = (await subir.json()) as { url: string };
+          posterUrl = d.url;
+        }
+      }
+    } catch {
+      /* poster é opcional */
+    }
+
+    galeria.push({
+      id: `novo-${proxId++}`,
+      tipo: 'video',
+      url: chave,
+      full: '',
+      poster: posterUrl,
+      alt: arquivo.name.replace(/\.[^.]+$/, ''),
+      ordem: galeria.length,
+      novo: true,
+    });
+  }
+
+  function nomeSeguro(nome: string): string {
+    const base = nome
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9.]+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '')
+      .toLowerCase();
+    return `${Date.now()}-${base || 'video.mp4'}`;
+  }
+
+  function progressoXhr(
+    url: string,
+    arquivo: File,
+    aoEvoluir: (pct: number) => void,
+  ): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('PUT', url);
+      xhr.setRequestHeader('Content-Type', arquivo.type || 'application/octet-stream');
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) aoEvoluir((e.loaded / e.total) * 100);
+      };
+      xhr.onload = () =>
+        xhr.status >= 200 && xhr.status < 300
+          ? resolve()
+          : reject(new Error(`R2 retornou ${xhr.status}`));
+      xhr.onerror = () => reject(new Error('Falha de rede no envio do vídeo'));
+      xhr.send(arquivo);
+    });
+  }
+
+  async function gerarPoster(arquivo: File): Promise<File | null> {
+    const video = document.createElement('video');
+    video.preload = 'metadata';
+    video.muted = true;
+    video.playsInline = true;
+    video.src = URL.createObjectURL(arquivo);
+
+    try {
+      await new Promise<void>((resolve, reject) => {
+        video.onloadeddata = () => resolve();
+        video.onerror = () => reject(new Error('vídeo inválido'));
+      });
+      video.currentTime = 0.5;
+      await new Promise<void>((resolve) => {
+        video.onseeked = () => resolve();
+        setTimeout(resolve, 1500);
+      });
+
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth || 800;
+      canvas.height = video.videoHeight || 800;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return null;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const blob = await new Promise<Blob | null>((r) =>
+        canvas.toBlob(r, 'image/webp', 0.8),
+      );
+      if (!blob) return null;
+      return new File([blob], 'poster.webp', { type: 'image/webp' });
+    } catch {
+      return null;
+    } finally {
+      URL.revokeObjectURL(video.src);
+    }
+  }
+
+  // Desenha ao carregar
+  desenhar();
+  void ehEdicao;
+</script>
+
+<style>
+  .duas-colunas {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+    align-items: start;
+  }
+
+  @media (min-width: 860px) {
+    .duas-colunas {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #374151;
+  }
+
+  .check input {
+    width: 17px;
+    height: 17px;
+    accent-color: #ff5e1a;
+  }
+
+  /* ---- upload ---- */
+  .barra-upload {
+    position: relative;
+    height: 34px;
+    background: #f3f4f6;
+    border-radius: 9px;
+    overflow: hidden;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .barra-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 0%;
+    background: linear-gradient(90deg, #ff7a3d, #ff5e1a);
+    transition: width 0.2s;
+  }
+
+  .barra-txt {
+    position: relative;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #111827;
+  }
+
+  /* ---- galeria ---- */
+  .galeria {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  :global(.item-galeria) {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 9px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 11px;
+    cursor: grab;
+  }
+
+  :global(.item-galeria.arrastando) {
+    opacity: 0.4;
+  }
+
+  :global(.item-galeria.sobre) {
+    border-color: #ff5e1a;
+    box-shadow: inset 0 2px 0 #ff5e1a;
+  }
+
+  :global(.g-thumb) {
+    width: 56px;
+    height: 56px;
+    object-fit: cover;
+    border-radius: 8px;
+    background: #e5e7eb;
+    flex-shrink: 0;
+  }
+
+  :global(.g-vazio) {
+    display: grid;
+    place-items: center;
+    font-size: 1.3rem;
+  }
+
+  :global(.g-info) {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  :global(.g-tipo) {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #374151;
+  }
+
+  :global(.g-nome) {
+    font-size: 0.76rem;
+    color: #6b7280;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  :global(.g-badge) {
+    align-self: flex-start;
+    margin-top: 3px;
+    padding: 1px 7px;
+    background: #fef3c7;
+    color: #b45309;
+    border-radius: 999px;
+    font-size: 0.64rem;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  :global(.g-acoes) {
+    display: flex;
+    gap: 5px;
+    flex-shrink: 0;
+  }
+
+  :global(.g-btn) {
+    width: 30px;
+    height: 30px;
+    border: 1px solid #d1d5db;
+    background: #fff;
+    border-radius: 7px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    color: #374151;
+  }
+
+  :global(.g-btn:disabled) {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  :global(.g-btn-perigo) {
+    color: #dc2626;
+    border-color: #fecaca;
+  }
+
+  :global(.g-btn:hover:not(:disabled)) {
+    background: #f3f4f6;
+  }
+
+  .dica-galeria {
+    margin: 12px 0 0;
+    font-size: 0.78rem;
+    color: #6b7280;
+    line-height: 1.45;
+  }
+
+  .barra-salvar {
+    display: flex;
+    gap: 11px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+</style>

@@ -1,0 +1,30 @@
+---
+import '../styles/global.css';
+import { SITE } from '../config';
+
+interface Props {
+  titulo?: string;
+  descricao?: string;
+}
+
+const { titulo = SITE.nome, descricao = SITE.descricao } = Astro.props;
+const tituloCompleto = titulo === SITE.nome ? titulo : `${titulo} · ${SITE.nome}`;
+---
+
+<!doctype html>
+<html lang={SITE.idioma}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0f1115" />
+    <title>{tituloCompleto}</title>
+    <meta name="description" content={descricao} />
+    <meta property="og:title" content={tituloCompleto} />
+    <meta property="og:description" content={descricao} />
+    <meta property="og:type" content="website" />
+    <link rel="preconnect" href="/" />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

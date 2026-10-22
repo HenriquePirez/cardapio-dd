@@ -1,0 +1,53 @@
+{
+  // Nome do Worker (aparece no dashboard do Cloudflare)
+  "name": "cardapio-dd",
+  "main": "@astrojs/cloudflare/entrypoints/server",
+  "compatibility_date": "2025-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // Build do Astro -> os assets estáticos (CSS/JS) são servidos pelo Worker
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS"
+  },
+
+  // Banco de dados relacional (categorias, produtos, mídia, usuário)
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "cardapio-dd",
+      "database_id": "REPLACE_WITH_D1_ID"
+    }
+  ],
+
+  // Objetos: fotos e vídeos (zero custo de egress)
+  "r2_buckets": [
+    {
+      "binding": "MEDIA",
+      "bucket_name": "cardapio-dd-media"
+    }
+  ],
+
+  // Sessão do login (o adapter provisiona a KV automaticamente se ausente;
+  // deixamos explícito para clareza)
+  "kv_namespaces": [
+    {
+      "binding": "SESSION"
+    }
+  ],
+
+  // Variáveis não-sensíveis (secrets vão por `wrangler secret put`)
+  "vars": {
+    // Domínio público do bucket R2 (use o custom domain do R2)
+    // Ex: https://media.seudominio.com  -> usado nas URLs do cardápio
+    // Se vazio, as mídias são servidas por /media/<chave> (o Worker lê do R2).
+    "MEDIA_PUBLIC_BASE": ""
+    // Opcional (envio de vídeo DIRETO ao R2, sem passar pelo Worker).
+    // Configure como SECRETS, não aqui:
+    //   npx wrangler secret put R2_ACCOUNT_ID
+    //   npx wrangler secret put R2_ACCESS_KEY_ID
+    //   npx wrangler secret put R2_SECRET_ACCESS_KEY
+    //   npx wrangler secret put R2_BUCKET_NAME
+    // Sem isso, o upload de vídeo usa o fallback pelo Worker (funciona também).
+  }
+}

@@ -1,0 +1,174 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { db } from '../../lib/env';
+import { listarCategorias, listarProdutos } from '../../lib/db';
+import { urlMidia } from '../../lib/env';
+
+const d1 = db();
+const [categorias, produtos] = await Promise.all([listarCategorias(d1), listarProdutos(d1)]);
+
+const destaques = produtos.filter((p) => p.destaque === 1);
+const indisponiveis = produtos.filter((p) => p.disponivel === 0);
+const semMidia = produtos.filter((p) => p.midia.length === 0);
+
+const estatisticas = [
+  { rotulo: 'Produtos', valor: produtos.length, href: '/admin/produtos' },
+  { rotulo: 'Categorias', valor: categorias.length, href: '/admin/categorias' },
+  { rotulo: 'Destaques', valor: destaques.length, href: '/admin/produtos?filtro=destaque' },
+  { rotulo: 'Sem mídia', valor: semMidia.length, href: '/admin/produtos?filtro=sem-midia' },
+];
+---
+
+<AdminLayout titulo="Painel">
+  <div class="barra-acoes">
+    <div>
+      <h1 class="admin-h1">Painel</h1>
+      <p class="admin-sub">Visão geral do cardápio.</p>
+    </div>
+    <div class="acoes">
+      <a href="/admin/produtos/novo" class="btn btn-primario">+ Novo produto</a>
+      <a href="/" target="_blank" rel="noopener" class="btn btn-secundario">Ver cardápio ↗</a>
+    </div>
+  </div>
+
+  <div class="grade-stats">
+    {estatisticas.map((s) => (
+      <a href={s.href} class="stat">
+        <span class="stat-valor">{s.valor}</span>
+        <span class="stat-rotulo">{s.rotulo}</span>
+      </a>
+    ))}
+  </div>
+
+  {indisponiveis.length > 0 && (
+    <div class="aviso aviso-erro">
+      {indisponiveis.length} produto(s) marcado(s) como <strong>indisponível</strong> —
+      não aparecem no cardápio público.
+    </div>
+  )}
+
+  <section class="cartao">
+    <h2>Últimos produtos</h2>
+    {produtos.length === 0 ? (
+      <p class="vazio">
+        Nenhum produto ainda. <a href="/admin/produtos/novo">Cadastre o primeiro →</a>
+      </p>
+    ) : (
+      <div>
+        {produtos.slice(0, 6).map((p) => {
+          const capa = p.midia[0];
+          const src = capa
+            ? capa.tipo === 'video'
+              ? urlMidia(capa.poster || capa.url)
+              : urlMidia(capa.url)
+            : '';
+          return (
+            <div class="linha-lista">
+              {src ? (
+                <img class="miniatura" src={src} alt="" loading="lazy" decoding="async" />
+              ) : (
+                <span class="miniatura" aria-hidden="true" />
+              )}
+              <div class="cresce">
+                <div class="titulo">{p.nome}</div>
+                <div class="sub">
+                  {p.categoria_id} · {p.midia.length} mídia(s)
+                  {p.destaque === 1 ? ' · ⭐ destaque' : ''}
+                  {p.disponivel === 0 ? ' · oculto' : ''}
+                </div>
+              </div>
+              <div class="acoes">
+                <a href={`/admin/produtos/${p.id}`} class="btn btn-secundario btn-sm">Editar</a>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    )}
+  </section>
+
+  <section class="cartao">
+    <h2>Categorias</h2>
+    {categorias.length === 0 ? (
+      <p class="vazio">
+        Nenhuma categoria. <a href="/admin/categorias">Criar →</a>
+      </p>
+    ) : (
+      <div>
+        {categorias.map((c) => (
+          <div class="linha-lista">
+            <span class="miniatura icone" aria-hidden="true">{c.icone ?? '📁'}</span>
+            <div class="cresce">
+              <div class="titulo">{c.nome}</div>
+              <div class="sub">
+                {produtos.filter((p) => p.categoria_id === c.id).length} produto(s)
+              </div>
+            </div>
+            <div class="acoes">
+              <a href="/admin/categorias" class="btn btn-secundario btn-sm">Editar</a>
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+  </section>
+</AdminLayout>
+
+<style>
+  .grade-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  @media (min-width: 640px) {
+    .grade-stats {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  .stat {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.12s, box-shadow 0.12s;
+  }
+
+  .stat:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.07);
+  }
+
+  .stat-valor {
+    font-size: 1.9rem;
+    font-weight: 800;
+    line-height: 1;
+    color: #ff5e1a;
+    letter-spacing: -0.03em;
+  }
+
+  .stat-rotulo {
+    font-size: 0.82rem;
+    color: #6b7280;
+    font-weight: 600;
+  }
+
+  .icone {
+    display: grid;
+    place-items: center;
+    font-size: 1.4rem;
+    background: #f3f4f6;
+  }
+
+  .vazio a {
+    color: #ff5e1a;
+    font-weight: 600;
+  }
+</style>

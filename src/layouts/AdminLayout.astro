@@ -1,0 +1,422 @@
+---
+/**
+ * Layout base do painel /admin.
+ * Visual mais "papel" (claro) para diferenciar do cardápio público (escuro).
+ */
+import '../styles/global.css';
+import { lerUsuario } from '../lib/session';
+
+interface Props {
+  titulo: string;
+  descricao?: string;
+}
+
+const { titulo, descricao = 'Gerenciamento do cardápio' } = Astro.props;
+const usuario = await lerUsuario(Astro);
+const caminho = Astro.url.pathname;
+const ativo = (p: string) => (caminho === p || caminho.startsWith(p + '/') ? 'ativo' : '');
+
+function sair() {
+  return `
+    <form method="post" action="/admin/api/logout" class="sair-form" data-csrf="1">
+      <button type="submit" class="sair-btn">Sair</button>
+    </form>`;
+}
+---
+
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#111827" />
+    <title>{titulo} · Admin</title>
+    <meta name="description" content={descricao} />
+  </head>
+  <body class="admin-body">
+    {usuario && (
+      <header class="admin-topo">
+        <div class="admin-topo-inner">
+          <a class="admin-logo" href="/admin">⚙️ Cardápio · Admin</a>
+
+          <nav class="admin-nav" aria-label="Navegação do painel">
+            <a href="/admin" class={ativo('/admin') && caminho === '/admin' ? 'ativo' : ''}>Painel</a>
+            <a href="/admin/produtos" class={ativo('/admin/produtos')}>Produtos</a>
+            <a href="/admin/categorias" class={ativo('/admin/categorias')}>Categorias</a>
+          </nav>
+
+          <div class="admin-usuario">
+            <span class="admin-nome" title={usuario.email}>{usuario.nome}</span>
+            <Fragment set:html={sair()} />
+          </div>
+        </div>
+      </header>
+    )}
+
+    <main class="admin-main">
+      <slot />
+    </main>
+
+    <script>
+      // Guarda o token de sessão (cookie SameSite) e injeta como header em
+      // submissões via fetch. Os forms nativos já vão com cookie por padrão.
+      document.addEventListener('submit', (e) => {
+        const form = e.target;
+        if (!(form instanceof HTMLFormElement) || !form.dataset.fetch) return;
+        e.preventDefault();
+        enviarForm(form);
+      });
+
+      async function enviarForm(form: HTMLFormElement) {
+        const dados = new FormData(form);
+        const botao = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+        if (botao) botao.disabled = true;
+        try {
+          const res = await fetch(form.action, {
+            method: form.method || 'POST',
+            body: dados,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            credentials: 'same-origin',
+            redirect: 'follow',
+          });
+          const alvo = res.redirected
+            ? res.url
+            : new URLSearchParams(location.search).get('prox') || '/admin';
+          location.href = alvo;
+        } finally {
+          if (botao) botao.disabled = false;
+        }
+      }
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  .admin-body {
+    background: #f5f6f8;
+    color: #111827;
+    min-height: 100vh;
+    margin: 0;
+    font-family:
+      system-ui,
+      -apple-system,
+      'Segoe UI',
+      Roboto,
+      Helvetica,
+      Arial,
+      sans-serif;
+  }
+
+  .admin-topo {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: #111827;
+    color: #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+  }
+
+  .admin-topo-inner {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .admin-logo {
+    font-weight: 800;
+    font-size: 0.98rem;
+    color: #fff;
+    white-space: nowrap;
+  }
+
+  .admin-nav {
+    display: flex;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .admin-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .admin-nav a {
+    padding: 7px 13px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #d1d5db;
+    white-space: nowrap;
+  }
+
+  .admin-nav a:hover {
+    background: rgba(255, 255, 255, 0.09);
+    color: #fff;
+  }
+
+  .admin-nav a.ativo {
+    background: #ff7a3d;
+    color: #fff;
+  }
+
+  .admin-usuario {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .admin-nome {
+    font-size: 0.85rem;
+    color: #9ca3af;
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .sair-form {
+    margin: 0;
+  }
+
+  .sair-btn {
+    padding: 7px 14px;
+    border: 1px solid #374151;
+    background: transparent;
+    color: #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .sair-btn:hover {
+    background: #374151;
+  }
+
+  .admin-main {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 24px 16px 60px;
+  }
+
+  .admin-h1 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin: 0 0 4px;
+    letter-spacing: -0.02em;
+  }
+
+  .admin-sub {
+    margin: 0 0 22px;
+    color: #6b7280;
+    font-size: 0.92rem;
+  }
+
+  .cartao {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    margin-bottom: 18px;
+  }
+
+  .cartao h2 {
+    margin: 0 0 14px;
+    font-size: 1.05rem;
+    font-weight: 700;
+  }
+
+  .campo {
+    margin-bottom: 14px;
+  }
+
+  .campo label {
+    display: block;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 5px;
+  }
+
+  .campo input,
+  .campo textarea,
+  .campo select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 9px;
+    font-size: 15px;
+    font-family: inherit;
+    background: #fff;
+    color: #111827;
+    box-sizing: border-box;
+  }
+
+  .campo textarea {
+    min-height: 84px;
+    resize: vertical;
+  }
+
+  .campo input:focus,
+  .campo textarea:focus,
+  .campo select:focus {
+    outline: 2px solid #ff7a3d;
+    outline-offset: 1px;
+    border-color: transparent;
+  }
+
+  .campo small {
+    display: block;
+    margin-top: 4px;
+    color: #6b7280;
+    font-size: 0.78rem;
+  }
+
+  .grade-campos {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  @media (min-width: 560px) {
+    .grade-campos {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 11px 20px;
+    border-radius: 9px;
+    border: 1px solid transparent;
+    font-size: 0.92rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    text-decoration: none;
+  }
+
+  .btn-primario {
+    background: linear-gradient(135deg, #ff7a3d, #ff5e1a);
+    color: #fff;
+  }
+
+  .btn-primario:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .btn-secundario {
+    background: #fff;
+    border-color: #d1d5db;
+    color: #374151;
+  }
+
+  .btn-perigo {
+    background: #fff;
+    border-color: #fecaca;
+    color: #dc2626;
+  }
+
+  .btn-perigo:hover {
+    background: #fef2f2;
+  }
+
+  .btn-sm {
+    padding: 7px 13px;
+    font-size: 0.84rem;
+  }
+
+  .aviso {
+    padding: 11px 14px;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    margin-bottom: 16px;
+    font-weight: 500;
+  }
+
+  .aviso-erro {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+  }
+
+  .aviso-ok {
+    background: #f0fdf4;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+  }
+
+  .linha-lista {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 0;
+    border-bottom: 1px solid #f3f4f6;
+  }
+
+  .linha-lista:last-child {
+    border-bottom: 0;
+  }
+
+  .linha-lista .cresce {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .linha-lista .titulo {
+    font-weight: 700;
+    font-size: 0.96rem;
+  }
+
+  .linha-lista .sub {
+    font-size: 0.82rem;
+    color: #6b7280;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .miniatura {
+    width: 52px;
+    height: 52px;
+    border-radius: 9px;
+    object-fit: cover;
+    background: #e5e7eb;
+    flex-shrink: 0;
+  }
+
+  .acoes {
+    display: flex;
+    gap: 7px;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .vazio {
+    text-align: center;
+    color: #6b7280;
+    padding: 34px 10px;
+    font-size: 0.92rem;
+  }
+
+  .barra-acoes {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+</style>
