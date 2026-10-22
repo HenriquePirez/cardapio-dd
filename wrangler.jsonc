@@ -16,7 +16,7 @@
     {
       "binding": "DB",
       "database_name": "cardapio-dd",
-      "database_id": "REPLACE_WITH_D1_ID"
+      "database_id": "c25cc025-285b-4ac1-91c9-3a9a5f0039a9"
     }
   ],
 
@@ -28,11 +28,11 @@
     }
   ],
 
-  // Sessão do login (o adapter provisiona a KV automaticamente se ausente;
-  // deixamos explícito para clareza)
+  // Sessão do login (driver KV provisionado pelo adapter Cloudflare)
   "kv_namespaces": [
     {
-      "binding": "SESSION"
+      "binding": "SESSION",
+      "id": "1037359e715941369e59d52a83501428"
     }
   ],
 
