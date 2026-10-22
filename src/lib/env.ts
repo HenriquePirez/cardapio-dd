@@ -1,5 +1,5 @@
 /**
- * Acesso centralizado aos bindings do Cloudflare (D1, R2, KV).
+ * Acesso centralizado aos bindings do Cloudflare (D1 e KV).
  *
  * Em SSR (rotas do cardápio e do admin) o `env` é lido do módulo
  * `cloudflare:workers`, que o adapter do Astro injeta em runtime.
@@ -7,24 +7,38 @@
 import { env } from 'cloudflare:workers';
 import type { D1Like } from './db';
 
-/** Tipos estruturais mínimos para não depender dos tipos gerados do wrangler. */
-export interface R2Like {
+/**
+ * Tipos estruturais mínimos do KV, para não depender dos tipos gerados.
+ * A mídia usa KV (e não R2) porque o R2 exige assinatura com cartão.
+ */
+export interface KvLike {
+  get(key: string, type: 'arrayBuffer'): Promise<ArrayBuffer | null>;
+  get(key: string): Promise<string | null>;
+  getWithMetadata<T = unknown>(
+    key: string,
+    type: 'arrayBuffer',
+  ): Promise<{ value: ArrayBuffer | null; metadata: T | null }>;
   put(
     key: string,
     value: ArrayBuffer | ArrayBufferView | string | ReadableStream | Blob,
-    options?: { httpMetadata?: Record<string, string>; customMetadata?: Record<string, string> },
-  ): Promise<{ key: string; size: number } | null>;
-  get(key: string): Promise<{ body: ReadableStream; httpMetadata?: Record<string, string> } | null>;
+    options?: { httpMetadata?: { contentType?: string }; expirationTtl?: number },
+  ): Promise<void>;
   delete(key: string): Promise<void>;
   list(options?: { prefix?: string; limit?: number }): Promise<{
-    objects: Array<{ key: string; size: number }>;
-    truncated: boolean;
+    keys: Array<{ name: string }>;
+    list_complete: boolean;
+    cursor?: string;
   }>;
+}
+
+/** Metadados gravados junto de cada objeto de mídia. */
+export interface MetaMidia {
+  httpMetadata?: { contentType?: string };
 }
 
 interface EnvBindings {
   DB?: D1Like;
-  MEDIA?: R2Like;
+  MEDIA?: KvLike;
   MEDIA_PUBLIC_BASE?: string;
   [k: string]: unknown;
 }
@@ -44,20 +58,97 @@ export function db(): D1Like {
   return b;
 }
 
-export function r2(): R2Like {
+/** Namespace KV que guarda as fotos e vídeos enviados pelo painel. */
+export function kvMidia(): KvLike {
   const b = bindings().MEDIA;
   if (!b) {
     throw new Error(
-      'Binding R2 (MEDIA) ausente. Verifique "r2_buckets" no wrangler.jsonc e rode `npx wrangler types`.',
+      'Binding KV (MEDIA) ausente. Verifique "kv_namespaces" no wrangler.jsonc e rode `npx wrangler types`.',
     );
   }
   return b;
 }
 
+// ---------------------------------------------------------------------------
+// Limites de mídia
+// ---------------------------------------------------------------------------
+
+/**
+ * Limite por arquivo, em bytes.
+ * O KV do plano free aceita até 25 MB por valor; usamos 15 MB de margem porque
+ * o corpo da requisição é lido de uma vez pelo Worker (limite de memória/CPU).
+ */
+export const LIMITE_ARQUIVO = 15 * 1024 * 1024;
+
+/** Formatos aceitos no upload. */
+export const TIPOS_ACEITOS = [
+  'image/webp',
+  'image/jpeg',
+  'image/png',
+  'image/avif',
+  'image/gif',
+  'video/mp4',
+  'video/webm',
+  'video/quicktime',
+] as const;
+
+/** Prefixos de chave permitidos (mesmos gerados pelo upload do admin). */
+export const PREFIXOS_MIDIA = ['fotos/', 'videos/'] as const;
+
+/**
+ * Valida uma chave de mídia antes de gravar/ler.
+ * Evita path traversal e fora dos prefixos autorizados.
+ */
+export function chaveValida(chave: string): boolean {
+  if (!chave || chave.length > 300) return false;
+  if (chave.includes('..') || chave.includes('\0') || chave.startsWith('/')) return false;
+  return PREFIXOS_MIDIA.some((p) => chave.startsWith(p));
+}
+
+/** Extensão (com ponto) de uma chave, em minúsculas. */
+export function extensao(chave: string): string {
+  const i = chave.lastIndexOf('.');
+  return i === -1 ? '' : chave.slice(i).toLowerCase();
+}
+
+/** Guess do Content-Type a partir da extensão (fallback sem metadado). */
+export function tipoPorExtensao(chave: string): string {
+  const mapa: Record<string, string> = {
+    '.webp': 'image/webp',
+    '.avif': 'image/avif',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.png': 'image/png',
+    '.gif': 'image/gif',
+    '.mp4': 'video/mp4',
+    '.webm': 'video/webm',
+    '.mov': 'video/quicktime',
+  };
+  return mapa[extensao(chave)] ?? 'application/octet-stream';
+}
+
+/** Nome de arquivo seguro para URL (sem acentos, sem espaços). */
+export function nomeSeguro(nome: string): string {
+  return (
+    nome
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9.]+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '')
+      .toLowerCase()
+      .slice(0, 120) || 'arquivo'
+  );
+}
+
+// ---------------------------------------------------------------------------
+// URLs de mídia
+// ---------------------------------------------------------------------------
+
 /**
  * Base pública para montar URL de mídia no cardápio.
- * - Se MEDIA_PUBLIC_BASE estiver definida (custom domain do R2), usa ela.
- * - Caso contrário, caminho relativo (dev local: arquivos em /public/media).
+ * - MEDIA_PUBLIC_BASE definida (host externo/CDN) -> usa ela.
+ * - Vazia -> caminho relativo, lido do KV pelo Worker em /media/<chave>.
  */
 export function baseMidia(): string {
   const base = bindings().MEDIA_PUBLIC_BASE || '';

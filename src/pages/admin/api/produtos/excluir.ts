@@ -1,11 +1,11 @@
 /**
  * POST /admin/api/produtos/excluir
- * Remove o produto e suas mídias (CASCADE).
- * (Arquivos no R2 são mantidos por segurança — ver README.)
+ * Remove o produto, suas mídias (CASCADE) e os objetos no KV.
  */
 import type { APIRoute } from 'astro';
 import { db } from '../../../../lib/env';
-import { excluirProduto } from '../../../../lib/db';
+import { excluirProduto, listarMidiasPorProdutos } from '../../../../lib/db';
+import { apagarObjetos, caminhosDaMidia } from '../../../../lib/midia';
 
 function mesmaOrigem(request: Request): boolean {
   const origin = request.headers.get('origin');
@@ -28,7 +28,13 @@ export const POST: APIRoute = async (ctx) => {
   }
 
   const id = String(form.get('id') ?? '').trim().toLowerCase();
-  if (id) await excluirProduto(db(), id);
+  if (id) {
+    const d1 = db();
+    // Coleta os caminhos ANTES do CASCADE apagar as linhas.
+    const midias = await listarMidiasPorProdutos(d1, [id]);
+    await excluirProduto(d1, id);
+    await apagarObjetos(midias.flatMap(caminhosDaMidia));
+  }
 
   return new Response(null, {
     status: 303,

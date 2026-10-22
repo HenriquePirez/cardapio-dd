@@ -1,12 +1,12 @@
 /**
- * Camada de acesso ao banco (D1) e ao armazenamento (R2).
+ * Camada de acesso ao banco (D1).
  *
  * Os bindings vêm do wrangler.jsonc:
  *   DB     -> D1 (categorias, produtos, mídia, usuário)
- *   MEDIA  -> R2 (fotos e vídeos)
+ *   MEDIA  -> KV (fotos e vídeos) — ver env.ts
  *
  * No Cloudflare, obtenha via:
- *   import { env } from 'cloudflare:workers';  -> env.DB, env.MEDIA
+ *   import { env } from 'cloudflare:workers';  -> env.DB
  */
 
 export interface Categoria {

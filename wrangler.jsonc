@@ -20,34 +20,28 @@
     }
   ],
 
-  // Objetos: fotos e vídeos (zero custo de egress)
-  "r2_buckets": [
-    {
-      "binding": "MEDIA",
-      "bucket_name": "cardapio-dd-media"
-    }
-  ],
+  // Objetos: fotos e vídeos. Usamos KV (free tier, sem cartão) em vez de R2,
+  // que exige assinatura com método de pagamento.
+  // Limites do plano free: 1 GB total, 25 MB por arquivo, 1.000 escritas/dia.
 
   // Sessão do login (driver KV provisionado pelo adapter Cloudflare)
   "kv_namespaces": [
     {
       "binding": "SESSION",
       "id": "1037359e715941369e59d52a83501428"
+    },
+    {
+      // Fotos e vídeos enviados pelo painel
+      "binding": "MEDIA",
+      "id": "224910a2831f4b529d6c031e51453d63"
     }
   ],
 
   // Variáveis não-sensíveis (secrets vão por `wrangler secret put`)
   "vars": {
-    // Domínio público do bucket R2 (use o custom domain do R2)
-    // Ex: https://media.seudominio.com  -> usado nas URLs do cardápio
-    // Se vazio, as mídias são servidas por /media/<chave> (o Worker lê do R2).
+    // Base opcional para URLs de mídia. Vazia (padrão): as mídias são servidas
+    // por /media/<chave>, lidas do KV pelo Worker. Preencha só se um dia
+    // mover as mídias para um host externo (ex: um CDN próprio).
     "MEDIA_PUBLIC_BASE": ""
-    // Opcional (envio de vídeo DIRETO ao R2, sem passar pelo Worker).
-    // Configure como SECRETS, não aqui:
-    //   npx wrangler secret put R2_ACCOUNT_ID
-    //   npx wrangler secret put R2_ACCESS_KEY_ID
-    //   npx wrangler secret put R2_SECRET_ACCESS_KEY
-    //   npx wrangler secret put R2_BUCKET_NAME
-    // Sem isso, o upload de vídeo usa o fallback pelo Worker (funciona também).
   }
 }

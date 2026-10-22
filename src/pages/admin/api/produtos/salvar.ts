@@ -16,6 +16,7 @@ import {
   atualizarMidia,
   excluirMidia,
 } from '../../../../lib/db';
+import { apagarObjetos, caminhosDaMidia } from '../../../../lib/midia';
 
 const SLUG = /^[a-z0-9-]+$/;
 
@@ -144,8 +145,17 @@ export const POST: APIRoute = async (ctx) => {
   }
 
   // 3) Remove da galeria os que saíram
+  const removidos: typeof atuais = [];
   for (const m of atuais) {
-    if (!mantidos.has(m.id)) await excluirMidia(d1, m.id);
+    if (!mantidos.has(m.id)) {
+      await excluirMidia(d1, m.id);
+      removidos.push(m);
+    }
+  }
+
+  // Apaga os objetos no KV (o plano free só tem 1 GB — não pode sobrar órfão).
+  if (removidos.length) {
+    await apagarObjetos(removidos.flatMap(caminhosDaMidia));
   }
 
   return voltar('/admin/produtos?msg=ok');

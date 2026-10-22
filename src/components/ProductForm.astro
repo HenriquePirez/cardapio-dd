@@ -3,7 +3,7 @@
  * Formulário de produto (novo ou edição).
  * - Dados básicos + link de compra
  * - Galeria: lista as mídias, permite excluir/reordenar,
- *   e faz upload (fotos otimizadas no navegador / vídeo direto no R2)
+ *   e faz upload (fotos otimizadas no navegador; vídeo como corpo bruto)
  */
 import type { Categoria, Midia, Produto } from '../lib/db';
 
@@ -126,8 +126,9 @@ const galeria = (produto?.midia ?? []).map((m) => ({
         <label for="arquivos">Adicionar mídia</label>
         <input id="arquivos" name="arquivos" type="file" accept="image/*,video/*" multiple />
         <small>
-          <strong>Fotos:</strong> são otimizadas no navegador (até 1600px / WebP) antes de subir.<br />
-          <strong>Vídeo:</strong> vai direto ao armazenamento. Prefira arquivos leves (&lt; 8 MB).
+          <strong>Fotos:</strong> são otimizadas no navegador (até 1920px / WebP) antes de subir.<br />
+          <strong>Vídeo:</strong> limite de <strong>12 MB</strong>. Comprima antes, por exemplo:<br />
+          <code>ffmpeg -i in.mp4 -vf "scale=1280:-2" -c:v libx264 -crf 26 -preset slow -movflags +faststart -an out.mp4</code>
         </small>
       </div>
 
@@ -157,7 +158,7 @@ const galeria = (produto?.midia ?? []).map((m) => ({
   // ===================================================================
   // Galeria: estado + UI (adicionar, reordenar, excluir, upload)
   // - Fotos: processadas no navegador (resize -> WebP) e enviadas ao worker
-  // - Vídeo: enviado direto ao R2 via URL pré-assinada
+  // - Vídeo: enviado como corpo bruto para /admin/api/midia/upload-video
   // ===================================================================
   interface ItemGaleria {
     id: number | string;
@@ -430,51 +431,41 @@ const galeria = (produto?.midia ?? []).map((m) => ({
     });
   }
 
+  /** Limite de vídeo por arquivo. Espelha o backend (KV free: 25 MB por valor). */
+  const LIMITE_VIDEO = 12 * 1024 * 1024;
+
+  function mb(bytes: number): string {
+    return `${(bytes / 1024 / 1024).toFixed(1).replace('.', ',')} MB`;
+  }
+
   async function enviarVideo(arquivo: File) {
-    // 1) tenta URL pré-assinada (envio DIRETO ao R2, ideal p/ vídeo)
-    const pedir = await fetch('/admin/api/midia/presign', {
+    if (arquivo.size > LIMITE_VIDEO) {
+      throw new Error(
+        `O vídeo tem ${mb(arquivo.size)} e o limite é ${mb(LIMITE_VIDEO)}. Comprima antes, por exemplo:\n` +
+          'ffmpeg -i in.mp4 -vf "scale=1280:-2" -c:v libx264 -crf 26 -preset slow -movflags +faststart -an out.mp4',
+      );
+    }
+
+    // 1) Envia como CORPO BRUTO — evita o multipart, que é caro em CPU
+    //    no Workers (limite de 10ms por requisição no plano free).
+    const res = await fetch('/admin/api/midia/upload-video', {
       method: 'POST',
-      body: nomeSeguro(arquivo.name),
+      body: arquivo,
       credentials: 'same-origin',
       headers: {
-        'Content-Type': 'text/plain',
+        'Content-Type': arquivo.type || 'video/mp4',
+        'X-Original-Name': arquivo.name,
         'X-Requested-With': 'XMLHttpRequest',
       },
     });
-
-    let chave = '';
-    let posterKey = '';
-
-    if (pedir.ok) {
-      const { uploadUrl, key, posterKey: pk } = (await pedir.json()) as {
-        uploadUrl: string;
-        key: string;
-        posterKey: string;
-      };
-      // 2) o arquivo vai direto ao R2, sem passar pelo worker
-      await progressoXhr(uploadUrl, arquivo, (pct) =>
-        progresso(pct, `Enviando vídeo… ${Math.round(pct)}%`),
-      );
-      chave = key;
-      posterKey = pk;
-    } else {
-      // Fallback: sobe pelo worker (sem credenciais S3 configuradas)
-      const fd = new FormData();
-      fd.append('arquivo', arquivo, arquivo.name);
-      fd.append('alt', arquivo.name.replace(/\.[^.]+$/, ''));
-      const res = await fetch('/admin/api/midia/upload', {
-        method: 'POST',
-        body: fd,
-        credentials: 'same-origin',
-        headers: { 'X-Requested-With': 'XMLHttpRequest' },
-      });
-      if (!res.ok) throw new Error(await res.text());
-      const d = (await res.json()) as { url: string };
-      chave = d.url;
-      posterKey = chave.replace(/\.[a-z0-9]+$/i, '') + '-poster.webp';
+    if (!res.ok) {
+      const d = (await res.json().catch(() => null)) as { erro?: string } | null;
+      throw new Error(d?.erro ?? `Falha no envio do vídeo (HTTP ${res.status}).`);
     }
+    const { url: chave } = (await res.json()) as { url: string };
+    const posterKey = chave.replace(/\.[a-z0-9]+$/i, '') + '-poster.webp';
 
-    // 3) gera o poster no navegador e envia junto (mesmo nos dois caminhos)
+    // 2) gera o poster no navegador e envia junto (opcional)
     let posterUrl = '';
     try {
       const posterFile = await gerarPoster(arquivo);
@@ -506,38 +497,6 @@ const galeria = (produto?.midia ?? []).map((m) => ({
       alt: arquivo.name.replace(/\.[^.]+$/, ''),
       ordem: galeria.length,
       novo: true,
-    });
-  }
-
-  function nomeSeguro(nome: string): string {
-    const base = nome
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-zA-Z0-9.]+/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '')
-      .toLowerCase();
-    return `${Date.now()}-${base || 'video.mp4'}`;
-  }
-
-  function progressoXhr(
-    url: string,
-    arquivo: File,
-    aoEvoluir: (pct: number) => void,
-  ): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.open('PUT', url);
-      xhr.setRequestHeader('Content-Type', arquivo.type || 'application/octet-stream');
-      xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) aoEvoluir((e.loaded / e.total) * 100);
-      };
-      xhr.onload = () =>
-        xhr.status >= 200 && xhr.status < 300
-          ? resolve()
-          : reject(new Error(`R2 retornou ${xhr.status}`));
-      xhr.onerror = () => reject(new Error('Falha de rede no envio do vídeo'));
-      xhr.send(arquivo);
     });
   }
 

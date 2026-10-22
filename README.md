@@ -7,9 +7,13 @@ qualidade e vídeos dos produtos; ao tocar em **Comprar**, o cliente vai para o 
 Inclui **painel administrativo** (`/admin`) com login único para cadastrar categorias,
 produtos e subir fotos/vídeos — tudo sem tocar em código.
 
-- **Stack:** Astro 7 (SSR) · Cloudflare Workers · D1 (banco) · R2 (fotos/vídeos) · KV (sessão)
+- **Stack:** Astro 7 (SSR) · Cloudflare Workers · D1 (banco) · KV (fotos/vídeos + sessão)
 - **Deploy:** Git → **Workers Builds** (push = deploy automático)
 - **Plano inicial:** Cloudflare Free (com cache na edge para caber no limite de CPU)
+
+> **Por que KV e não R2?** O R2 exige assinatura com **método de pagamento**, mesmo no free
+> tier. O KV funciona no free **sem cartão** — por isso a mídia mora lá. Se um dia liberar o
+> R2, dá para migrar mudando só a camada de bindings (`src/lib/env.ts`).
 
 ---
 
@@ -17,18 +21,18 @@ produtos e subir fotos/vídeos — tudo sem tocar em código.
 
 ```
 Visitante ──► Cloudflare Workers ──► D1 (categorias/produtos/mídia/usuário)
-                    │                    │
+                    │
                     ├─► Cache da edge (30s) no cardápio público "/"
-                    └─► R2 (fotos e vídeos) ◄── upload do admin
-                                                    │
-                                          direto no R2 (vídeo, presigned)
-                                          ou pelo Worker (foto otimizada)
+                    └─► KV MEDIA (fotos e vídeos) ◄── upload do admin
+                                                        │
+                                              foto otimizada no navegador
+                                              vídeo como corpo bruto
 ```
 
 | Recurso   | Binding  | Para quê                                              |
 | --------- | -------- | ----------------------------------------------------- |
 | D1        | `DB`     | Categorias, produtos, galeria, usuário, tentativas    |
-| R2        | `MEDIA`  | Fotos e vídeos (zero custo de egress)                 |
+| KV        | `MEDIA`  | Fotos e vídeos                                        |
 | KV        | `SESSION`| Sessão do login (provisionado automaticamente)        |
 | Assets    | `ASSETS` | CSS/JS do build                                       |
 
@@ -37,7 +41,7 @@ Visitante ──► Cloudflare Workers ──► D1 (categorias/produtos/mídia/
 - `/` — cardápio público (SSR + cache na edge)
 - `/admin/login`, `/admin/criar-conta` — acesso
 - `/admin`, `/admin/categorias`, `/admin/produtos`, `/admin/produtos/[id]` — gestão
-- `/media/<chave>` — serve objeto do R2 (fallback quando `MEDIA_PUBLIC_BASE` está vazio)
+- `/media/<chave>` — serve objeto do KV, com suporte a **Range** (206) para o seek do vídeo
 
 ---
 
@@ -58,7 +62,7 @@ npm run build        # build de produção
 ```
 
 > **Importante:** `npm run dev` não liga as bindings do Cloudflare. Para testar login,
-> D1 e R2 de verdade, use `npm run preview` (sobe o `workerd`, mesmo runtime da produção).
+> D1 e KV de verdade, use `npm run preview` (sobe o `workerd`, mesmo runtime da produção).
 
 ### Primeiro acesso ao painel
 
@@ -82,17 +86,28 @@ O painel otimiza **fotos** no próprio navegador antes de enviar:
 - thumbnail do card: WebP até 1600px (qualidade 0.82)
 - versão do lightbox: JPEG até 1920px (qualidade 0.85)
 
-**Vídeos** podem subir de duas formas (automático):
-
-| Caminho                     | Quando                                    | Passa pelo Worker? |
-| --------------------------- | ----------------------------------------- | ------------------ |
-| **Presigned → R2 direto**   | credenciais S3 configuradas (recomendado) | Não                |
-| **Fallback pelo Worker**    | sem credenciais S3                        | Sim                |
-
 Também é gerado um **poster** do vídeo (frame ~0.5s) automaticamente no navegador.
+
+| Tipo   | Caminho                                  | Limite por arquivo |
+| ------ | ---------------------------------------- | ------------------ |
+| Foto   | multipart → `/admin/api/midia/upload`    | 15 MB              |
+| Vídeo  | corpo bruto → `/admin/api/midia/upload-video` | 15 MB (limite do painel: **12 MB**) |
+
+> O vídeo vai como **corpo bruto** (sem multipart) de propósito: um arquivo grande passando
+> pelo parser de multipart é caro em CPU, e o plano free do Workers tem 10ms por requisição.
+
+Para deixar o vídeo abaixo de 12 MB:
+
+```bash
+ffmpeg -i in.mp4 -vf "scale=1280:-2" -c:v libx264 -crf 26 -preset slow \
+       -movflags +faststart -an out.mp4
+```
 
 O padrão do cardápio é: a **primeira mídia** da galeria vira a capa do card.
 Reordene com as setas ↑↓ ou arrastando.
+
+Ao **tirar um item da galeria** ou **excluir um produto**, os objetos correspondentes são
+apagados do KV — importante porque o plano free guarda só **1 GB** no total.
 
 ---
 
@@ -100,30 +115,27 @@ Reordene com as setas ↑↓ ou arrastando.
 
 ### 1. `wrangler.jsonc`
 
-| Campo                  | O que é                                                        |
-| ---------------------- | -------------------------------------------------------------- |
-| `d1_databases[0].database_id` | ID real do D1 (criado no 1º deploy — ver abaixo)        |
-| `r2_buckets[0].bucket_name`    | Nome do bucket R2                                    |
-| `vars.MEDIA_PUBLIC_BASE`       | Domínio público do R2 (opcional)                    |
+| Campo                         | O que é                                                  |
+| ----------------------------- | -------------------------------------------------------- |
+| `d1_databases[0].database_id` | ID real do D1 (criado no 1º deploy — ver abaixo)         |
+| `kv_namespaces[0].id`         | ID do namespace KV da **sessão**                         |
+| `kv_namespaces[1].id`         | ID do namespace KV da **mídia** (`MEDIA`)                |
+| `vars.MEDIA_PUBLIC_BASE`      | Base externa de mídia (opcional)                         |
 
 `MEDIA_PUBLIC_BASE`:
 
-- **vazia** (padrão): as mídias são servidas por `/media/<chave>` — o Worker lê do R2.
+- **vazia** (padrão): as mídias são servidas por `/media/<chave>`, lidas do KV.
   Funciona em dev e produção, sem configuração extra.
-- **preenchida** (recomendado em produção): URL aponta direto para a CDN do R2
-  (ex.: `https://media.seudominio.com`), mais rápido e sem passar pelo Worker.
+- **preenchida**: só se um dia mover as mídias para um host externo (ex.: um CDN próprio).
 
-### 2. Envio de vídeo direto ao R2 (opcional, recomendado)
+### 2. Limites do KV (plano free)
 
-Se não configurado, o vídeo sobe pelo Worker (funciona, limite de 100 MB por requisição).
-Para enviar direto ao R2, crie um **API token R2** (Object Read & Write) e rode:
-
-```bash
-npx wrangler secret put R2_ACCOUNT_ID
-npx wrangler secret put R2_ACCESS_KEY_ID
-npx wrangler secret put R2_SECRET_ACCESS_KEY
-npx wrangler secret put R2_BUCKET_NAME
-```
+| Limite             | Valor     | Efeito prático                                          |
+| ------------------ | --------- | ------------------------------------------------------- |
+| Armazenamento      | 1 GB      | Otimize as fotos; apague mídia que não usa              |
+| Tamanho por valor  | 25 MB     | Motivo do limite de 12 MB no envio de vídeo             |
+| Escritas           | 1.000/dia | Uploads são raros — sem impacto                         |
+| Leituras           | 100k/dia  | Mídia usa `Cache-Control: immutable` na edge            |
 
 ### 3. Link de compra
 
@@ -146,11 +158,12 @@ npx wrangler login              # abre o navegador
 npx wrangler d1 create cardapio-dd
 #   -> copie o database_id gerado para wrangler.jsonc
 
-# Bucket de mídia
-npx wrangler r2 bucket create cardapio-dd-media
-
-# Sessão (pode deixar o adapter criar; explícito por clareza)
+# Sessão do login
 npx wrangler kv namespace create SESSION
+
+# Mídia (fotos e vídeos)
+npx wrangler kv namespace create MEDIA
+#   -> copie o id gerado para kv_namespaces[1]
 ```
 
 Aplique as migrations no banco **remoto**:
@@ -187,7 +200,6 @@ Depois do 1º deploy, confira se o `database_id` do `wrangler.jsonc` já é o re
 
 1. Acesse `https://<worker>.<sub>.workers.dev/admin` e **crie a conta**.
 2. Troque os `comprar_url` de exemplo pelo link real do app.
-3. (Opcional) Configure `MEDIA_PUBLIC_BASE` + os secrets do R2.
 
 ---
 
@@ -225,11 +237,11 @@ src/
 ├── env.d.ts                   # tipos de App.SessionData + Cloudflare.Env
 ├── lib/
 │   ├── db.ts                  # acesso ao D1 (tipado)
-│   ├── env.ts                 # bindings (D1/R2) + urlMidia()
+│   ├── env.ts                 # bindings (D1/KV) + urlMidia() + validação de chave
 │   ├── auth.ts                # PBKDF2-SHA256 via Web Crypto
 │   ├── session.ts             # cria/ler/destroi sessão do Astro
 │   ├── login-guard.ts         # rate-limit do login (D1)
-│   └── r2-presign.ts          # URL presigned (assinatura S3 SigV4)
+│   └── media.ts               # apaga objetos do KV (evita órfãos)
 ├── components/
 │   ├── ProductCard.astro      # card: capa, preço, Comprar
 │   ├── Gallery.astro          # lightbox: swipe + vídeo sob demanda
@@ -239,7 +251,7 @@ src/
 │   └── AdminLayout.astro      # painel
 └── pages/
     ├── index.astro            # cardápio (lê do D1)
-    ├── media/[...chave].ts    # fallback de mídia do R2
+    ├── media/[...chave].ts    # serve mídia do KV (com Range/206)
     └── admin/                 # login, CRUD e APIs
 ```
 
@@ -250,5 +262,6 @@ src/
 | Limite            | Mitigação                                                |
 | ----------------- | -------------------------------------------------------- |
 | 10 ms de CPU/req  | Cache da edge (30s) no `/` — a maioria das visitas não executa SSR |
-| 100 MB de corpo   | Vídeo vai direto ao R2 (quando presigned configurado)    |
+| 100 MB de corpo   | Vídeo vai como corpo bruto direto ao KV (sem multipart)  |
 | 100k requisições/dia | mídia com `Cache-Control: immutable` e CSS/JS cached   |
+| 1 GB de KV        | otimização de foto no navegador + apagar mídia sem uso   |

@@ -1,16 +1,27 @@
 /**
  * POST /admin/api/midia/upload
  *
- * Envia mídia PELO Worker para o R2. Uso:
- *  - Foto: campos "arquivo" (thumb) + "full" (alta resolução) + "alt"
- *          -> cria dois objetos e devolve url/full
- *  - Poster de vídeo: campos "arquivo" + "chave"
- *          -> grava no objeto indicado (chave pré-assinada pelo presign)
+ * Envia FOTO ou POSTER para o KV.
  *
- * Vídeos grandes NÃO passam por aqui — vão direto ao R2 (ver presign.ts).
+ *  - Foto: campos "arquivo" (thumbnail) + "full" (alta resolução) + "alt"
+ *          -> grava dois objetos e devolve url/full
+ *  - Poster de vídeo: campos "arquivo" + "chave"
+ *          -> grava no objeto indicado (mesma raiz do vídeo)
+ *
+ * A conversão/otimização (WebP, redimensionamento) já acontece NO NAVEGADOR
+ * antes do envio — aqui só gravamos os bytes no KV.
+ *
+ * VíDEO não passa por aqui (corpo grande demais para multipart):
+ * ver /admin/api/midia/upload-video, que recebe corpo bruto.
  */
 import type { APIRoute } from 'astro';
-import { r2 } from '../../../../lib/env';
+import {
+  kvMidia,
+  chaveValida,
+  nomeSeguro,
+  LIMITE_ARQUIVO,
+  TIPOS_ACEITOS,
+} from '../../../../lib/env';
 
 function mesmaOrigem(request: Request): boolean {
   const origin = request.headers.get('origin');
@@ -22,15 +33,11 @@ function mesmaOrigem(request: Request): boolean {
   }
 }
 
-function limparNome(nome: string): string {
-  const base = nome
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-zA-Z0-9.]+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '')
-    .toLowerCase();
-  return base || 'arquivo';
+function json(dados: unknown, status = 200): Response {
+  return new Response(JSON.stringify(dados), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
 }
 
 export const POST: APIRoute = async (ctx) => {
@@ -47,49 +54,43 @@ export const POST: APIRoute = async (ctx) => {
   if (!(arquivo instanceof File) || arquivo.size === 0) {
     return new Response('Nenhum arquivo recebido.', { status: 400 });
   }
+  if (arquivo.size > LIMITE_ARQUIVO) {
+    return json({ erro: `Arquivo maior que ${Math.round(LIMITE_ARQUIVO / 1024 / 1024)} MB.` }, 413);
+  }
 
-  const bucket = r2();
-  const selo = Date.now();
+  const tipo = arquivo.type || 'application/octet-stream';
+  if (!TIPOS_ACEITOS.includes(tipo as (typeof TIPOS_ACEITOS)[number])) {
+    return json({ erro: `Formato não suportado: ${tipo}` }, 415);
+  }
 
-  // --- Caso 1: poster de vídeo (chave explícita) ------------------------
+  const kv = kvMidia();
+  const bytes = await arquivo.arrayBuffer();
+
+  // --- Caso 1: poster de vídeo (chave explícita) -------------------------
   const chave = form.get('chave');
   if (typeof chave === 'string' && chave.trim()) {
     const alvo = chave.trim().replace(/^\/+/, '');
-    if (alvo.includes('..')) return new Response('Chave inválida.', { status: 400 });
+    if (!chaveValida(alvo)) return json({ erro: 'Chave inválida.' }, 400);
 
-    await bucket.put(alvo, arquivo, {
-      httpMetadata: { contentType: arquivo.type || 'image/webp' },
-    });
+    await kv.put(alvo, bytes, { httpMetadata: { contentType: tipo } });
     return json({ url: alvo, full: alvo, alt: String(form.get('alt') ?? '') });
   }
 
-  // --- Caso 2: foto (thumb + full) -------------------------------------
-  const full = form.get('full');
-  const nomeBase = limparNome(arquivo.name);
-  const thumbKey = `fotos/${selo}-${nomeBase.replace(/\.[a-z0-9]+$/i, '')}.webp`;
+  // --- Caso 2: foto (thumbnail + full) ----------------------------------
+  // O navegador já converteu: "arquivo" = WebP, "full" = JPEG.
+  const base = `${Date.now()}-${nomeSeguro(arquivo.name).replace(/\.[a-z0-9]+$/i, '')}`;
+  const thumbKey = `fotos/${base}.webp`;
 
-  await bucket.put(thumbKey, arquivo, {
-    httpMetadata: { contentType: arquivo.type || 'image/webp' },
-  });
+  await kv.put(thumbKey, bytes, { httpMetadata: { contentType: 'image/webp' } });
 
   let fullKey = thumbKey;
-  if (full instanceof File && full.size > 0) {
-    fullKey = `fotos/${selo}-${nomeBase.replace(/\.[a-z0-9]+$/i, '')}-full.jpg`;
-    await bucket.put(fullKey, full, {
+  const full = form.get('full');
+  if (full instanceof File && full.size > 0 && full.size <= LIMITE_ARQUIVO) {
+    fullKey = `fotos/${base}-full.jpg`;
+    await kv.put(fullKey, await full.arrayBuffer(), {
       httpMetadata: { contentType: full.type || 'image/jpeg' },
     });
   }
 
-  return json({
-    url: thumbKey,
-    full: fullKey,
-    alt: String(form.get('alt') ?? ''),
-  });
+  return json({ url: thumbKey, full: fullKey, alt: String(form.get('alt') ?? '') });
 };
-
-function json(dados: unknown): Response {
-  return new Response(JSON.stringify(dados), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' },
-  });
-}
