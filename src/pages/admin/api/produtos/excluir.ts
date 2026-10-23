@@ -6,6 +6,7 @@ import type { APIRoute } from 'astro';
 import { db } from '../../../../lib/env';
 import { excluirProduto, listarMidiasPorProdutos } from '../../../../lib/db';
 import { apagarObjetos, caminhosDaMidia } from '../../../../lib/midia';
+import { invalidarCardapio } from '../../../../lib/cache';
 
 function mesmaOrigem(request: Request): boolean {
   const origin = request.headers.get('origin');
@@ -34,6 +35,8 @@ export const POST: APIRoute = async (ctx) => {
     const midias = await listarMidiasPorProdutos(d1, [id]);
     await excluirProduto(d1, id);
     await apagarObjetos(midias.flatMap(caminhosDaMidia));
+    // O cardápio público ("/") é cacheado na edge: purga para a mudança aparecer na hora.
+    await invalidarCardapio(ctx.request);
   }
 
   return new Response(null, {

@@ -6,6 +6,7 @@
 import type { APIRoute } from 'astro';
 import { db } from '../../../../lib/env';
 import { excluirCategoria, listarProdutos } from '../../../../lib/db';
+import { invalidarCardapio } from '../../../../lib/cache';
 
 function mesmaOrigem(request: Request): boolean {
   const origin = request.headers.get('origin');
@@ -47,5 +48,7 @@ export const POST: APIRoute = async (ctx) => {
   }
 
   await excluirCategoria(d1, id);
+  // O cardápio público ("/") é cacheado na edge: purga para a mudança aparecer na hora.
+  await invalidarCardapio(ctx.request);
   return voltar('/admin/categorias?msg=excluida');
 };

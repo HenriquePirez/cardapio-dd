@@ -58,7 +58,15 @@ const contagem = (id: string) => produtos.filter((p) => p.categoria_id === id).l
         <div class="grade-campos">
           <div class="campo">
             <label for="icone">Ícone (emoji)</label>
-            <input id="icone" name="icone" type="text" value={alvo?.icone ?? ''} placeholder="🍔" />
+            <input
+              id="icone"
+              name="icone"
+              type="text"
+              value={alvo?.icone ?? ''}
+              placeholder="🍔"
+              maxlength="8"
+            />
+            <small>Até 2 emojis — a miniatura é pequena e mais que isso não cabe.</small>
           </div>
           <div class="campo">
             <label for="ordem">Ordem</label>
@@ -117,6 +125,19 @@ const contagem = (id: string) => produtos.filter((p) => p.categoria_id === id).l
   </div>
 
   <script>
+    import { limitarEmojis } from '../../lib/icone';
+
+    // Corta o ícone para 2 emojis enquanto o usuário digita (e no envio).
+    const campo = document.getElementById('icone');
+    if (campo instanceof HTMLInputElement) {
+      const cortar = () => {
+        const cortado = limitarEmojis(campo.value);
+        if (cortado !== campo.value) campo.value = cortado;
+      };
+      campo.addEventListener('input', cortar);
+      campo.form?.addEventListener('submit', cortar);
+    }
+
     // Confirma antes de excluir; avisa se a categoria ainda tem produtos.
     document.addEventListener('submit', (e) => {
       const form = e.target;
@@ -158,9 +179,14 @@ const contagem = (id: string) => produtos.filter((p) => p.categoria_id === id).l
   }
 
   .icone {
-    display: grid;
-    place-items: center;
-    font-size: 1.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    /* A miniatura é 52px: com 2 emojis, a fonte precisa ser menor para caber. */
+    font-size: 1.05rem;
+    line-height: 1;
+    white-space: nowrap;
     background: #f3f4f6;
   }
 </style>

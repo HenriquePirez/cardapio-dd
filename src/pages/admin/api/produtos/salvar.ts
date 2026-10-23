@@ -17,6 +17,7 @@ import {
   excluirMidia,
 } from '../../../../lib/db';
 import { apagarObjetos, caminhosDaMidia } from '../../../../lib/midia';
+import { invalidarCardapio } from '../../../../lib/cache';
 
 const SLUG = /^[a-z0-9-]+$/;
 
@@ -157,6 +158,9 @@ export const POST: APIRoute = async (ctx) => {
   if (removidos.length) {
     await apagarObjetos(removidos.flatMap(caminhosDaMidia));
   }
+
+  // O cardápio público ("/") é cacheado na edge: purga para a edição aparecer na hora.
+  await invalidarCardapio(ctx.request);
 
   return voltar('/admin/produtos?msg=ok');
 };
