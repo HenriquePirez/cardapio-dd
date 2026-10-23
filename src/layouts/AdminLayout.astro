@@ -30,7 +30,7 @@ function sair() {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="robots" content="noindex, nofollow" />
-    <meta name="theme-color" content="#111827" />
+    <meta name="theme-color" content="#14532d" />
     <title>{titulo} · Admin</title>
     <meta name="description" content={descricao} />
   </head>
@@ -38,7 +38,10 @@ function sair() {
     {usuario && (
       <header class="admin-topo">
         <div class="admin-topo-inner">
-          <a class="admin-logo" href="/admin">⚙️ Cardápio · Admin</a>
+          <a class="admin-logo" href="/admin" aria-label="Dona Dôra · Admin">
+            <img src="/logo-donadora.png" alt="Dona Dôra" width="568" height="573" />
+            <span>Admin</span>
+          </a>
 
           <nav class="admin-nav" aria-label="Navegação do painel">
             <a href="/admin" class={ativo('/admin') && caminho === '/admin' ? 'ativo' : ''}>Painel</a>
@@ -112,9 +115,10 @@ function sair() {
     position: sticky;
     top: 0;
     z-index: 50;
-    background: #111827;
+    background: #14532d;
     color: #fff;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    border-bottom: 3px solid #f97316;
   }
 
   .admin-topo-inner {
@@ -128,10 +132,27 @@ function sair() {
   }
 
   .admin-logo {
-    font-weight: 800;
-    font-size: 0.98rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
     color: #fff;
     white-space: nowrap;
+  }
+
+  .admin-logo img {
+    height: 34px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+  }
+
+  .admin-logo span {
+    font-weight: 800;
+    font-size: 0.98rem;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.16);
+    letter-spacing: 0.01em;
   }
 
   .admin-nav {
@@ -162,7 +183,7 @@ function sair() {
   }
 
   .admin-nav a.ativo {
-    background: #ff7a3d;
+    background: #f97316;
     color: #fff;
   }
 
@@ -187,7 +208,7 @@ function sair() {
 
   .sair-btn {
     padding: 7px 14px;
-    border: 1px solid #374151;
+    border: 1px solid rgba(255, 255, 255, 0.35);
     background: transparent;
     color: #e5e7eb;
     border-radius: 8px;
@@ -196,7 +217,7 @@ function sair() {
   }
 
   .sair-btn:hover {
-    background: #374151;
+    background: rgba(255, 255, 255, 0.15);
   }
 
   .admin-main {
@@ -267,7 +288,7 @@ function sair() {
   .campo input:focus,
   .campo textarea:focus,
   .campo select:focus {
-    outline: 2px solid #ff7a3d;
+    outline: 2px solid #f97316;
     outline-offset: 1px;
     border-color: transparent;
   }
@@ -307,7 +328,7 @@ function sair() {
   }
 
   .btn-primario {
-    background: linear-gradient(135deg, #ff7a3d, #ff5e1a);
+    background: linear-gradient(135deg, #f97316, #ea580c);
     color: #fff;
   }
 

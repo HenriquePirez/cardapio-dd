@@ -1,16 +1,24 @@
+/* Paleta da Dona Dôra — mesmas cores da landing ddora.net.br */
 :root {
-  --bg: #0f1115;
-  --bg-card: #171a21;
-  --bg-elev: #1f232c;
-  --text: #f3f4f6;
-  --text-dim: #a1a7b3;
-  --accent: #ff7a3d;
-  --accent-2: #ff5e1a;
-  --radius: 16px;
+  --verde: #14532d;
+  --verde-escuro: #0f3d21;
+  --laranja: #f97316;
+  --laranja-escuro: #ea580c;
+
+  --bg: #f9f9f9; /* fundo claro, igual às seções da landing */
+  --bg-card: #ffffff;
+  --bg-elev: #f3f4f6;
+  --text: #1f2937;
+  --text-dim: #6b7280;
+  --accent: var(--laranja);
+  --accent-2: var(--laranja-escuro);
+  --radius: 14px;
   --radius-sm: 10px;
   --max: 640px;
   --pad: 16px;
-  --shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+  --shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  --shadow-hover: 0 12px 28px rgba(0, 0, 0, 0.14);
+  --border: #e5e7eb;
 }
 
 * {

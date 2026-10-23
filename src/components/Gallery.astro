@@ -192,17 +192,25 @@ const { galerias } = Astro.props;
   .lb-contador {
     margin: 2px 0 0;
     font-size: 0.78rem;
-    color: var(--text-dim);
+    color: rgba(255, 255, 255, 0.7);
   }
 
   .lb-comprar {
     flex-shrink: 0;
     padding: 12px 22px;
-    border-radius: 999px;
-    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    border-radius: var(--radius-sm);
+    background: var(--laranja);
     color: #fff;
     font-weight: 700;
     font-size: 0.95rem;
+    box-shadow: 0 4px 14px rgba(249, 115, 22, 0.4);
+    transition: background 0.2s, transform 0.2s;
+  }
+
+  .lb-comprar:hover,
+  .lb-comprar:focus-visible {
+    background: var(--laranja-escuro);
+    transform: translateY(-2px);
   }
 
   @media (max-width: 420px) {

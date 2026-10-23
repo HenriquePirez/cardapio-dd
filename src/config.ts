@@ -3,8 +3,8 @@
  * Troque os valores abaixo quando for para produção.
  */
 export const SITE = {
-  nome: 'Cardápio',
-  descricao: 'Cardápio digital — veja as fotos e vídeos dos produtos.',
+  nome: 'Dona Dôra',
+  descricao: 'Pizzas artesanais, massas e lasanhas — veja as fotos e faça seu pedido.',
   // A base de mídia externa não fica aqui: configure a variável
   // MEDIA_PUBLIC_BASE no wrangler.jsonc (ou via `wrangler secret put`).
   // URLs de mídia: ver src/lib/env.ts (urlMidia).
