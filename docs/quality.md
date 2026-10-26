@@ -76,6 +76,22 @@ não por default.
 Adaptações de aplicação vivem no `eslint.config.mjs` (documentadas no cabeçalho dele),
 não nas regras — manter sincronia com o toolkit na origem.
 
+## Melhoria de harness (reaplicável)
+
+Fluxo **native method adaptation** do Harness2 (toolkit rev `790a895`; CLI oficial =
+lab isolado, não adotado). Reexecutar após mudança material de client/modelo/instruções:
+
+```text
+Leia /tmp/opencode/vibe-coding-toolkit/docs/prompts/14-harness-evaluation.md (ou a cópia
+versionada em docs/prompts/) e avalie o harness deste projeto em cópias descartáveis de
+/tmp/opencode/vibe-coding-toolkit/templates/harness-evaluation/, usando
+node /tmp/opencode/vibe-coding-toolkit/scripts/validate-harness.mjs <copia> como avaliador.
+Baseline esperada: 5 pass / 2 fail. Casos e critérios: docs/07-harness-evaluation.md.
+```
+
+Resultados da avaliação inicial e da idempotência: `docs/setup.md`. Orçamento padrão:
+**uma** comparação de melhoria por falha observada, depois reportar.
+
 ## Manutenção
 
 - Ao adicionar lógica nova: teste junto (TDD) e `npm run verify` antes do commit.
