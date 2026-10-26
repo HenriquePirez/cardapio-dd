@@ -2,10 +2,13 @@
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import { db } from '../../lib/env';
 import { listarCategorias, listarProdutos } from '../../lib/db';
+import { resolverIcone, ICONES_CATEGORIA } from '../../lib/icone';
 
 const d1 = db();
 const categorias = await listarCategorias(d1);
 const produtos = await listarProdutos(d1);
+
+const comIcone = categorias.map((c) => ({ c, vis: resolverIcone(c.icone) }));
 
 const edicao = Astro.url.searchParams.get('editar');
 const mensagem = Astro.url.searchParams.get('msg');
@@ -57,16 +60,24 @@ const contagem = (id: string) => produtos.filter((p) => p.categoria_id === id).l
 
         <div class="grade-campos">
           <div class="campo">
-            <label for="icone">Ícone (emoji)</label>
-            <input
-              id="icone"
-              name="icone"
-              type="text"
-              value={alvo?.icone ?? ''}
-              placeholder="🍔"
-              maxlength="8"
-            />
-            <small>Até 2 emojis — a miniatura é pequena e mais que isso não cabe.</small>
+            <label for="icone">Ícone</label>
+            <select id="icone" name="icone">
+              <option value="">Sem ícone</option>
+              {alvo?.icone && !(ICONES_CATEGORIA as readonly string[]).includes(alvo.icone) && (
+                <option value={alvo.icone} selected>
+                  Atual: {alvo.icone}
+                </option>
+              )}
+              <optgroup label="Ícones">
+                {ICONES_CATEGORIA.map((nome) => (
+                  <option value={nome} selected={alvo?.icone === nome}>
+                    {nome}
+                  </option>
+                ))}
+              </optgroup>
+            </select>
+            <small>Ícone exibido ao lado do nome da seção no cardápio.</small>
+            <span class="prev-icone" id="prev-icone" aria-hidden="true"></span>
           </div>
           <div class="campo">
             <label for="ordem">Ordem</label>
@@ -97,9 +108,15 @@ const contagem = (id: string) => produtos.filter((p) => p.categoria_id === id).l
         <p class="vazio">Nenhuma categoria ainda.</p>
       ) : (
         <div>
-          {categorias.map((c) => (
+          {comIcone.map(({ c, vis }) => (
             <div class="linha-lista">
-              <span class="miniatura icone" aria-hidden="true">{c.icone ?? '📁'}</span>
+              {vis?.classe && <i class={`miniatura icone ${vis.classe}`} aria-hidden="true"></i>}
+              {!vis?.classe && vis?.texto && (
+                <span class="miniatura icone" aria-hidden="true">
+                  {vis.texto}
+                </span>
+              )}
+              {!vis && <i class="miniatura icone fi-br-folder" aria-hidden="true"></i>}
               <div class="cresce">
                 <div class="titulo">{c.nome}</div>
                 <div class="sub">{c.id} · {contagem(c.id)} produto(s)</div>
@@ -125,17 +142,20 @@ const contagem = (id: string) => produtos.filter((p) => p.categoria_id === id).l
   </div>
 
   <script>
-    import { limitarEmojis } from '../../lib/icone';
+    import { ICONES_CATEGORIA } from '../../lib/icone';
 
-    // Corta o ícone para 2 emojis enquanto o usuário digita (e no envio).
+    // Atualiza a miniatura do ícone escolhido no select.
     const campo = document.getElementById('icone');
-    if (campo instanceof HTMLInputElement) {
-      const cortar = () => {
-        const cortado = limitarEmojis(campo.value);
-        if (cortado !== campo.value) campo.value = cortado;
+    const prev = document.getElementById('prev-icone');
+    if (campo instanceof HTMLSelectElement && prev) {
+      const nomes = ICONES_CATEGORIA as readonly string[];
+      const atualizar = () => {
+        const v = campo.value;
+        prev.className = nomes.includes(v) ? `prev-icone fi-br-${v}` : 'prev-icone';
+        prev.textContent = nomes.includes(v) ? '' : v;
       };
-      campo.addEventListener('input', cortar);
-      campo.form?.addEventListener('submit', cortar);
+      campo.addEventListener('change', atualizar);
+      atualizar();
     }
 
     // Confirma antes de excluir; avisa se a categoria ainda tem produtos.
@@ -188,5 +208,17 @@ const contagem = (id: string) => produtos.filter((p) => p.categoria_id === id).l
     line-height: 1;
     white-space: nowrap;
     background: #f3f4f6;
+  }
+
+  .prev-icone {
+    display: inline-grid;
+    place-items: center;
+    min-width: 34px;
+    min-height: 34px;
+    margin-top: 8px;
+    font-size: 1.5rem;
+    font-style: normal;
+    line-height: 1;
+    color: #6b7280;
   }
 </style>

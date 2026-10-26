@@ -6,7 +6,7 @@ import type { APIRoute } from 'astro';
 import { db } from '../../../../lib/env';
 import { salvarCategoria, obterCategoria } from '../../../../lib/db';
 import { invalidarCardapio } from '../../../../lib/cache';
-import { limitarEmojis } from '../../../../lib/icone';
+import { normalizarIcone } from '../../../../lib/icone';
 
 const SLUG = /^[a-z0-9-]+$/;
 
@@ -38,7 +38,7 @@ export const POST: APIRoute = async (ctx) => {
   const idOriginal = String(form.get('id_original') ?? '').trim().toLowerCase();
   const nome = String(form.get('nome') ?? '').trim();
   // A miniatura é um quadrado de 52px: cabem no máximo 2 emojis.
-  const icone = limitarEmojis(String(form.get('icone') ?? '').trim());
+  const icone = normalizarIcone(String(form.get('icone') ?? '').trim());
   const descricao = String(form.get('descricao') ?? '').trim();
   const ordem = Number(form.get('ordem') ?? 0);
 
