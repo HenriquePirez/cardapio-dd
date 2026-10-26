@@ -110,8 +110,12 @@ export const POST: APIRoute = async (ctx) => {
   });
 
   const prox = String(form.get('prox') ?? '').trim();
-  // Só aceita caminho interno (evita open redirect — inclusive via "\\")
-  const destino = prox.startsWith('/') && !/^\/[/\\]/.test(prox) ? prox : '/admin';
+  // Só aceita caminho interno (evita open redirect — inclusive via "\\" e
+  // via caractere de controle, que o browser ignora e reabre como "//")
+  // eslint-disable-next-line no-control-regex -- caracteres de controle são exatamente o alvo do teste
+  const possuiControle = /[\u0000-\u0020]/.test(prox);
+  const destino =
+    prox.startsWith('/') && !/^\/[/\\]/.test(prox) && !possuiControle ? prox : '/admin';
   return ctx.redirect(destino, 303);
 };
 

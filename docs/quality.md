@@ -29,12 +29,12 @@ e em push para `main` (sem branch protection — é só feedback).
 
 ## Contagem e plano (medição de 2026-10-26)
 
-Estado: **lint 0 erros / 31 avisos** (fast) · **0 erros / 34 avisos** (typed).
+Estado: **lint 0 erros / 32 avisos** (fast) · **0 erros / 35 avisos** (typed).
 
 | Regra | Sev. | Qtd. | Plano de redução |
 |---|---|---|---|
-| `quality/max-lines` | warn | 4 arquivos (`ProductForm.astro` 729, `AdminLayout.astro` 448, `index.astro` 386, `Gallery.astro` 363) | Refatorar por responsabilidade real (prompt 09 do toolkit) como tarefa dedicada — UI sem testes E2E; promover a error ao zerar. *Nota: o parser do Astro avalia `ProductForm.astro` duas vezes (frontmatter+template), gerando 1 aviso duplicado.* |
-| `complexity` | warn | 9 | Mesma frente de refatoração; concentradas em rotas `/admin/api`. |
+| `quality/max-lines` | warn | 4 arquivos (`ProductForm.astro` 740, `AdminLayout.astro` 447, `index.astro` 385, `Gallery.astro` 363 — linhas `wc`; o parser do Astro avalia `ProductForm.astro` duas vezes, gerando 1 aviso duplicado) | Refatorar por responsabilidade real (prompt 09 do toolkit) como tarefa dedicada — UI sem testes E2E; promover a error ao zerar. |
+| `complexity` | warn | 10 | Mesma frente de refatoração; concentradas em rotas `/admin/api`. |
 | `max-statements` | warn | 8 | Idem. |
 | `no-useless-assignment` | warn | 3 | Inicializações mortas antes de try/catch reatribuir; corrigir junto do refator (mudança de fluxo exige cuidado sem testes de rota). |
 | `@typescript-eslint/no-non-null-assertion` | warn | 5 | Substituir `!` por tratamento explícito de nulo nas rotas admin. |
@@ -46,12 +46,14 @@ não por default.
 
 ## Dependências (npm audit, 2026-10-26)
 
-- `npm audit --omit=dev`: **0 vulnerabilidades** (não há dependências de produção —
-  tudo é devDependency; o artefato de produção é build estático + bindings).
-- `npm audit`: 5 advisories (1 high, 4 moderate) todos em `undici` via `wrangler ≥4.36`
-  (toolchain dev local). Correção sugerida = **downgrade** para `wrangler@4.35.0` —
-  descartada (perde correções do wrangler; não afeta o runtime em produção).
-  Reavaliar quando houver versão do wrangler corrigida acima da atual (`^4.152`).
+- `package.json` tem `dependencies` reais (`astro@^7.4.2`, `@astrojs/cloudflare@^14.4.2`);
+  a cadeia `@astrojs/cloudflare → wrangler/miniflare → undici` **alcança** `--omit=dev`.
+- `npm audit` e `npm audit --omit=dev`: **5 advisories** (1 high, 4 moderate), todos em
+  `undici` via `wrangler ≥4.36` (toolchain de build/dev — não executa no worker
+  publicado, que é artefato estático + bindings, mas está declarada como dependência
+  de produção). Correção sugerida = **downgrade** para `wrangler@4.35.0` — descartada
+  (perde correções do wrangler). Reavaliar a cada bump quando houver versão corrigida
+  acima da atual (`^4.152`).
 - Adoções novas: `eslint@^10`, `@eslint/js`, `typescript-eslint@^8`, `eslint-plugin-astro@^3`,
   `globals`, `vitest@^5`. Nenhuma delas é executada em produção.
 

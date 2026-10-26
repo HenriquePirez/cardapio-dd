@@ -72,7 +72,7 @@ existente consolidado, não duplicado.
 | `npm test` (novo) | Validado | 30/30 (`vitest run`, ambiente node, stub de `cloudflare:workers`) |
 | `npm run rules:selfcheck` (novo) | Validado | 3/3 regras custom via `RuleTester` |
 | `npm run verify` (novo) | Validado | lint → typed → check → test → build, exit 0 |
-| `npm audit` | Validado | deps de produção: 0; 5 advisories dev-only (undici via wrangler ≥4.36; downgrade descartado e registrado) |
+| `npm audit` | Validado | 5 advisories (1 high, 4 moderate), todos `undici` via cadeia `@astrojs/cloudflare → wrangler`; alcançam `--omit=dev` (astro/cloudflare são `dependencies`); downgrade descartado e registrado em `docs/quality.md` |
 | CI (GitHub Actions) | Configurado sem execução | YAML estático revisado; roda no GitHub no próximo push/PR |
 | Context7 | Validado | resolve-library-id + query-docs reais (adapter Astro/sessions) |
 | Idempotência do setup | Validado | re-execução de `mcp add` +2× `skills add` + caveman installer: hash agregado idêntico antes/depois; git limpo; caveman reporta "already contains" |
@@ -118,6 +118,11 @@ não versionado).
   **6 corrigidos** em `8cb02a4` (breakout de JSON no lightbox, Content-Type de upload,
   nosniff em `/media`, open redirect via backslash, innerHTML do formulário, permissões
   de CI, e-mail em log). Evidência: `npm run verify` verde após as correções.
+- **Revisão por risco final** (subagente independente sobre o diff completo): 1 high +
+  6 medium/low — todos tratados: bypass de redirect por caractere de controle (tab)
+  corrigido (validação local 6/6); Content-Type legado do KV sanitizado na leitura de
+  `/media`; `%` malformado em `/media` → 400; claims de `npm audit` corrigidas nos docs
+  com o estado real; demais informativos sem ação.
 - **Pendências residuais** (detalhes no relatório privado; gatilho de retomada):
   - *F-03 (medium, needs-validation):* criação de conta no primeiro uso com race
     (TOCTOU + `ON CONFLICT`) — corrigir com transação D1 quando o estado de produção

@@ -16,11 +16,18 @@ import {
   kvMidia,
   chaveValida,
   tipoPorExtensao,
+  TIPOS_ACEITOS,
   type MetaMidia,
 } from '../../lib/env';
 
 export const GET: APIRoute = async (ctx) => {
-  const chave = decodeURIComponent(ctx.params.chave ?? '').replace(/^\/+/, '');
+  let chave: string;
+  try {
+    chave = decodeURIComponent(ctx.params.chave ?? '').replace(/^\/+/, '');
+  } catch {
+    // % malformado: 400, não 500
+    return new Response('Chave inválida.', { status: 400 });
+  }
 
   if (!chaveValida(chave)) {
     return new Response('Chave inválida.', { status: 400 });
@@ -32,7 +39,10 @@ export const GET: APIRoute = async (ctx) => {
     const kv = kvMidia();
     const r = await kv.getWithMetadata<MetaMidia>(chave, 'arrayBuffer');
     valor = r.value;
-    contentType = r.metadata?.httpMetadata?.contentType ?? '';
+    // Metadado pode ser legado ou de upload antigo; só confiamos em tipos da
+    // allowlist (senão o fallback pela extensão da chave assume o Content-Type).
+    const salvo = r.metadata?.httpMetadata?.contentType ?? '';
+    contentType = (TIPOS_ACEITOS as readonly string[]).includes(salvo) ? salvo : '';
   } catch {
     return new Response('Erro ao ler o armazenamento.', { status: 500 });
   }
