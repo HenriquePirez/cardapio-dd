@@ -1,0 +1,33 @@
+# Exclusões do Graphify (grafo de código). Adaptado para Astro + Cloudflare Workers.
+# Nunca indexe segredos nem conteúdo gerado/vendor.
+.git/
+node_modules/
+dist/
+.build/
+.astro/
+.wrangler/
+coverage/
+graphify-out/
+.agents/
+.claude/
+.codex/
+.opencode/
+.superpowers/
+.env
+.env.*
+.dev.vars
+*.pem
+*.key
+*.p12
+*.pfx
+auth.json
+credentials.json
+*.log
+*.tsbuildinfo
+package-lock.json
+# mídia binária e ícones (conteúdo, não código)
+public/media/
+public/*.png
+public/*.ico
+# tipos gerados pelo wrangler (fonte: wrangler.jsonc + npm run types)
+worker-configuration.d.ts

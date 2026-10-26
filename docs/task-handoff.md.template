@@ -1,0 +1,18 @@
+# Handoff de tarefa
+
+> Use **apenas** para trabalho inacabado que atravessa sessões. Reutilize um registro de
+> plano/tarefa existente em vez de criar uma fonte concorrente. Decisões duradouras ficam
+> na documentação canônica do projeto (`PRODUCT.md`, `docs/*.md`).
+
+- Objetivo e aceitação: [resultado pedido e critérios observáveis de conclusão]
+- Estado verificado: [data, checkout/revisão, mudanças locais; nunca assuma árvore limpa]
+- Concluído: [mudanças e localização dos arquivos]
+- Evidência: [comandos reais, resultados e quando rodaram; distinga falhas de checagens não executadas]
+- Restante: [menor próxima ação, dependências e riscos conhecidos]
+- Bloqueios: [causa, trabalho dependente e condição para retomar]
+- Recursos: [processos, portas, diretórios de build, bancos descartáveis; limpeza pendente]
+- Contexto a revisitar: [fontes ou premissas que podem ter mudado]
+
+Antes de retomar, verifique arquivos, estado do Git, checagens e recursos vivos. Este
+registro é contexto, não prova de que uma checagem ainda passa. Não inclua segredos,
+cargas privadas nem logs completos.
