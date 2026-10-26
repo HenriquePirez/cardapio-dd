@@ -4,6 +4,10 @@
  * Visual mais "papel" (claro) para diferenciar do cardápio público (escuro).
  */
 import '../styles/global.css';
+import '@fontsource/fredoka/300.css';
+import '@fontsource/fredoka/400.css';
+import '@fontsource/fredoka/500.css';
+import '@flaticon/flaticon-uicons/css/bold/rounded.css';
 import { lerUsuario } from '../lib/session';
 
 interface Props {
@@ -105,14 +109,7 @@ function sair() {
     color: #111827;
     min-height: 100vh;
     margin: 0;
-    font-family:
-      system-ui,
-      -apple-system,
-      'Segoe UI',
-      Roboto,
-      Helvetica,
-      Arial,
-      sans-serif;
+    font-family: var(--fonte);
   }
 
   .admin-topo {

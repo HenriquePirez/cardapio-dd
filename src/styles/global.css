@@ -19,6 +19,7 @@
   --shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
   --shadow-hover: 0 12px 28px rgba(0, 0, 0, 0.14);
   --border: #e5e7eb;
+  --fonte: 'Fredoka', system-ui, sans-serif;
 }
 
 * {
@@ -33,14 +34,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family:
-    system-ui,
-    -apple-system,
-    'Segoe UI',
-    Roboto,
-    Helvetica,
-    Arial,
-    sans-serif;
+  font-family: var(--fonte);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   overscroll-behavior-y: none;
