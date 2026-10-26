@@ -7,6 +7,9 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   qualidade:
     runs-on: ubuntu-latest

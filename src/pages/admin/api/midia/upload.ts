@@ -87,8 +87,12 @@ export const POST: APIRoute = async (ctx) => {
   const full = form.get('full');
   if (full instanceof File && full.size > 0 && full.size <= LIMITE_ARQUIVO) {
     fullKey = `fotos/${base}-full.jpg`;
+    // Confia no tipo do cliente só se ele estiver na allowlist de imagens;
+    // qualquer outro vira octet-stream (não executável no mesmo origin).
+    const tipoImagem =
+      full.type.startsWith('image/') && (TIPOS_ACEITOS as readonly string[]).includes(full.type);
     await kv.put(fullKey, await full.arrayBuffer(), {
-      httpMetadata: { contentType: full.type || 'image/jpeg' },
+      httpMetadata: { contentType: tipoImagem ? full.type : 'application/octet-stream' },
     });
   }
 

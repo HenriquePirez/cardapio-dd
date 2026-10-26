@@ -95,7 +95,8 @@ export const POST: APIRoute = async (ctx) => {
   if (it === null || it < ITERACOES || (!hashComPepper(usuario.senha_hash) && pimenta)) {
     try {
       await trocarSenha(d1, usuario.email, await hashSenha(senha, pimenta ?? undefined));
-      console.log(`[auth] hash de ${usuario.email} atualizado (${it ?? '?'} -> ${ITERACOES} it)`);
+      // e-mail não entra no log (PII); id opaco é suficiente para diagnóstico
+      console.log(`[auth] hash atualizado (usuario ${usuario.id}: ${it ?? '?'} -> ${ITERACOES} it)`);
     } catch (erro) {
       // Não bloqueia o login por causa do upgrade
       console.error('[auth] falha ao atualizar hash:', erro);
@@ -109,8 +110,8 @@ export const POST: APIRoute = async (ctx) => {
   });
 
   const prox = String(form.get('prox') ?? '').trim();
-  // Só aceita caminho interno (evita open redirect)
-  const destino = prox.startsWith('/') && !prox.startsWith('//') ? prox : '/admin';
+  // Só aceita caminho interno (evita open redirect — inclusive via "\\")
+  const destino = prox.startsWith('/') && !/^\/[/\\]/.test(prox) ? prox : '/admin';
   return ctx.redirect(destino, 303);
 };
 

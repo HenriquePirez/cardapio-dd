@@ -45,6 +45,7 @@ export const GET: APIRoute = async (ctx) => {
   // Cabeçalhos comuns (a chave já contém timestamp -> imutável)
   const base = {
     'Content-Type': tipo,
+    'X-Content-Type-Options': 'nosniff',
     'Accept-Ranges': 'bytes',
     'Cache-Control': 'public, max-age=31536000, immutable',
     'Access-Control-Allow-Origin': '*',

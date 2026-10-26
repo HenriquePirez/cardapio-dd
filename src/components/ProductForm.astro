@@ -198,6 +198,18 @@ const galeria = (produto?.midia ?? []).map((m) => ({
     return tipo === 'video' ? '🎬' : '🖼';
   }
 
+  // Escapa valores vindos do banco para interpolação em innerHTML.
+  const ENTIDADES: Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+  };
+  function esc(valor: string): string {
+    return valor.replace(/[&<>"']/g, (c) => ENTIDADES[c] ?? c);
+  }
+
   function fonte(item: ItemGaleria): string {
     if (item.tipo === 'video') {
       if (item.posterArquivo) return URL.createObjectURL(item.posterArquivo);
@@ -225,12 +237,12 @@ const galeria = (produto?.midia ?? []).map((m) => ({
       li.innerHTML = `
         ${
           src
-            ? `<img class="g-thumb" src="${src}" alt="" loading="lazy" decoding="async" />`
+            ? `<img class="g-thumb" src="${esc(src)}" alt="" loading="lazy" decoding="async" />`
             : `<span class="g-thumb g-vazio" aria-hidden="true">${emoji(item.tipo)}</span>`
         }
         <div class="g-info">
           <span class="g-tipo">${emoji(item.tipo)} ${item.tipo === 'video' ? 'Vídeo' : 'Foto'}</span>
-          <span class="g-nome" title="${item.url}">${item.url || 'novo arquivo'}</span>
+          <span class="g-nome" title="${esc(item.url)}">${esc(item.url) || 'novo arquivo'}</span>
           ${item.novo ? '<span class="g-badge">não salvo</span>' : ''}
         </div>
         <div class="g-acoes">

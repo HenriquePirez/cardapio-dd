@@ -52,7 +52,8 @@ const { galerias } = Astro.props;
   </div>
 </div>
 
-<script type="application/json" id="lb-dados" set:html={JSON.stringify(galerias)} />
+<!-- \u003c impede que um "</script>" dentro dos dados quebre o bloco JSON -->
+<script type="application/json" id="lb-dados" set:html={JSON.stringify(galerias).replaceAll('<', '\\u003c')} />
 
 <style>
   .lightbox {
