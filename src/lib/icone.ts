@@ -31,8 +31,8 @@ export const ICONES_CATEGORIA = [
   'camera',
 ] as const;
 
-/** Resultado da resolução: classe CSS do ícone ou texto legado. */
-export type IconeCategoria = { classe: string } | { texto: string };
+/** Resultado da resolução: classe CSS do ícone ou texto legado (exatamente um). */
+export type IconeCategoria = { classe: string; texto?: never } | { classe?: never; texto: string };
 
 /**
  * Decide como um valor de `icone` é exibido: nome da lista vira classe

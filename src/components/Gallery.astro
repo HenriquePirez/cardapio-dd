@@ -33,18 +33,17 @@ const { galerias } = Astro.props;
   aria-modal="true"
   aria-label="Galeria do produto"
 >
-  <button class="lb-fechar" type="button" aria-label="Fechar">&times;</button>
+  <button class="lb-voltar" type="button" aria-label="Voltar">&larr;</button>
 
   <div class="lb-stage">
-    <button class="lb-nav lb-antes" type="button" aria-label="Anterior">&#10094;</button>
     <div class="lb-track" id="lb-track"></div>
-    <button class="lb-nav lb-prox" type="button" aria-label="Próxima">&#10095;</button>
   </div>
+
+  <div class="lb-dots" id="lb-dots" aria-label="Navegação da galeria" hidden></div>
 
   <div class="lb-barra">
     <div class="lb-textos">
       <p class="lb-nome" id="lb-nome"></p>
-      <p class="lb-contador" id="lb-contador"></p>
     </div>
     <a class="lb-comprar" id="lb-comprar" href="#" target="_blank" rel="noopener noreferrer">
       Comprar
@@ -80,10 +79,10 @@ const { galerias } = Astro.props;
     }
   }
 
-  .lb-fechar {
+  .lb-voltar {
     position: absolute;
     top: max(12px, env(safe-area-inset-top));
-    right: 14px;
+    left: 14px;
     z-index: 3;
     width: 42px;
     height: 42px;
@@ -91,7 +90,7 @@ const { galerias } = Astro.props;
     border-radius: 50%;
     background: rgba(0, 0, 0, 0.55);
     color: #fff;
-    font-size: 1.7rem;
+    font-size: 1.5rem;
     line-height: 1;
     display: grid;
     place-items: center;
@@ -104,6 +103,7 @@ const { galerias } = Astro.props;
     display: flex;
     align-items: center;
     overflow: hidden;
+    container-type: size;
   }
 
   .lb-track {
@@ -127,45 +127,51 @@ const { galerias } = Astro.props;
     scroll-snap-align: center;
     display: grid;
     place-items: center;
-    padding: 8px;
   }
 
+  /* Quadrado 1:1 do tamanho do menor lado do stage (estilo Instagram). */
   .lb-slide img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    border-radius: 8px;
+    width: min(100cqw, 100cqh);
+    height: min(100cqw, 100cqh);
+    object-fit: cover;
   }
 
   .lb-slide video {
-    width: 100%;
-    max-height: 100%;
-    border-radius: 8px;
+    width: min(100cqw, 100cqh);
+    height: min(100cqw, 100cqh);
+    object-fit: contain;
     background: #000;
   }
 
-  .lb-nav {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 2;
-    width: 46px;
-    height: 46px;
+  .lb-dots {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px 2px;
+  }
+
+  .lb-dots[hidden] {
+    display: none;
+  }
+
+  .lb-dot {
+    width: 7px;
+    height: 7px;
+    padding: 0;
     border: 0;
     border-radius: 50%;
-    background: rgba(0, 0, 0, 0.5);
-    color: #fff;
-    font-size: 1.2rem;
-    display: grid;
-    place-items: center;
+    background: rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    transition:
+      width 0.2s,
+      background 0.2s;
   }
 
-  .lb-antes {
-    left: 8px;
-  }
-
-  .lb-prox {
-    right: 8px;
+  .lb-dot.ativo {
+    width: 18px;
+    border-radius: 4px;
+    background: #fff;
   }
 
   .lb-barra {
@@ -190,12 +196,6 @@ const { galerias } = Astro.props;
     text-overflow: ellipsis;
   }
 
-  .lb-contador {
-    margin: 2px 0 0;
-    font-size: 0.78rem;
-    color: rgba(255, 255, 255, 0.7);
-  }
-
   .lb-comprar {
     flex-shrink: 0;
     padding: 12px 22px;
@@ -212,12 +212,6 @@ const { galerias } = Astro.props;
   .lb-comprar:focus-visible {
     background: var(--laranja-escuro);
     transform: translateY(-2px);
-  }
-
-  @media (max-width: 420px) {
-    .lb-nav {
-      display: none;
-    }
   }
 </style>
 
@@ -241,11 +235,9 @@ const { galerias } = Astro.props;
   const lb = document.getElementById('lightbox') as HTMLElement | null;
   const track = document.getElementById('lb-track') as HTMLElement | null;
   const nomeEl = document.getElementById('lb-nome');
-  const contadorEl = document.getElementById('lb-contador');
+  const dotsEl = document.getElementById('lb-dots');
   const comprarEl = document.getElementById('lb-comprar') as HTMLAnchorElement | null;
-  const btnFechar = lb?.querySelector<HTMLElement>('.lb-fechar');
-  const btnAntes = lb?.querySelector<HTMLElement>('.lb-antes');
-  const btnProx = lb?.querySelector<HTMLElement>('.lb-prox');
+  const btnVoltar = lb?.querySelector<HTMLElement>('.lb-voltar');
   let atual = 0;
   let total = 0;
   let scrollTimer: ReturnType<typeof setTimeout> | undefined;
@@ -255,12 +247,33 @@ const { galerias } = Astro.props;
     return Math.round(track.scrollLeft / track.clientWidth);
   }
 
-  function atualizarContador() {
-    if (contadorEl) contadorEl.textContent = `${atual + 1} / ${total}`;
+  function atualizarDots() {
+    if (!dotsEl) return;
+    dotsEl.querySelectorAll<HTMLElement>('.lb-dot').forEach((d, i) => {
+      d.classList.toggle('ativo', i === atual);
+      if (i === atual) d.setAttribute('aria-current', 'true');
+      else d.removeAttribute('aria-current');
+    });
   }
 
   function pararVideos() {
     track?.querySelectorAll('video').forEach((v) => v.pause());
+  }
+
+  function montarDots(n: number) {
+    if (!dotsEl) return;
+    dotsEl.innerHTML = '';
+    dotsEl.hidden = n <= 1;
+    for (let i = 0; i < n; i++) {
+      const d = document.createElement('button');
+      d.type = 'button';
+      d.className = 'lb-dot';
+      d.setAttribute('aria-label', `Ir para o item ${i + 1} de ${n}`);
+      d.addEventListener('click', () => {
+        if (track) track.scrollTo({ left: i * track.clientWidth, behavior: 'smooth' });
+      });
+      dotsEl.appendChild(d);
+    }
   }
 
   function montar(id: string) {
@@ -293,7 +306,8 @@ const { galerias } = Astro.props;
     track.scrollLeft = 0;
     if (nomeEl) nomeEl.textContent = g.nome;
     if (comprarEl) comprarEl.href = g.comprarUrl || '#';
-    atualizarContador();
+    montarDots(total);
+    atualizarDots();
     return true;
   }
 
@@ -301,7 +315,7 @@ const { galerias } = Astro.props;
     if (!lb || !montar(id)) return;
     lb.hidden = false;
     document.body.style.overflow = 'hidden';
-    btnFechar?.focus();
+    btnVoltar?.focus();
   }
 
   function fechar() {
@@ -310,6 +324,7 @@ const { galerias } = Astro.props;
     lb.hidden = true;
     document.body.style.overflow = '';
     if (track) track.innerHTML = '';
+    if (dotsEl) dotsEl.innerHTML = '';
   }
 
   function irPara(delta: number) {
@@ -326,9 +341,7 @@ const { galerias } = Astro.props;
     if (idGat) abrir(idGat);
   });
 
-  btnFechar?.addEventListener('click', fechar);
-  btnAntes?.addEventListener('click', () => irPara(-1));
-  btnProx?.addEventListener('click', () => irPara(1));
+  btnVoltar?.addEventListener('click', fechar);
 
   // Clique fora da mídia (fundo) fecha
   lb?.addEventListener('click', (e) => {
@@ -344,7 +357,7 @@ const { galerias } = Astro.props;
       clearTimeout(scrollTimer);
       scrollTimer = setTimeout(() => {
         atual = slideIndex();
-        atualizarContador();
+        atualizarDots();
         track.querySelectorAll('video').forEach((v, i) => {
           if (i !== atual) v.pause();
         });
