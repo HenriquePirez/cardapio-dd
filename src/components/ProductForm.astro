@@ -184,7 +184,7 @@ const galeria = (produto?.midia ?? []).map((m) => ({
 
   const ehEdicao = !!(document.querySelector('input[name="id"][readonly]'));
 
-  let galeria: ItemGaleria[] = inputJson.value ? JSON.parse(inputJson.value) : [];
+  const galeria: ItemGaleria[] = inputJson.value ? JSON.parse(inputJson.value) : [];
   let proxId = 1;
 
   function sincronizar() {

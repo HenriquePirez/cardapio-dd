@@ -32,7 +32,11 @@ export async function verificarBloqueio(db: D1Like, email: string): Promise<Esta
   if (!row) return { bloqueado: false, restantes: MAX_TENTATIVAS, bloqueadoAte: null };
 
   if (row.bloqueado_ate) {
-    const ate = Date.parse(row.bloqueado_ate + 'Z') / 1000;
+    // O D1 grava o ISO com 'Z'; Date.parse('...ZZ') devolve NaN e anulava o
+    // bloqueio na requisição seguinte. Só acrescentamos 'Z' quando falta fuso.
+    const bruto = row.bloqueado_ate;
+    const comFuso = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(bruto) ? bruto : `${bruto}Z`;
+    const ate = Date.parse(comFuso) / 1000;
     if (Number.isFinite(ate) && ate > agoraSeg()) {
       return { bloqueado: true, restantes: 0, bloqueadoAte: ate };
     }

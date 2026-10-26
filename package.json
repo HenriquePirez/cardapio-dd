@@ -9,6 +9,11 @@
     "check": "astro check",
     "preview": "astro preview",
     "astro": "astro",
+    "lint": "eslint .",
+    "lint:typed": "eslint -c eslint.typed.config.mjs src",
+    "test": "vitest run",
+    "rules:selfcheck": "node scripts/verify-quality-rules.mjs",
+    "verify": "npm run lint && npm run lint:typed && npm run check && npm run test && npm run build",
     "db:apply:local": "wrangler d1 execute cardapio-dd --local --file=./migrations/0001_init.sql && wrangler d1 execute cardapio-dd --local --file=./migrations/0002_seed.sql",
     "db:apply:remote": "wrangler d1 execute cardapio-dd --remote --file=./migrations/0001_init.sql && wrangler d1 execute cardapio-dd --remote --file=./migrations/0002_seed.sql",
     "types": "wrangler types"
@@ -24,8 +29,14 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.12",
+    "@eslint/js": "^10.0.1",
     "@types/node": "^26.6.5",
+    "eslint": "^10.13.0",
+    "eslint-plugin-astro": "^3.2.1",
+    "globals": "^17.13.0",
     "typescript": "^6.0.3",
+    "typescript-eslint": "^8.72.0",
+    "vitest": "^5.0.5",
     "wrangler": "4.152.0"
   }
 }

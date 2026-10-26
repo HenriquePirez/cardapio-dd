@@ -22,6 +22,9 @@
 - Tipos (cheque): `npm run check`
 - Build: `npm run build`
 - Banco local: `npm run db:apply:local` (remoto `db:apply:remote` = produção; só com autorização)
+- Lint (fast): `npm run lint` · Lint (tipado): `npm run lint:typed`
+- Testes: `npm test` (Vitest, lógica pura de `src/lib`)
+- Verificação combinada: `npm run verify` (lint + typed + check + test + build)
 
 ## Acordos de trabalho
 
