@@ -11,6 +11,51 @@
 export const MAX_ICONE = 2;
 
 /**
+ * Nomes de ícone curados do Uicons (Flaticon, estilo bold rounded),
+ * verificados no pacote `@flaticon/flaticon-uicons` — só nomes desta
+ * lista viram classe CSS; qualquer outro valor é texto (emoji legado).
+ */
+export const ICONES_CATEGORIA = [
+  'pizza-slice',
+  'burger-alt',
+  'bowl-chopsticks-noodles',
+  'cake-birthday',
+  'cake-slice',
+  'beer',
+  'leaf',
+  'pot',
+  'mushroom',
+  'bread-slice',
+  'store-alt',
+  'tags',
+  'camera',
+] as const;
+
+/** Resultado da resolução: classe CSS do ícone ou texto legado. */
+export type IconeCategoria = { classe: string } | { texto: string };
+
+/**
+ * Decide como um valor de `icone` é exibido: nome da lista vira classe
+ * `fi-br-*`; vazio some; qualquer outro valor (emoji antigo) vira texto.
+ */
+export function resolverIcone(valor: string | null | undefined): IconeCategoria | null {
+  const v = (valor ?? '').trim();
+  if (!v) return null;
+  if ((ICONES_CATEGORIA as readonly string[]).includes(v)) return { classe: `fi-br-${v}` };
+  return { texto: v };
+}
+
+/**
+ * Normaliza o valor vindo do formulário antes de salvar: nome da lista
+ * passa intacto; senão aplica o corte legado de emojis (descarta texto).
+ */
+export function normalizarIcone(valor: string): string {
+  const v = valor.trim();
+  if ((ICONES_CATEGORIA as readonly string[]).includes(v)) return v;
+  return limitarEmojis(v);
+}
+
+/**
  * Corta `texto` para no máximo `max` emojis (graphemas que contenham emoji).
  * Graphemas sem emoji (espaços, texto) são descartados — o campo é só de ícone.
  */
