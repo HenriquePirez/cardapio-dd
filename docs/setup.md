@@ -47,7 +47,7 @@
 | 16 | Vercel skills | Instalar (`web-design-guidelines`, `writing-guidelines`, `find-skills`) | projeto (`.agents/skills/` + lockfile) | **Validado:** discovery imediato no OpenCode; nomes de frontmatter conferidos; licenças: `vercel-labs/skills` MIT; `agent-skills` sem LICENSE (atribuição mantida) |
 | 17 | Next.js runtime/performance | Inaplicável | — | Projeto é Astro (preservar stack); image service `compile` já configurado. Bundle budgets: medida futura se necessária |
 | 18 | PostgreSQL skills | Inaplicável | — | Persistência D1 + KV (exceção registrada em `PRODUCT.md`/`docs/architecture.md`; revisitar com serviços pagos) |
-| 19 | GitHub CI repair | Parcial (criação nova) | projeto | Workflow `.github/workflows/ci.yml` criado (PR + push main, `permissions: contents: read`); **configurado sem execução** — primeiro run real ocorre no próximo push/PR no GitHub |
+| 19 | GitHub CI repair | Parcial (criação nova) | projeto | Workflow `.github/workflows/ci.yml` (PR + push main, `permissions: contents: read`); **validado em run real** `40360541674` = success (2026-10-26) |
 | 20 | Security review | Prompt 13 local + revisão manual | projeto | **Validado:** baseline review executada (11 findings; 6 corrigidos em `8cb02a4`); skill `differential-review` (Trail of Bits) = Claude Code/Codex only → fallback manual documentado |
 | 21 | shadcn/ui | Inaplicável | — | Sem React/Tailwind; CSS próprio com tokens (`src/styles/global.css`) — preservar stack |
 | 22 | Sentry MCP | Bloqueado | — | Exige conta/projeto Sentry e autorização separada. Retomar: criar conta + token |
@@ -73,7 +73,7 @@ existente consolidado, não duplicado.
 | `npm run rules:selfcheck` (novo) | Validado | 3/3 regras custom via `RuleTester` |
 | `npm run verify` (novo) | Validado | lint → typed → check → test → build, exit 0 |
 | `npm audit` | Validado | 5 advisories (1 high, 4 moderate), todos `undici` via cadeia `@astrojs/cloudflare → wrangler`; alcançam `--omit=dev` (astro/cloudflare são `dependencies`); downgrade descartado e registrado em `docs/quality.md` |
-| CI (GitHub Actions) | Configurado sem execução | YAML estático revisado; roda no GitHub no próximo push/PR |
+| CI (GitHub Actions) | Validado | Run `40360541674` no push `3f03839`: **success** (2026-10-26; `npm ci` + lint + typed + check + test + build, ubuntu-latest/Node 24) — warnings exibidos são os legados documentados |
 | Context7 | Validado | resolve-library-id + query-docs reais (adapter Astro/sessions) |
 | Idempotência do setup | Validado | re-execução de `mcp add` +2× `skills add` + caveman installer: hash agregado idêntico antes/depois; git limpo; caveman reporta "already contains" |
 | Segurança (baseline) | Validado | 11 findings no relatório privado; F-01/02/04/05/10/11 corrigidos (`8cb02a4`); demais pendentes abaixo |
@@ -138,7 +138,7 @@ não versionado).
 
 - **Bloqueios de máquina** (retomar quando o pré-requisito existir): RTK (Homebrew),
   Graphify (`uv`), agent-browser e Chrome DevTools MCP (Chrome), Sentry (conta externa),
-  CI real no GitHub (primeiro push/PR), Harness2 CLI lab (`uv` + Python 3.12 + autorização).
+  Harness2 CLI lab (`uv` + Python 3.12 + autorização).
 - **Pendências do produto** (ver `PRODUCT.md`): domínio real em `astro.config.mjs`
   (placeholder), destino do link de compra (configuração externa).
 - **Pendências de qualidade:** refactor dos 4 arquivos >350 linhas (plano em
