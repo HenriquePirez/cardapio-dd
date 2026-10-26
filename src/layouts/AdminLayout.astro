@@ -69,6 +69,11 @@ function sair() {
       <slot />
     </main>
 
+    <p class="admin-creditos">
+      Ícones por
+      <a href="https://www.flaticon.com/br/" target="_blank" rel="noopener noreferrer">Flaticon</a>
+    </p>
+
     <script>
       // Guarda o token de sessão (cookie SameSite) e injeta como header em
       // submissões via fetch. Os forms nativos já vão com cookie por padrão.
@@ -110,6 +115,19 @@ function sair() {
     min-height: 100vh;
     margin: 0;
     font-family: var(--fonte);
+  }
+
+  .admin-creditos {
+    margin: 0;
+    padding: 10px 16px calc(12px + env(safe-area-inset-bottom));
+    text-align: center;
+    font-size: 0.72rem;
+    color: #9ca3af;
+  }
+
+  .admin-creditos a {
+    color: inherit;
+    text-decoration: underline;
   }
 
   .admin-topo {

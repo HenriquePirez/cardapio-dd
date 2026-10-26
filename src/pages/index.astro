@@ -78,7 +78,7 @@ function capaDe(p: (typeof produtos)[number]) {
       <img class="topo-logo" src="/logo-donadora.png" alt="Logo Dona Dôra" width="568" height="573" />
       <div class="topo-textos">
         <h1 class="topo-titulo">{SITE.nome}</h1>
-        <p class="topo-sub">O sabor que começa pelos olhos 👀</p>
+        <p class="topo-sub">O sabor que começa pelos olhos <i class="fi-br-eye" aria-hidden="true"></i></p>
       </div>
     </div>
   </header>
@@ -98,7 +98,7 @@ function capaDe(p: (typeof produtos)[number]) {
   <main class="container">
     {produtos.length === 0 && (
       <div class="vazio">
-        <p>Cardápio em construção. Volte em breve! 🍔</p>
+        <p>Cardápio em construção. Volte em breve! <i class="fi-br-burger-alt" aria-hidden="true"></i></p>
       </div>
     )}
 
@@ -169,6 +169,10 @@ function capaDe(p: (typeof produtos)[number]) {
   <footer class="rodape">
     <div class="container">
       <p>{SITE.nome} · Cardápio digital</p>
+      <p class="rodape-creditos">
+        Ícones por
+        <a href="https://www.flaticon.com/br/" target="_blank" rel="noopener noreferrer">Flaticon</a>
+      </p>
     </div>
   </footer>
 
@@ -371,6 +375,16 @@ function capaDe(p: (typeof produtos)[number]) {
     color: rgba(255, 255, 255, 0.85);
     font-size: 0.82rem;
     text-align: center;
+  }
+
+  .rodape-creditos {
+    margin: 6px 0 0;
+    font-size: 0.72rem;
+    opacity: 0.75;
+  }
+
+  .rodape-creditos a {
+    text-decoration: underline;
   }
 
   @media (min-width: 560px) {

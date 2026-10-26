@@ -112,7 +112,7 @@ const galeria = (produto?.midia ?? []).map((m) => ({
           </label>
           <label class="check">
             <input type="checkbox" name="disponivel" value="1" checked={produto ? produto.disponivel === 1 : true} />
-            👁 Disponível no cardápio
+            <i class="fi-br-eye" aria-hidden="true"></i> Disponível no cardápio
           </label>
         </div>
       </div>
@@ -194,8 +194,8 @@ const galeria = (produto?.midia ?? []).map((m) => ({
     inputJson.value = JSON.stringify(paraJson);
   }
 
-  function emoji(tipo: string) {
-    return tipo === 'video' ? '🎬' : '🖼';
+  function iconeClasse(tipo: string) {
+    return tipo === 'video' ? 'fi-br-film' : 'fi-br-images';
   }
 
   // Escapa valores vindos do banco para interpolação em innerHTML.
@@ -238,10 +238,10 @@ const galeria = (produto?.midia ?? []).map((m) => ({
         ${
           src
             ? `<img class="g-thumb" src="${esc(src)}" alt="" loading="lazy" decoding="async" />`
-            : `<span class="g-thumb g-vazio" aria-hidden="true">${emoji(item.tipo)}</span>`
+            : `<i class="g-thumb g-vazio ${iconeClasse(item.tipo)}" aria-hidden="true"></i>`
         }
         <div class="g-info">
-          <span class="g-tipo">${emoji(item.tipo)} ${item.tipo === 'video' ? 'Vídeo' : 'Foto'}</span>
+          <span class="g-tipo"><i class="${iconeClasse(item.tipo)}" aria-hidden="true"></i> ${item.tipo === 'video' ? 'Vídeo' : 'Foto'}</span>
           <span class="g-nome" title="${esc(item.url)}">${esc(item.url) || 'novo arquivo'}</span>
           ${item.novo ? '<span class="g-badge">não salvo</span>' : ''}
         </div>
