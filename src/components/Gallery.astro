@@ -108,6 +108,7 @@ const { galerias } = Astro.props;
 
   .lb-track {
     display: flex;
+    gap: 10px;
     width: 100%;
     height: 100%;
     overflow-x: auto;
@@ -120,30 +121,33 @@ const { galerias } = Astro.props;
     display: none;
   }
 
-  .lb-slide {
-    flex: 0 0 100%;
-    width: 100%;
+  /*
+   * Slides e bolinhas são criados por JS, então não recebem o atributo de
+   * escopo do Astro — os seletores precisam ser :global.
+   */
+  :global(.lb-slide) {
+    flex: 0 0 82%;
     height: 100%;
     scroll-snap-align: center;
     display: grid;
     place-items: center;
   }
 
-  /* Quadrado 1:1 do tamanho do menor lado do stage (estilo Instagram). */
-  .lb-slide img {
-    /* Fallback sem unidades de container; a linha min() prevalece quando suportada. */
+  /* Quadrado 1:1; o próximo item fica espiando à direita (estilo Netflix). */
+  :global(.lb-slide img),
+  :global(.lb-slide video) {
     width: 100%;
-    height: 100%;
-    width: min(100cqw, 100cqh);
-    height: min(100cqw, 100cqh);
+    width: min(100%, 100cqh);
+    aspect-ratio: 1;
+    border-radius: 12px;
+    display: block;
+  }
+
+  :global(.lb-slide img) {
     object-fit: cover;
   }
 
-  .lb-slide video {
-    width: 100%;
-    height: 100%;
-    width: min(100cqw, 100cqh);
-    height: min(100cqw, 100cqh);
+  :global(.lb-slide video) {
     object-fit: contain;
     background: #000;
   }
@@ -152,7 +156,7 @@ const { galerias } = Astro.props;
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 6px;
+    gap: 0;
     padding: 10px 16px 2px;
   }
 
@@ -161,7 +165,7 @@ const { galerias } = Astro.props;
   }
 
   /* Alvo de toque de 24px; a bolinha visível é o ::before. */
-  .lb-dot {
+  :global(.lb-dot) {
     position: relative;
     width: 24px;
     height: 24px;
@@ -171,7 +175,7 @@ const { galerias } = Astro.props;
     cursor: pointer;
   }
 
-  .lb-dot::before {
+  :global(.lb-dot::before) {
     content: '';
     position: absolute;
     top: 50%;
@@ -186,7 +190,7 @@ const { galerias } = Astro.props;
       background 0.2s;
   }
 
-  .lb-dot.ativo::before {
+  :global(.lb-dot.ativo::before) {
     width: 18px;
     background: #fff;
   }
@@ -259,9 +263,26 @@ const { galerias } = Astro.props;
   let total = 0;
   let scrollTimer: ReturnType<typeof setTimeout> | undefined;
 
+  function passo() {
+    const s = track?.querySelector<HTMLElement>('.lb-slide');
+    if (!track || !s) return 0;
+    const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
+    return s.offsetWidth + gap;
+  }
+
+  // Centro do slide em relação à área visível (snap central, com limites nas pontas).
+  function scrollDoSlide(i: number) {
+    const s = track?.querySelector<HTMLElement>('.lb-slide');
+    if (!track || !s) return 0;
+    const alvo = i * passo() - (track.clientWidth - s.offsetWidth) / 2;
+    return Math.min(Math.max(alvo, 0), track.scrollWidth - track.clientWidth);
+  }
+
   function slideIndex() {
-    if (!track) return 0;
-    return Math.round(track.scrollLeft / track.clientWidth);
+    const s = track?.querySelector<HTMLElement>('.lb-slide');
+    if (!track || !s || !passo()) return 0;
+    const i = Math.round((track.scrollLeft + (track.clientWidth - s.offsetWidth) / 2) / passo());
+    return Math.min(Math.max(i, 0), Math.max(total - 1, 0));
   }
 
   function atualizarDots() {
@@ -287,7 +308,7 @@ const { galerias } = Astro.props;
       d.className = 'lb-dot';
       d.setAttribute('aria-label', `Ir para o item ${i + 1} de ${n}`);
       d.addEventListener('click', () => {
-        if (track) track.scrollTo({ left: i * track.clientWidth, behavior: 'smooth' });
+        if (track) track.scrollTo({ left: scrollDoSlide(i), behavior: 'smooth' });
       });
       dotsEl.appendChild(d);
     }
@@ -347,7 +368,7 @@ const { galerias } = Astro.props;
   function irPara(delta: number) {
     if (!track || total <= 1) return;
     const alvo = Math.min(Math.max(slideIndex() + delta, 0), total - 1);
-    track.scrollTo({ left: alvo * track.clientWidth, behavior: 'smooth' });
+    track.scrollTo({ left: scrollDoSlide(alvo), behavior: 'smooth' });
   }
 
   // Delegação: qualquer elemento com data-abrir-galeria abre o lightbox
