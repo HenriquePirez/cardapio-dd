@@ -76,6 +76,7 @@ const contagem = (id: string) => produtos.filter((p) => p.categoria_id === id).l
                 ))}
               </optgroup>
             </select>
+            <input type="hidden" name="icone_original" value={alvo?.icone ?? ''} />
             <small>Ícone exibido ao lado do nome da seção no cardápio.</small>
             <span class="prev-icone" id="prev-icone" aria-hidden="true"></span>
           </div>

@@ -38,7 +38,10 @@ export const POST: APIRoute = async (ctx) => {
   const idOriginal = String(form.get('id_original') ?? '').trim().toLowerCase();
   const nome = String(form.get('nome') ?? '').trim();
   // A miniatura é um quadrado de 52px: cabem no máximo 2 emojis.
-  const icone = normalizarIcone(String(form.get('icone') ?? '').trim());
+  // Valor legado fora da lista é preservado quando o select não mudou.
+  const iconeEnviado = String(form.get('icone') ?? '').trim();
+  const iconeOriginal = String(form.get('icone_original') ?? '').trim();
+  const icone = iconeEnviado === iconeOriginal ? iconeOriginal : normalizarIcone(iconeEnviado);
   const descricao = String(form.get('descricao') ?? '').trim();
   const ordem = Number(form.get('ordem') ?? 0);
 

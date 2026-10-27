@@ -76,7 +76,12 @@ const estatisticas = [
                 <div class="titulo">{p.nome}</div>
                 <div class="sub">
                   {p.categoria_id} · {p.midia.length} mídia(s)
-                  {p.destaque === 1 ? ' · ⭐ destaque' : ''}
+                  {p.destaque === 1 && (
+                    <>
+                      {' · '}
+                      <i class="fi-br-star" aria-hidden="true"></i> destaque
+                    </>
+                  )}
                   {p.disponivel === 0 ? ' · oculto' : ''}
                 </div>
               </div>

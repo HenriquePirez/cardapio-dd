@@ -108,7 +108,7 @@ const galeria = (produto?.midia ?? []).map((m) => ({
           <label for="preco2">Opções</label>
           <label class="check">
             <input type="checkbox" name="destaque" value="1" checked={produto?.destaque === 1} />
-            ⭐ Destaque (carrossel do topo)
+            <i class="fi-br-star" aria-hidden="true"></i> Destaque (carrossel do topo)
           </label>
           <label class="check">
             <input type="checkbox" name="disponivel" value="1" checked={produto ? produto.disponivel === 1 : true} />

@@ -40,6 +40,12 @@ body {
   overscroll-behavior-y: none;
 }
 
+/* Fredoka 700 não é carregada: evita faux-bold do padrão do navegador. */
+strong,
+b {
+  font-weight: 500;
+}
+
 img,
 video {
   display: block;

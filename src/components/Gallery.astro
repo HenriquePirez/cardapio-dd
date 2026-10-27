@@ -39,7 +39,7 @@ const { galerias } = Astro.props;
     <div class="lb-track" id="lb-track"></div>
   </div>
 
-  <div class="lb-dots" id="lb-dots" aria-label="Navegação da galeria" hidden></div>
+  <div class="lb-dots" id="lb-dots" role="group" aria-label="Navegação da galeria" hidden></div>
 
   <div class="lb-barra">
     <div class="lb-textos">
@@ -131,12 +131,17 @@ const { galerias } = Astro.props;
 
   /* Quadrado 1:1 do tamanho do menor lado do stage (estilo Instagram). */
   .lb-slide img {
+    /* Fallback sem unidades de container; a linha min() prevalece quando suportada. */
+    width: 100%;
+    height: 100%;
     width: min(100cqw, 100cqh);
     height: min(100cqw, 100cqh);
     object-fit: cover;
   }
 
   .lb-slide video {
+    width: 100%;
+    height: 100%;
     width: min(100cqw, 100cqh);
     height: min(100cqw, 100cqh);
     object-fit: contain;
@@ -155,22 +160,34 @@ const { galerias } = Astro.props;
     display: none;
   }
 
+  /* Alvo de toque de 24px; a bolinha visível é o ::before. */
   .lb-dot {
-    width: 7px;
-    height: 7px;
+    position: relative;
+    width: 24px;
+    height: 24px;
     padding: 0;
     border: 0;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.4);
+    background: transparent;
     cursor: pointer;
+  }
+
+  .lb-dot::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 7px;
+    height: 7px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.4);
+    transform: translate(-50%, -50%);
     transition:
       width 0.2s,
       background 0.2s;
   }
 
-  .lb-dot.ativo {
+  .lb-dot.ativo::before {
     width: 18px;
-    border-radius: 4px;
     background: #fff;
   }
 
@@ -347,7 +364,8 @@ const { galerias } = Astro.props;
   lb?.addEventListener('click', (e) => {
     const alvo = e.target;
     if (!(alvo instanceof Element)) return;
-    if (alvo === lb || alvo.classList.contains('lb-stage')) fechar();
+    if (alvo.closest('.lb-barra, .lb-dots')) return;
+    fechar();
   });
 
   // Atualiza contador durante o swipe e pausa vídeo ao sair do slide
@@ -358,8 +376,9 @@ const { galerias } = Astro.props;
       scrollTimer = setTimeout(() => {
         atual = slideIndex();
         atualizarDots();
-        track.querySelectorAll('video').forEach((v, i) => {
-          if (i !== atual) v.pause();
+        track.querySelectorAll('.lb-slide').forEach((s, i) => {
+          if (i === atual) return;
+          s.querySelectorAll('video').forEach((v) => v.pause());
         });
       }, 90);
     },
