@@ -13,6 +13,7 @@ export const AVISOS_PRODUTO: Record<string, string> = {
   'erro-ordem': 'Ordem inválida: informe um número inteiro maior ou igual a zero.',
   'erro-categoria': 'Escolha uma categoria válida.',
   'erro-link': 'Link de compra inválido: use um endereço começando com http:// ou https://.',
+  'erro-modalidade': 'Escolha uma opção válida de atendimento.',
   'erro-slug-duplicado': 'Já existe outro produto com esse identificador.',
   'erro-galeria': 'A galeria chegou incompleta e nada foi salvo. Recarregue a página e tente de novo.',
 };

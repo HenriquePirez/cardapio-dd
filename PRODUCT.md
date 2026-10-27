@@ -25,8 +25,11 @@ em código**.
 1. **Ver cardápio** — `/` lista categorias e produtos com capa, preço, destaque e galeria
    (foto/vídeo com lightbox e seek). Entrada: visita. Resultado: cardápio renderizado com
    cache na edge (mudanças aparecem em ~30s).
-2. **Comprar** — toque no botão redireciona para o `comprar_url` do produto (http/https).
-   Entrada: produto. Resultado: navegação para o app/link externo de compra.
+2. **Comprar** — toque no botão abre o fluxo de pedido conforme a `modalidade` do produto:
+   **retirada** vai direto para o `comprar_url` (http/https, nova aba); **local** mostra o
+   aviso de que pedidos no local são feitos no totem; **ambos** pergunta
+   "comer no local ou retirada?". Entrada: produto. Resultado: link externo aberto ou
+   aviso do totem exibido.
 3. **Criar conta (primeiro acesso)** — `/admin` redireciona para `/admin/criar-conta`
    enquanto não existe usuário; define nome, e-mail e senha (mínimo 10 caracteres).
 4. **Entrar no painel** — `/admin/login`; 5 falhas bloqueiam por 10 min; escritas exigem
@@ -34,7 +37,7 @@ em código**.
 5. **Gerenciar categorias** — `/admin/categorias`: criar, renomear (com emoji), reordenar,
    excluir.
 6. **Gerenciar produtos** — `/admin/produtos`: criar/editar com preço, categoria, link de
-   compra, disponibilidade, destaque, ordem e **galeria** (upload de foto otimizada no
+   compra, disponibilidade, modalidade (local/retirada/ambos), destaque, ordem e **galeria** (upload de foto otimizada no
    navegador ou vídeo bruto; poster gerado automaticamente; exclusão remove objetos do KV).
 7. **Servir mídia** — `/media/<chave>` lê do KV com suporte a Range (206) para o seek do
    vídeo.
@@ -88,8 +91,8 @@ painel de métricas · SEO avançado/sitemap.
 
 ## Critérios de aceitação (produto)
 
-- O cliente vê o cardápio completo no celular e consegue abrir galeria e ir para o link de
-  compra.
+- O cliente vê o cardápio completo no celular, abre a galeria e conclui o pedido pelo
+  caminho certo: link de retirada ou aviso do totem para consumo no local.
 - O dono cadastra categoria/produto/mídia pelo painel sem deploy nem edição de código.
 - Escritas sem sessão retornam 401, leituras sem sessão redirecionam ao login; 5 falhas de
   login bloqueiam por 10 min.

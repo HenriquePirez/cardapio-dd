@@ -19,6 +19,7 @@ import {
 import { apagarObjetos, caminhosDaMidia } from '../../../../lib/midia';
 import { invalidarCardapio } from '../../../../lib/cache';
 import { lerGaleriaJson } from '../../../../lib/galeria';
+import { normalizarModalidade } from '../../../../lib/pedido';
 import { mesmaOrigem } from '../../../../lib/http';
 
 const SLUG = /^[a-z0-9-]+$/;
@@ -49,6 +50,9 @@ export const POST: APIRoute = async (ctx) => {
   const ordem = Number(form.get('ordem') ?? 0);
   const destaque = form.get('destaque') ? 1 : 0;
   const disponivel = form.get('disponivel') ? 1 : 0;
+  const modalidade = normalizarModalidade(
+    String(form.get('modalidade') ?? '').trim() || 'ambos',
+  );
 
   const voltarEdicao = idOriginal ? `/admin/produtos/${idOriginal}` : '/admin/produtos/novo';
 
@@ -60,6 +64,7 @@ export const POST: APIRoute = async (ctx) => {
   if (!Number.isInteger(ordem) || ordem < 0) return voltar(voltarEdicao + '?msg=erro-ordem');
   if (!categoria) return voltar(voltarEdicao + '?msg=erro-categoria');
   if (!/^https?:\/\//i.test(comprarUrl)) return voltar(voltarEdicao + '?msg=erro-link');
+  if (!modalidade) return voltar(voltarEdicao + '?msg=erro-modalidade');
 
   // Lê a galeria ANTES de gravar: valor ausente/inválido tem de recusar o save,
   // nunca virar lista vazia (isso apagaria as mídias do D1 e do KV).
@@ -91,6 +96,7 @@ export const POST: APIRoute = async (ctx) => {
     ordem: Number.isFinite(ordem) ? ordem : 0,
     comprar_url: comprarUrl,
     disponivel,
+    modalidade,
   });
 
   // ---- Sincroniza a galeria -------------------------------------------

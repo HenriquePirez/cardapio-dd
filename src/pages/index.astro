@@ -1,11 +1,13 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ProductCard from '../components/ProductCard.astro';
+import PedidoDialog from '../components/PedidoDialog.astro';
 import Gallery from '../components/Gallery.astro';
 import IconeCategoria from '../components/IconeCategoria.astro';
 import { db, urlMidia } from '../lib/env';
 import { cardapioCompleto } from '../lib/db';
 import { formatarPreco, SITE } from '../config';
+import { normalizarModalidade, type Modalidade } from '../lib/pedido';
 
 // Cardápio lido do D1 em runtime (SSR), com cache na edge (ver middleware).
 const { categorias, produtos } = await cardapioCompleto(db());
@@ -24,7 +26,6 @@ const galerias: Record<
   string,
   {
     nome: string;
-    comprarUrl: string;
     itens: Array<{
       tipo: 'imagem' | 'video';
       src: string;
@@ -38,7 +39,6 @@ const galerias: Record<
 for (const p of produtos) {
   galerias[p.id] = {
     nome: p.nome,
-    comprarUrl: p.comprar_url,
     itens: p.midia.map((m) =>
       m.tipo === 'imagem'
         ? {
@@ -54,6 +54,16 @@ for (const p of produtos) {
             alt: m.alt || '',
           },
     ),
+  };
+}
+
+// Fluxo de compra: URL aberta só na retirada; local mostra o aviso do totem.
+const pedidos: Record<string, { url: string; modalidade: Modalidade; nome: string }> = {};
+for (const p of produtos) {
+  pedidos[p.id] = {
+    url: p.comprar_url,
+    modalidade: normalizarModalidade(p.modalidade) ?? 'ambos',
+    nome: p.nome,
   };
 }
 
@@ -79,7 +89,7 @@ function capaDe(p: (typeof produtos)[number]) {
       <img class="topo-logo" src="/logo-donadora.png" alt="Logo Dona Dôra" width="568" height="573" />
       <div class="topo-textos">
         <h1 class="topo-titulo">{SITE.nome}</h1>
-        <p class="topo-sub">O sabor que começa pelos olhos <i class="fi-br-eye" aria-hidden="true"></i></p>
+        <p class="topo-sub">O sabor que começa pelos olhos</p>
       </div>
     </div>
   </header>
@@ -158,7 +168,6 @@ function capaDe(p: (typeof produtos)[number]) {
                 descricao={p.descricao ?? undefined}
                 capa={capaDe(p)}
                 totalMidia={p.midia.length}
-                comprarUrl={p.comprar_url}
               />
             ))}
           </div>
@@ -177,6 +186,7 @@ function capaDe(p: (typeof produtos)[number]) {
     </div>
   </footer>
 
+  <PedidoDialog pedidos={pedidos} />
   <Gallery galerias={galerias} />
 </BaseLayout>
 

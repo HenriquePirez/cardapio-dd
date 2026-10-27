@@ -10,10 +10,9 @@ interface Props {
   // Mídia de capa (primeira imagem) e total de itens da galeria
   capa?: { url: string; alt: string; tipo: 'imagem' | 'video'; poster?: string } | undefined;
   totalMidia: number;
-  comprarUrl: string;
 }
 
-const { id, nome, preco, descricao, capa, totalMidia, comprarUrl } = Astro.props;
+const { id, nome, preco, descricao, capa, totalMidia } = Astro.props;
 
 // Para vídeo, mostra o poster como capa (não baixa o arquivo de vídeo)
 const capaSrc = capa
@@ -65,15 +64,14 @@ const temVideo = capa?.tipo === 'video';
       <span class="card-preco">{formatarPreco(preco)}</span>
     </div>
 
-    <a
+    <button
       class="btn-comprar"
-      href={comprarUrl}
-      target="_blank"
-      rel="noopener noreferrer"
+      type="button"
+      data-comprar={id}
       aria-label={`Comprar ${nome}`}
     >
       Comprar
-    </a>
+    </button>
   </div>
 </article>
 
@@ -226,6 +224,8 @@ const temVideo = capa?.tipo === 'video';
   .btn-comprar {
     flex-shrink: 0;
     padding: 11px 18px;
+    border: 0;
+    cursor: pointer;
     border-radius: var(--radius-sm);
     background: var(--laranja);
     color: #fff;

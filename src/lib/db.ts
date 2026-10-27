@@ -27,6 +27,8 @@ export interface Produto {
   ordem: number;
   comprar_url: string;
   disponivel: number;
+  /** 'local' | 'retirada' | 'ambos' (ver src/lib/pedido.ts). */
+  modalidade: string;
   criado_em?: string;
   atualizado_em?: string;
 }
@@ -173,13 +175,14 @@ export async function salvarProduto(
 ): Promise<void> {
   await db
     .prepare(
-      `INSERT INTO produtos (id, nome, preco, categoria_id, descricao, destaque, ordem, comprar_url, disponivel)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `INSERT INTO produtos (id, nome, preco, categoria_id, descricao, destaque, ordem, comprar_url, disponivel, modalidade)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT(id) DO UPDATE SET
          nome = excluded.nome, preco = excluded.preco,
          categoria_id = excluded.categoria_id, descricao = excluded.descricao,
          destaque = excluded.destaque, ordem = excluded.ordem,
          comprar_url = excluded.comprar_url, disponivel = excluded.disponivel,
+         modalidade = excluded.modalidade,
          atualizado_em = datetime('now')`,
     )
     .bind(
@@ -192,6 +195,7 @@ export async function salvarProduto(
       p.ordem,
       p.comprar_url,
       p.disponivel,
+      p.modalidade,
     )
     .run();
 }

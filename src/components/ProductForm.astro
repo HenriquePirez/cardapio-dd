@@ -15,6 +15,7 @@ interface Props {
 const { produto, categorias } = Astro.props;
 
 const modoEdicao = !!produto;
+const modalidade = produto?.modalidade ?? 'ambos';
 const acao = modoEdicao
   ? `/admin/api/produtos/salvar`
   : `/admin/api/produtos/salvar`;
@@ -98,6 +99,25 @@ const galeria = (produto?.midia ?? []).map((m) => ({
         <input id="comprar_url" name="comprar_url" type="url" required
           value={produto?.comprar_url ?? ''} placeholder="https://app.exemplo.com/comprar?produto=…" />
         <small>Ao tocar em “Comprar”, o cliente é levado para este link.</small>
+      </div>
+
+      <div class="campo">
+        <label for="modalidade">Disponível para</label>
+        <select id="modalidade" name="modalidade">
+          <option value="ambos" selected={modalidade === 'ambos'}>
+            Comer no local e retirada
+          </option>
+          <option value="retirada" selected={modalidade === 'retirada'}>
+            Somente retirada (link do app)
+          </option>
+          <option value="local" selected={modalidade === 'local'}>
+            Somente comer no local (totem)
+          </option>
+        </select>
+        <small>
+          Com “comer no local e retirada”, o cliente escolhe ao tocar em Comprar.
+          Só local abre o aviso do totem; só retirada vai direto ao link.
+        </small>
       </div>
 
       <div class="grade-campos">

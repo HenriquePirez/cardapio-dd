@@ -14,6 +14,7 @@
 npm ci                      # instala pelo lockfile
 npm run types               # gera worker-configuration.d.ts (tipos das bindings)
 npm run db:apply:local      # schema + seed no D1 local (.wrangler/)
+npm run db:0003:local       # coluna modalidade (aplicar depois do schema)
 npm run dev                 # http://localhost:4321
 ```
 

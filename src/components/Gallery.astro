@@ -10,7 +10,6 @@ interface Props {
     string,
     {
       nome: string;
-      comprarUrl: string;
       itens: Array<{
         tipo: 'imagem' | 'video';
         src: string;
@@ -45,9 +44,9 @@ const { galerias } = Astro.props;
     <div class="lb-textos">
       <p class="lb-nome" id="lb-nome"></p>
     </div>
-    <a class="lb-comprar" id="lb-comprar" href="#" target="_blank" rel="noopener noreferrer">
+    <button class="lb-comprar" id="lb-comprar" type="button" data-comprar="">
       Comprar
-    </a>
+    </button>
   </div>
 </div>
 
@@ -133,6 +132,11 @@ const { galerias } = Astro.props;
     place-items: center;
   }
 
+  /* Uma mídia só: nada de peek, a imagem fica centralizada. */
+  :global(.lb-track.unico .lb-slide) {
+    flex: 0 0 100%;
+  }
+
   /* Quadrado 1:1; o próximo item fica espiando à direita (estilo Netflix). */
   :global(.lb-slide img),
   :global(.lb-slide video) {
@@ -211,6 +215,7 @@ const { galerias } = Astro.props;
 
   .lb-nome {
     margin: 0;
+    color: #fff;
     font-weight: 500;
     font-size: 1rem;
     white-space: nowrap;
@@ -221,6 +226,8 @@ const { galerias } = Astro.props;
   .lb-comprar {
     flex-shrink: 0;
     padding: 12px 22px;
+    border: 0;
+    cursor: pointer;
     border-radius: var(--radius-sm);
     background: var(--laranja);
     color: #fff;
@@ -247,7 +254,6 @@ const { galerias } = Astro.props;
   }
   interface Galeria {
     nome: string;
-    comprarUrl: string;
     itens: ItemGaleria[];
   }
 
@@ -258,7 +264,7 @@ const { galerias } = Astro.props;
   const track = document.getElementById('lb-track') as HTMLElement | null;
   const nomeEl = document.getElementById('lb-nome');
   const dotsEl = document.getElementById('lb-dots');
-  const comprarEl = document.getElementById('lb-comprar') as HTMLAnchorElement | null;
+  const comprarEl = document.getElementById('lb-comprar') as HTMLButtonElement | null;
   const btnVoltar = lb?.querySelector<HTMLElement>('.lb-voltar');
   let atual = 0;
   let total = 0;
@@ -343,10 +349,11 @@ const { galerias } = Astro.props;
       track.appendChild(slide);
     });
     total = g.itens.length;
+    track.classList.toggle('unico', total === 1);
     atual = 0;
     track.scrollLeft = 0;
     if (nomeEl) nomeEl.textContent = g.nome;
-    if (comprarEl) comprarEl.href = g.comprarUrl || '#';
+    if (comprarEl) comprarEl.dataset.comprar = id;
     montarDots(total);
     atualizarDots();
     return true;
@@ -416,6 +423,8 @@ const { galerias } = Astro.props;
   // Teclado
   document.addEventListener('keydown', (e) => {
     if (lb?.hidden) return;
+    // Diálogo de pedido aberto por cima: ele cuida do Esc/Tab.
+    if (document.getElementById('pedido-dialog')?.hasAttribute('hidden') === false) return;
     if (e.key === 'Escape') fechar();
     if (e.key === 'ArrowLeft') irPara(-1);
     if (e.key === 'ArrowRight') irPara(1);
