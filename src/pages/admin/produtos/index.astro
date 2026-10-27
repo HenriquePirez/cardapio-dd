@@ -3,6 +3,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 import { db } from '../../../lib/env';
 import { listarCategorias, listarProdutos } from '../../../lib/db';
 import { urlMidia } from '../../../lib/env';
+import { AVISOS_PRODUTO, ehSucesso } from '../../../lib/mensagens';
 
 const d1 = db();
 const categorias = await listarCategorias(d1);
@@ -41,8 +42,11 @@ const nomeCat = (id: string) => categorias.find((c) => c.id === id)?.nome ?? id;
     </div>
   </div>
 
-  {msg === 'ok' && <div class="aviso aviso-ok">Produto salvo.</div>}
-  {msg === 'excluido' && <div class="aviso aviso-ok">Produto excluído.</div>}
+  {msg && AVISOS_PRODUTO[msg] && (
+    <div class={`aviso ${ehSucesso(msg) ? 'aviso-ok' : 'aviso-erro'}`} role={ehSucesso(msg) ? 'status' : 'alert'}>
+      {AVISOS_PRODUTO[msg]}
+    </div>
+  )}
 
   <!-- Busca e filtros -->
   <section class="cartao filtros">

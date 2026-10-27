@@ -25,7 +25,12 @@ const temVideo = capa?.tipo === 'video';
 ---
 
 <article class="card" data-produto={id}>
-  <button class="card-midia" type="button" data-abrir-galeria={id} aria-label={`Ver fotos de ${nome}`}>
+  <button
+    class="card-midia"
+    type="button"
+    data-abrir-galeria={totalMidia > 0 ? id : undefined}
+    aria-label={totalMidia > 0 ? `Ver fotos de ${nome}` : `${nome} (sem fotos)`}
+  >
     {capaSrc ? (
       <img
         src={capaSrc}

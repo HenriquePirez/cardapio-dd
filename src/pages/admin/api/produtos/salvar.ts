@@ -18,18 +18,9 @@ import {
 } from '../../../../lib/db';
 import { apagarObjetos, caminhosDaMidia } from '../../../../lib/midia';
 import { invalidarCardapio } from '../../../../lib/cache';
+import { lerGaleriaJson } from '../../../../lib/galeria';
 
 const SLUG = /^[a-z0-9-]+$/;
-
-interface ItemGaleria {
-  id: number | string;
-  tipo: 'imagem' | 'video';
-  url: string;
-  full?: string;
-  poster?: string;
-  alt?: string;
-  ordem?: number;
-}
 
 function voltar(para: string): Response {
   return new Response(null, { status: 303, headers: { Location: para } });
@@ -56,7 +47,7 @@ export const POST: APIRoute = async (ctx) => {
   }
 
   const idNovo = String(form.get('id') ?? '').trim().toLowerCase();
-  const idOriginal = String(form.get('id') ?? '').trim().toLowerCase();
+  const idOriginal = String(form.get('id_original') ?? '').trim().toLowerCase();
   const nome = String(form.get('nome') ?? '').trim();
   const precoRaw = String(form.get('preco') ?? '').replace(',', '.');
   const preco = Number(precoRaw);
@@ -67,13 +58,18 @@ export const POST: APIRoute = async (ctx) => {
   const destaque = form.get('destaque') ? 1 : 0;
   const disponivel = form.get('disponivel') ? 1 : 0;
 
-  const voltarEdicao = `/admin/produtos/${idOriginal}`;
+  const voltarEdicao = idOriginal ? `/admin/produtos/${idOriginal}` : '/admin/produtos/novo';
 
   if (!SLUG.test(idNovo)) return voltar(voltarEdicao + '?msg=erro-slug');
   if (!nome) return voltar(voltarEdicao + '?msg=erro-nome');
   if (!Number.isFinite(preco) || preco < 0) return voltar(voltarEdicao + '?msg=erro-preco');
   if (!categoria) return voltar(voltarEdicao + '?msg=erro-categoria');
   if (!/^https?:\/\//i.test(comprarUrl)) return voltar(voltarEdicao + '?msg=erro-link');
+
+  // Lê a galeria ANTES de gravar: valor ausente/inválido tem de recusar o save,
+  // nunca virar lista vazia (isso apagaria as mídias do D1 e do KV).
+  const galeria = lerGaleriaJson(form.get('galeria_json'));
+  if (!galeria) return voltar(voltarEdicao + '?msg=erro-galeria');
 
   const d1 = db();
 
@@ -103,15 +99,6 @@ export const POST: APIRoute = async (ctx) => {
   });
 
   // ---- Sincroniza a galeria -------------------------------------------
-  let galeria: ItemGaleria[] = [];
-  try {
-    const bruto = String(form.get('galeria_json') ?? '[]');
-    galeria = JSON.parse(bruto) as ItemGaleria[];
-    if (!Array.isArray(galeria)) galeria = [];
-  } catch {
-    galeria = [];
-  }
-
   const atuais = await listarMidiasPorProdutos(d1, [idNovo]);
   const idsAtuais = new Set(atuais.map((m) => m.id));
 

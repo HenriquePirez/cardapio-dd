@@ -3,8 +3,10 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 import ProductForm from '../../../components/ProductForm.astro';
 import { db } from '../../../lib/env';
 import { listarCategorias } from '../../../lib/db';
+import { AVISOS_PRODUTO, ehSucesso } from '../../../lib/mensagens';
 
 const categorias = await listarCategorias(db());
+const msg = Astro.url.searchParams.get('msg');
 ---
 
 <AdminLayout titulo="Novo produto">
@@ -15,6 +17,12 @@ const categorias = await listarCategorias(db());
     </div>
     <a href="/admin/produtos" class="btn btn-secundario">← Produtos</a>
   </div>
+
+  {msg && AVISOS_PRODUTO[msg] && (
+    <div class={`aviso ${ehSucesso(msg) ? 'aviso-ok' : 'aviso-erro'}`} role={ehSucesso(msg) ? 'status' : 'alert'}>
+      {AVISOS_PRODUTO[msg]}
+    </div>
+  )}
 
   {categorias.length === 0 && (
     <div class="aviso aviso-erro">

@@ -85,6 +85,10 @@ export const POST: APIRoute = async (ctx) => {
     // era inédito e agora quer usar um slug que já existe
     return voltar('/admin/categorias?editar=' + encodeURIComponent(idOriginal));
   }
+  if (existente && !idOriginal) {
+    // criar uma categoria com slug já usado sobrescreveria a existente
+    return voltar('/admin/categorias?erro=slug-em-uso');
+  }
 
   await salvarCategoria(d1, {
     id,

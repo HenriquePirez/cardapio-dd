@@ -350,7 +350,8 @@ const { galerias } = Astro.props;
   }
 
   function abrir(id: string) {
-    if (!lb || !montar(id)) return;
+    const g = dados[id];
+    if (!lb || !g?.itens.length || !montar(id)) return;
     lb.hidden = false;
     document.body.style.overflow = 'hidden';
     btnVoltar?.focus();
@@ -381,11 +382,11 @@ const { galerias } = Astro.props;
 
   btnVoltar?.addEventListener('click', fechar);
 
-  // Clique fora da mídia (fundo) fecha
+  // Clique fora da mídia (fundo) fecha; tocar na foto/vídeo não.
   lb?.addEventListener('click', (e) => {
     const alvo = e.target;
     if (!(alvo instanceof Element)) return;
-    if (alvo.closest('.lb-barra, .lb-dots')) return;
+    if (alvo.closest('.lb-slide, .lb-barra, .lb-dots, .lb-voltar')) return;
     fechar();
   });
 
