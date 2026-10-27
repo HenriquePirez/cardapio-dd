@@ -58,7 +58,7 @@ export interface D1StmtLike {
   bind(...values: unknown[]): D1StmtLike;
   first<T = Record<string, unknown>>(): Promise<T | null>;
   all<T = Record<string, unknown>>(): Promise<{ results: T[] }>;
-  run(): Promise<unknown>;
+  run(): Promise<{ success?: boolean; meta?: { changes?: number } }>;
 }
 
 // ---------------------------------------------------------------
@@ -251,18 +251,24 @@ export async function contarUsuarios(db: D1Like): Promise<number> {
   return r?.n ?? 0;
 }
 
-export async function criarUsuario(
+/**
+ * Cria o primeiro usuário do painel de forma atômica.
+ * Retorna false quando já existe alguém — dois POSTs simultâneos não
+ * conseguem mais sobrescrever a conta um do outro.
+ */
+export async function criarPrimeiroUsuario(
   db: D1Like,
   u: { id: string; email: string; nome: string; senha_hash: string },
-): Promise<void> {
-  await db
+): Promise<boolean> {
+  const resultado = await db
     .prepare(
-      `INSERT INTO usuarios (id, email, nome, senha_hash) VALUES (?, ?, ?, ?)
-       ON CONFLICT(email) DO UPDATE SET
-         nome = excluded.nome, senha_hash = excluded.senha_hash`,
+      `INSERT INTO usuarios (id, email, nome, senha_hash)
+       SELECT ?, ?, ?, ?
+       WHERE NOT EXISTS (SELECT 1 FROM usuarios)`,
     )
     .bind(u.id, u.email, u.nome, u.senha_hash)
     .run();
+  return (resultado.meta?.changes ?? 0) > 0;
 }
 
 export async function trocarSenha(db: D1Like, email: string, senhaHash: string): Promise<void> {

@@ -2,16 +2,13 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ProductCard from '../components/ProductCard.astro';
 import Gallery from '../components/Gallery.astro';
+import IconeCategoria from '../components/IconeCategoria.astro';
 import { db, urlMidia } from '../lib/env';
 import { cardapioCompleto } from '../lib/db';
-import { resolverIcone } from '../lib/icone';
 import { formatarPreco, SITE } from '../config';
 
 // Cardápio lido do D1 em runtime (SSR), com cache na edge (ver middleware).
 const { categorias, produtos } = await cardapioCompleto(db());
-
-// Ícone por categoria: nome da lista vira classe Uicons; emoji antigo vira texto.
-const categoriasComIcone = categorias.map((c) => ({ ...c, vis: resolverIcone(c.icone) }));
 
 const destaques = produtos.filter((p) => p.destaque === 1);
 
@@ -90,10 +87,9 @@ function capaDe(p: (typeof produtos)[number]) {
   <!-- Navegação rápida por categoria -->
   <nav class="atalhos" aria-label="Categorias">
     <div class="container atalhos-scroll">
-      {categoriasComIcone.map((cat) => (
+      {categorias.map((cat) => (
         <a class="atalho" href={`#${cat.id}`}>
-          {cat.vis?.classe && <i class={cat.vis.classe} aria-hidden="true"></i>}
-          {cat.vis?.texto && <span aria-hidden="true">{cat.vis.texto}</span>}
+          <IconeCategoria icone={cat.icone} />
           {cat.nome}
         </a>
       ))}
@@ -141,15 +137,14 @@ function capaDe(p: (typeof produtos)[number]) {
     )}
 
     <!-- Categorias + produtos -->
-    {categoriasComIcone.map((cat) => {
+    {categorias.map((cat) => {
       const lista = porCategoria.get(cat.id);
       if (!lista?.length) return null;
       return (
         <section class="secao" id={cat.id} aria-labelledby={`h-${cat.id}`}>
           <div class="secao-cab">
             <h2 class="secao-titulo" id={`h-${cat.id}`}>
-              {cat.vis?.classe && <i class={cat.vis.classe} aria-hidden="true"></i>}
-              {cat.vis?.texto && <span aria-hidden="true">{cat.vis.texto}</span>}
+              <IconeCategoria icone={cat.icone} />
               {cat.nome}
             </h2>
             {cat.descricao && <p class="secao-desc">{cat.descricao}</p>}

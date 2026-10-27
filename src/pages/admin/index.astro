@@ -3,12 +3,10 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 import { db } from '../../lib/env';
 import { listarCategorias, listarProdutos } from '../../lib/db';
 import { urlMidia } from '../../lib/env';
-import { resolverIcone } from '../../lib/icone';
+import IconeCategoria from '../../components/IconeCategoria.astro';
 
 const d1 = db();
 const [categorias, produtos] = await Promise.all([listarCategorias(d1), listarProdutos(d1)]);
-
-const categoriasComIcone = categorias.map((c) => ({ ...c, vis: resolverIcone(c.icone) }));
 
 const destaques = produtos.filter((p) => p.destaque === 1);
 const indisponiveis = produtos.filter((p) => p.disponivel === 0);
@@ -103,15 +101,9 @@ const estatisticas = [
       </p>
     ) : (
       <div>
-        {categoriasComIcone.map((c) => (
+        {categorias.map((c) => (
           <div class="linha-lista">
-            {c.vis?.classe && <i class={`miniatura icone ${c.vis.classe}`} aria-hidden="true"></i>}
-            {!c.vis?.classe && c.vis?.texto && (
-              <span class="miniatura icone" aria-hidden="true">
-                {c.vis.texto}
-              </span>
-            )}
-            {!c.vis && <i class="miniatura icone fi-br-folder" aria-hidden="true"></i>}
+            <IconeCategoria icone={c.icone} classe="miniatura icone" reserva />
             <div class="cresce">
               <div class="titulo">{c.nome}</div>
               <div class="sub">

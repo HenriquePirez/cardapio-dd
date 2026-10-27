@@ -82,6 +82,7 @@ function segmentar(texto: string): string[] {
 }
 
 function contemEmoji(graphema: string): boolean {
-  // Extended_Pictographic cobre emoji modernos; o fallback cobre os antigos.
-  return /\p{Extended_Pictographic}|\p{Emoji_Presentation}/u.test(graphema);
+  // Extended_Pictographic cobre emoji modernos; Emoji_Presentation os antigos;
+  // U+20E3 é o keycap (1️⃣, #️⃣), que não entra nas duas primeiras classes.
+  return /\p{Extended_Pictographic}|\p{Emoji_Presentation}|\u20E3/u.test(graphema);
 }

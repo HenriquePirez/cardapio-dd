@@ -124,15 +124,19 @@ não versionado).
   `/media`; `%` malformado em `/media` → 400; claims de `npm audit` corrigidas nos docs
   com o estado real; demais informativos sem ação.
 - **Pendências residuais** (detalhes no relatório privado; gatilho de retomada):
-  - *F-03 (medium, needs-validation):* criação de conta no primeiro uso com race
-    (TOCTOU + `ON CONFLICT`) — corrigir com transação D1 quando o estado de produção
-    for confirmado.
-  - *F-06 (low):* CSP/HSTS/Referrer-Policy ausentes — avaliar no proxy/zona (edge) ou
-    middleware quando houver teste de UI.
+  - *F-03 (medium) — corrigido em 2026-10-27:* criação da primeira conta passou a usar
+    `INSERT ... WHERE NOT EXISTS` (`criarPrimeiroUsuario`) e exige o segredo `SETUP_TOKEN`;
+    dois POSTs simultâneos não sobrescrevem mais a credencial um do outro.
+  - *F-06 (low) — corrigido em 2026-10-27:* o middleware aplica CSP, HSTS,
+    `X-Frame-Options`/`frame-ancestors`, `Referrer-Policy`, `Permissions-Policy`,
+    `X-Content-Type-Options` e `Cache-Control: private, no-store` no painel. A CSP usa
+    `'unsafe-inline'` (scripts inline do Astro) — evoluir para nonce quando houver build
+    com hash.
   - *F-08 (low):* PBKDF2 40k + senha mínima 10 abaixo do ASVS — desvio documentado
     (limite do workerd; compensações: pepper + lockout); revisar se o runtime mudar.
-  - *F-09 (low):* lockout por e-mail sem camada de IP (DoS de login) — aceito para
-    conta única; revisar se houver mais usuários.
+  - *F-09 (low) — corrigido em 2026-10-27:* o lockout agora é por e-mail + IP
+    (`cf-connecting-ip`) com incremento atômico no D1 (`tentativas = tentativas + 1`
+    no UPSERT), então um anônimo não tranca mais a conta do dono de outro IP.
 
 ## Trabalho pendente e próxima entrega
 

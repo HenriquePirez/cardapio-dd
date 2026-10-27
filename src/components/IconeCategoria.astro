@@ -1,0 +1,29 @@
+---
+/**
+ * Ícone de categoria em um único lugar: nome da lista vira `fi-br-*`,
+ * valor legado vira texto e, no painel, categoria sem ícone mostra a pasta.
+ */
+import { resolverIcone } from '../lib/icone';
+
+interface Props {
+  icone?: string | null | undefined;
+  classe?: string | undefined;
+  /** Mostra a pasta quando não há ícone (listas do painel). */
+  reserva?: boolean | undefined;
+}
+
+const { icone, classe = '', reserva = false } = Astro.props;
+const vis = resolverIcone(icone);
+---
+
+{
+  vis?.classe ? (
+    <i class={`${classe} ${vis.classe}`.trim()} aria-hidden="true" />
+  ) : vis?.texto ? (
+    <span class={classe} aria-hidden="true">
+      {vis.texto}
+    </span>
+  ) : reserva ? (
+    <i class={`${classe} fi-br-folder`.trim()} aria-hidden="true" />
+  ) : null
+}

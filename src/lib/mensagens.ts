@@ -10,6 +10,7 @@ export const AVISOS_PRODUTO: Record<string, string> = {
   'erro-slug': 'Identificador inválido: use letras minúsculas, números e hífen.',
   'erro-nome': 'Informe o nome do produto.',
   'erro-preco': 'Preço inválido. Use um número, por exemplo 28.90.',
+  'erro-ordem': 'Ordem inválida: informe um número inteiro maior ou igual a zero.',
   'erro-categoria': 'Escolha uma categoria válida.',
   'erro-link': 'Link de compra inválido: use um endereço começando com http:// ou https://.',
   'erro-slug-duplicado': 'Já existe outro produto com esse identificador.',
@@ -21,6 +22,7 @@ export const AVISOS_CATEGORIA: Record<string, string> = {
   excluida: 'Categoria excluída.',
   'erro-slug': 'Identificador inválido: use letras minúsculas, números e hífen.',
   'erro-nome': 'Informe o nome da categoria.',
+  'erro-ordem': 'Ordem inválida: informe um número inteiro maior ou igual a zero.',
   'erro-slug-em-uso': 'Já existe uma categoria com esse identificador.',
 };
 

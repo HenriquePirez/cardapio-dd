@@ -4,16 +4,8 @@
  */
 import type { APIRoute } from 'astro';
 import { destruirSessao } from '../../../lib/session';
+import { mesmaOrigem } from '../../../lib/http';
 
-function mesmaOrigem(request: Request): boolean {
-  const origin = request.headers.get('origin');
-  if (!origin) return false;
-  try {
-    return new URL(origin).origin === new URL(request.url).origin;
-  } catch {
-    return false;
-  }
-}
 
 export const POST: APIRoute = async (ctx) => {
   if (!mesmaOrigem(ctx.request)) {

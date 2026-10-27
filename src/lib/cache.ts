@@ -7,15 +7,19 @@
  * aparecer — e no dev local (miniflare) o `cache.match()` não respeita o
  * TTL, então a mudança só apareceria reiniciando o `wrangler dev`.
  *
- * A chave precisa bater com a usada no middleware: a URL absoluta de "/".
+ * A chave precisa bater com a usada no middleware: a URL absoluta de "/",
+ * sem query (ver `chaveCardapio`).
  */
+export function chaveCardapio(url: string | URL): Request {
+  return new Request(new URL('/', url).toString(), { method: 'GET' });
+}
+
 export async function invalidarCardapio(request: Request): Promise<void> {
   try {
     // O tipo DOM de `CacheStorage` não expõe `.default`, por isso o cast.
     const cache = (caches as unknown as { default?: Cache }).default;
     if (!cache) return;
-    const chave = new Request(new URL('/', request.url).toString(), { method: 'GET' });
-    await cache.delete(chave);
+    await cache.delete(chaveCardapio(request.url));
   } catch {
     /* cache é otimização, não crítico — nunca derruba a escrita */
   }

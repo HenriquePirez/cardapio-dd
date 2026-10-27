@@ -22,16 +22,8 @@ import {
   LIMITE_ARQUIVO,
   TIPOS_ACEITOS,
 } from '../../../../lib/env';
+import { mesmaOrigem } from '../../../../lib/http';
 
-function mesmaOrigem(request: Request): boolean {
-  const origin = request.headers.get('origin');
-  if (!origin) return false;
-  try {
-    return new URL(origin).origin === new URL(request.url).origin;
-  } catch {
-    return false;
-  }
-}
 
 function json(dados: unknown, status = 200): Response {
   return new Response(JSON.stringify(dados), {

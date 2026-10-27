@@ -2,14 +2,13 @@
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import { db } from '../../lib/env';
 import { listarCategorias, listarProdutos } from '../../lib/db';
-import { resolverIcone, ICONES_CATEGORIA } from '../../lib/icone';
+import { ICONES_CATEGORIA } from '../../lib/icone';
+import IconeCategoria from '../../components/IconeCategoria.astro';
 import { AVISOS_CATEGORIA, ehSucesso } from '../../lib/mensagens';
 
 const d1 = db();
 const categorias = await listarCategorias(d1);
 const produtos = await listarProdutos(d1);
-
-const comIcone = categorias.map((c) => ({ c, vis: resolverIcone(c.icone) }));
 
 const edicao = Astro.url.searchParams.get('editar');
 const mensagem = Astro.url.searchParams.get('msg');
@@ -90,13 +89,19 @@ const contagem = (id: string) => produtos.filter((p) => p.categoria_id === id).l
                 ))}
               </optgroup>
             </select>
-            <input type="hidden" name="icone_original" value={alvo?.icone ?? ''} />
             <small>Ícone exibido ao lado do nome da seção no cardápio.</small>
             <i class="prev-icone" id="prev-icone" aria-hidden="true"></i>
           </div>
           <div class="campo">
             <label for="ordem">Ordem</label>
-            <input id="ordem" name="ordem" type="number" value={alvo?.ordem ?? categorias.length + 1} />
+            <input
+              id="ordem"
+              name="ordem"
+              type="number"
+              min="0"
+              step="1"
+              value={alvo?.ordem ?? categorias.length + 1}
+            />
             <small>Menor aparece primeiro.</small>
           </div>
         </div>
@@ -123,15 +128,9 @@ const contagem = (id: string) => produtos.filter((p) => p.categoria_id === id).l
         <p class="vazio">Nenhuma categoria ainda.</p>
       ) : (
         <div>
-          {comIcone.map(({ c, vis }) => (
+          {categorias.map((c) => (
             <div class="linha-lista">
-              {vis?.classe && <i class={`miniatura icone ${vis.classe}`} aria-hidden="true"></i>}
-              {!vis?.classe && vis?.texto && (
-                <span class="miniatura icone" aria-hidden="true">
-                  {vis.texto}
-                </span>
-              )}
-              {!vis && <i class="miniatura icone fi-br-folder" aria-hidden="true"></i>}
+              <IconeCategoria icone={c.icone} classe="miniatura icone" reserva />
               <div class="cresce">
                 <div class="titulo">{c.nome}</div>
                 <div class="sub">{c.id} · {contagem(c.id)} produto(s)</div>

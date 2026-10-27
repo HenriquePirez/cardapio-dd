@@ -50,6 +50,12 @@ function bindings(): EnvBindings {
   return env as unknown as EnvBindings;
 }
 
+/** Segredo opcional de bootstrap: obrigatório para criar a primeira conta. */
+export function setupToken(): string | null {
+  const v = bindings().SETUP_TOKEN;
+  return typeof v === 'string' && v.trim() ? v.trim() : null;
+}
+
 export function db(): D1Like {
   const b = bindings().DB;
   if (!b) {

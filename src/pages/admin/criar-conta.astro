@@ -39,12 +39,28 @@ if (jaExiste) {
       <div class="aviso aviso-erro" role="alert">
         {erro === 'campos' && 'Preencha todos os campos.'}
         {erro === 'divergentes' && 'As senhas não coincidem.'}
-        {erro === 'existe' && 'Já existe uma conta com este e-mail.'}
-        {erro !== 'campos' && erro !== 'divergentes' && erro !== 'existe' && erro}
+        {erro === 'token' && 'Código de configuração inválido.'}
+        {erro !== 'campos' && erro !== 'divergentes' && erro !== 'token' && erro}
       </div>
     )}
 
     <form method="post" action="/admin/api/criar-conta" class="form">
+      <div class="campo">
+        <label for="token">Código de configuração</label>
+        <input
+          id="token"
+          name="token"
+          type="password"
+          required
+          autocomplete="off"
+          placeholder="valor de SETUP_TOKEN"
+        />
+        <small>
+          Segredo definido com <code>npx wrangler secret put SETUP_TOKEN</code>. Sem ele a
+          criação de conta fica desativada.
+        </small>
+      </div>
+
       <div class="campo">
         <label for="nome">Seu nome</label>
         <input id="nome" name="nome" type="text" required autocomplete="name" placeholder="Nome" />

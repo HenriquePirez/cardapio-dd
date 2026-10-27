@@ -28,6 +28,10 @@ describe('normalizarIcone', () => {
   it('mantém emoji legado (máx 2)', () => {
     expect(normalizarIcone('\u{1F355}\u{1F355}\u{1F355}')).toBe('\u{1F355}\u{1F355}');
   });
+  it('reconhece keycap (1️⃣) como emoji', () => {
+    expect(normalizarIcone('1\uFE0F\u20E3')).toBe('1\uFE0F\u20E3');
+  });
+
   it('descarta texto sem emoji', () => {
     expect(normalizarIcone('abc')).toBe('');
   });

@@ -19,6 +19,7 @@ import {
 import { apagarObjetos, caminhosDaMidia } from '../../../../lib/midia';
 import { invalidarCardapio } from '../../../../lib/cache';
 import { lerGaleriaJson } from '../../../../lib/galeria';
+import { mesmaOrigem } from '../../../../lib/http';
 
 const SLUG = /^[a-z0-9-]+$/;
 
@@ -26,15 +27,6 @@ function voltar(para: string): Response {
   return new Response(null, { status: 303, headers: { Location: para } });
 }
 
-function mesmaOrigem(request: Request): boolean {
-  const origin = request.headers.get('origin');
-  if (!origin) return false;
-  try {
-    return new URL(origin).origin === new URL(request.url).origin;
-  } catch {
-    return false;
-  }
-}
 
 export const POST: APIRoute = async (ctx) => {
   if (!mesmaOrigem(ctx.request)) return new Response('Origem inválida.', { status: 403 });
@@ -49,7 +41,7 @@ export const POST: APIRoute = async (ctx) => {
   const idNovo = String(form.get('id') ?? '').trim().toLowerCase();
   const idOriginal = String(form.get('id_original') ?? '').trim().toLowerCase();
   const nome = String(form.get('nome') ?? '').trim();
-  const precoRaw = String(form.get('preco') ?? '').replace(',', '.');
+  const precoRaw = String(form.get('preco') ?? '').trim().replace(',', '.');
   const preco = Number(precoRaw);
   const categoria = String(form.get('categoria') ?? '').trim();
   const descricao = String(form.get('descricao') ?? '').trim();
@@ -62,7 +54,10 @@ export const POST: APIRoute = async (ctx) => {
 
   if (!SLUG.test(idNovo)) return voltar(voltarEdicao + '?msg=erro-slug');
   if (!nome) return voltar(voltarEdicao + '?msg=erro-nome');
-  if (!Number.isFinite(preco) || preco < 0) return voltar(voltarEdicao + '?msg=erro-preco');
+  if (!precoRaw || !Number.isFinite(preco) || preco < 0) {
+    return voltar(voltarEdicao + '?msg=erro-preco');
+  }
+  if (!Number.isInteger(ordem) || ordem < 0) return voltar(voltarEdicao + '?msg=erro-ordem');
   if (!categoria) return voltar(voltarEdicao + '?msg=erro-categoria');
   if (!/^https?:\/\//i.test(comprarUrl)) return voltar(voltarEdicao + '?msg=erro-link');
 

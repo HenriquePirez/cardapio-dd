@@ -7,6 +7,7 @@ import { db } from '../../../../lib/env';
 import { salvarCategoria, obterCategoria } from '../../../../lib/db';
 import { invalidarCardapio } from '../../../../lib/cache';
 import { normalizarIcone } from '../../../../lib/icone';
+import { mesmaOrigem } from '../../../../lib/http';
 
 const SLUG = /^[a-z0-9-]+$/;
 
@@ -14,15 +15,6 @@ function voltar(para: string): Response {
   return new Response(null, { status: 303, headers: { Location: para } });
 }
 
-function mesmaOrigem(request: Request): boolean {
-  const origin = request.headers.get('origin');
-  if (!origin) return false;
-  try {
-    return new URL(origin).origin === new URL(request.url).origin;
-  } catch {
-    return false;
-  }
-}
 
 export const POST: APIRoute = async (ctx) => {
   if (!mesmaOrigem(ctx.request)) return new Response('Origem inválida.', { status: 403 });
@@ -38,17 +30,21 @@ export const POST: APIRoute = async (ctx) => {
   const idOriginal = String(form.get('id_original') ?? '').trim().toLowerCase();
   const nome = String(form.get('nome') ?? '').trim();
   // A miniatura é um quadrado de 52px: cabem no máximo 2 emojis.
-  // Valor legado fora da lista é preservado quando o select não mudou.
   const iconeEnviado = String(form.get('icone') ?? '').trim();
-  const iconeOriginal = String(form.get('icone_original') ?? '').trim();
-  const icone = iconeEnviado === iconeOriginal ? iconeOriginal : normalizarIcone(iconeEnviado);
   const descricao = String(form.get('descricao') ?? '').trim();
   const ordem = Number(form.get('ordem') ?? 0);
 
   if (!SLUG.test(id)) return voltar('/admin/categorias?erro=slug');
   if (!nome) return voltar('/admin/categorias?erro=nome');
+  if (!Number.isInteger(ordem) || ordem < 0) return voltar('/admin/categorias?erro=ordem');
 
   const d1 = db();
+
+  // Valor legado fora da lista é preservado quando o select não mudou.
+  // A comparação usa o banco, não o hidden do formulário (que o cliente forja).
+  const atual = idOriginal ? await obterCategoria(d1, idOriginal) : null;
+  const iconeOriginal = atual?.icone ?? '';
+  const icone = iconeEnviado === iconeOriginal ? iconeOriginal : normalizarIcone(iconeEnviado);
 
   // Mudou o slug? Rebatemos os produtos vinculados para não deixar órfãos.
   // A ordem importa: a categoria NOVA precisa existir antes do UPDATE, senão o

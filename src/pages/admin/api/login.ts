@@ -22,16 +22,8 @@ import {
   registrarTentativaFalha,
   limparTentativas,
 } from '../../../lib/login-guard';
+import { mesmaOrigem } from '../../../lib/http';
 
-function mesmaOrigem(request: Request): boolean {
-  const origin = request.headers.get('origin');
-  if (!origin) return false;
-  try {
-    return new URL(origin).origin === new URL(request.url).origin;
-  } catch {
-    return false;
-  }
-}
 
 export const POST: APIRoute = async (ctx) => {
   if (!mesmaOrigem(ctx.request)) {
@@ -53,13 +45,14 @@ export const POST: APIRoute = async (ctx) => {
   }
 
   const d1 = db();
+  const ip = ctx.request.headers.get('cf-connecting-ip') ?? 'local';
 
   // Primeiro uso: se não há usuário, manda criar a conta inicial
   if ((await contarUsuarios(d1)) === 0) {
     return redirecionar('/admin/criar-conta');
   }
 
-  const bloqueio = await verificarBloqueio(d1, email);
+  const bloqueio = await verificarBloqueio(d1, email, ip);
   if (bloqueio.bloqueado) {
     const min = Math.max(1, Math.ceil(((bloqueio.bloqueadoAte ?? 0) - Date.now() / 1000) / 60));
     return redirecionar(`/admin/login?erro=bloqueado&min=${min}`);
@@ -78,14 +71,14 @@ export const POST: APIRoute = async (ctx) => {
     // Mesmo custo de CPU de um hash real, senão o tempo de resposta
     // denunciaria que o e-mail não existe (enumeração).
     if (!usuario) await conferirSenha(senha, hashDummy(pepper() ?? undefined));
-    const estado = await registrarTentativaFalha(d1, email);
+    const estado = await registrarTentativaFalha(d1, email, ip);
     if (estado.bloqueado) {
       return redirecionar('/admin/login?erro=bloqueado&min=10');
     }
     return redirecionar(`/admin/login?erro=senha&restam=${estado.restantes}`);
   }
 
-  await limparTentativas(d1, email);
+  await limparTentativas(d1, email, ip);
 
   // Upgrade transparente: se o hash gravado usa menos iterações que o código
   // atual (ou ficou sem pepper depois de o segredo ser definido), regrava já

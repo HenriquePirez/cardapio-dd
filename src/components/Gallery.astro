@@ -164,11 +164,12 @@ const { galerias } = Astro.props;
     display: none;
   }
 
-  /* Alvo de toque de 24px; a bolinha visível é o ::before. */
+  /* Alvo de toque de 36px; a bolinha visível é o ::before.
+     shortcut: 44px (ideal iOS) quando houver menos itens por galeria. */
   :global(.lb-dot) {
     position: relative;
-    width: 24px;
-    height: 24px;
+    width: 36px;
+    height: 36px;
     padding: 0;
     border: 0;
     background: transparent;
@@ -261,6 +262,8 @@ const { galerias } = Astro.props;
   const btnVoltar = lb?.querySelector<HTMLElement>('.lb-voltar');
   let atual = 0;
   let total = 0;
+  // Elemento que abriu o diálogo: o foco volta para ele ao fechar.
+  let focoAnterior: HTMLElement | null = null;
   let scrollTimer: ReturnType<typeof setTimeout> | undefined;
 
   function passo() {
@@ -352,6 +355,7 @@ const { galerias } = Astro.props;
   function abrir(id: string) {
     const g = dados[id];
     if (!lb || !g?.itens.length || !montar(id)) return;
+    focoAnterior = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     lb.hidden = false;
     document.body.style.overflow = 'hidden';
     btnVoltar?.focus();
@@ -364,6 +368,8 @@ const { galerias } = Astro.props;
     document.body.style.overflow = '';
     if (track) track.innerHTML = '';
     if (dotsEl) dotsEl.innerHTML = '';
+    focoAnterior?.focus();
+    focoAnterior = null;
   }
 
   function irPara(delta: number) {
@@ -413,5 +419,23 @@ const { galerias } = Astro.props;
     if (e.key === 'Escape') fechar();
     if (e.key === 'ArrowLeft') irPara(-1);
     if (e.key === 'ArrowRight') irPara(1);
+
+    // aria-modal promete foco preso: Tab circula só dentro do diálogo.
+    if (e.key === 'Tab') {
+      const focaveis = lb?.querySelectorAll<HTMLElement>(
+        'button, a[href], video[controls], [tabindex]:not([tabindex="-1"])',
+      );
+      if (!focaveis?.length) return;
+      const primeiro = focaveis[0]!;
+      const ultimo = focaveis[focaveis.length - 1]!;
+      const ativo = document.activeElement;
+      if (e.shiftKey && (ativo === primeiro || !lb?.contains(ativo))) {
+        e.preventDefault();
+        ultimo.focus();
+      } else if (!e.shiftKey && ativo === ultimo) {
+        e.preventDefault();
+        primeiro.focus();
+      }
+    }
   });
 </script>

@@ -18,11 +18,16 @@ npm run dev                 # http://localhost:4321
 ```
 
 Variáveis de ambiente: **`.dev.vars`** (gitignored, já existente localmente) contém
-`AUTH_PEPPER`. Nunca comite valores; para criar um novo em outra máquina:
+`AUTH_PEPPER` e `SETUP_TOKEN`. Nunca comite valores; para criar em outra máquina:
 
 ```bash
 printf 'AUTH_PEPPER=%s\n' '<valor aleatório forte>' >> .dev.vars
+printf 'SETUP_TOKEN=%s\n' '<código de uso único>' >> .dev.vars
 ```
+
+`SETUP_TOKEN` é obrigatório para criar a primeira conta: a página `/admin/criar-conta`
+pede esse código. Em produção, defina com `npx wrangler secret put SETUP_TOKEN` **antes**
+do primeiro acesso; sem ele a criação de conta responde 503.
 
 ## Ambientes
 

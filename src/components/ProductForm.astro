@@ -69,7 +69,7 @@ const galeria = (produto?.midia ?? []).map((m) => ({
         <div class="campo">
           <label for="preco">Preço (R$)</label>
           <input id="preco" name="preco" type="number" step="0.01" min="0" required
-            inputmode="decimal" value={produto?.preco ?? ''} placeholder="28,90" />
+            inputmode="decimal" value={produto?.preco ?? ''} placeholder="28.90" />
         </div>
         <div class="campo">
           <label for="categoria">Categoria</label>
@@ -103,7 +103,7 @@ const galeria = (produto?.midia ?? []).map((m) => ({
       <div class="grade-campos">
         <div class="campo">
           <label for="ordem">Ordem</label>
-          <input id="ordem" name="ordem" type="number" value={produto?.ordem ?? 1} />
+          <input id="ordem" name="ordem" type="number" min="0" step="1" value={produto?.ordem ?? 1} />
           <small>Menor aparece primeiro na categoria.</small>
         </div>
         <div class="campo">
@@ -129,7 +129,7 @@ const galeria = (produto?.midia ?? []).map((m) => ({
         <input id="arquivos" name="arquivos" type="file" accept="image/*,video/*" multiple />
         <small>
           <strong>Fotos:</strong> são otimizadas no navegador (até 1920px / WebP) antes de subir.<br />
-          <strong>Vídeo:</strong> limite de <strong>12 MB</strong>. Comprima antes, por exemplo:<br />
+          <strong>Vídeo:</strong> limite de <strong>12 MB</strong> (o servidor recusa acima disso). Comprima antes, por exemplo:<br />
           <code>ffmpeg -i in.mp4 -vf "scale=1280:-2" -c:v libx264 -crf 26 -preset slow -movflags +faststart -an out.mp4</code>
         </small>
       </div>
@@ -157,6 +157,8 @@ const galeria = (produto?.midia ?? []).map((m) => ({
 </form>
 
 <script>
+  import { LIMITE_VIDEO_BYTES } from '../lib/limites';
+
   // ===================================================================
   // Galeria: estado + UI (adicionar, reordenar, excluir, upload)
   // - Fotos: processadas no navegador (resize -> WebP) e enviadas ao worker
@@ -430,7 +432,11 @@ const galeria = (produto?.midia ?? []).map((m) => ({
       credentials: 'same-origin',
       headers: { 'X-Requested-With': 'XMLHttpRequest' },
     });
-    if (!res.ok) throw new Error(await res.text());
+    if (!res.ok) {
+      // A API responde JSON ({"erro": "..."}); o texto cru não serve para o usuário.
+      const d = (await res.json().catch(() => null)) as { erro?: string } | null;
+      throw new Error(d?.erro ?? `Falha no envio da foto (HTTP ${res.status}).`);
+    }
 
     const dados = (await res.json()) as { url: string; full: string; alt: string };
     galeria.push({
@@ -446,7 +452,7 @@ const galeria = (produto?.midia ?? []).map((m) => ({
   }
 
   /** Limite de vídeo por arquivo. Espelha o backend (KV free: 25 MB por valor). */
-  const LIMITE_VIDEO = 12 * 1024 * 1024;
+  const LIMITE_VIDEO = LIMITE_VIDEO_BYTES;
 
   function mb(bytes: number): string {
     return `${(bytes / 1024 / 1024).toFixed(1).replace('.', ',')} MB`;

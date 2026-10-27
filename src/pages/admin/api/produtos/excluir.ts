@@ -7,16 +7,8 @@ import { db } from '../../../../lib/env';
 import { excluirProduto, listarMidiasPorProdutos } from '../../../../lib/db';
 import { apagarObjetos, caminhosDaMidia } from '../../../../lib/midia';
 import { invalidarCardapio } from '../../../../lib/cache';
+import { mesmaOrigem } from '../../../../lib/http';
 
-function mesmaOrigem(request: Request): boolean {
-  const origin = request.headers.get('origin');
-  if (!origin) return false;
-  try {
-    return new URL(origin).origin === new URL(request.url).origin;
-  } catch {
-    return false;
-  }
-}
 
 export const POST: APIRoute = async (ctx) => {
   if (!mesmaOrigem(ctx.request)) return new Response('Origem inválida.', { status: 403 });

@@ -7,16 +7,8 @@ import type { APIRoute } from 'astro';
 import { db } from '../../../../lib/env';
 import { excluirCategoria, listarProdutos } from '../../../../lib/db';
 import { invalidarCardapio } from '../../../../lib/cache';
+import { mesmaOrigem } from '../../../../lib/http';
 
-function mesmaOrigem(request: Request): boolean {
-  const origin = request.headers.get('origin');
-  if (!origin) return false;
-  try {
-    return new URL(origin).origin === new URL(request.url).origin;
-  } catch {
-    return false;
-  }
-}
 
 function voltar(para: string): Response {
   return new Response(null, { status: 303, headers: { Location: para } });

@@ -7,9 +7,13 @@
  *
  * 2) Painel "/admin/*" -> exige sessão. Sem sessão, redireciona pro login
  *    (ou responde 401 em escritas). Não há roles: logado = acesso total.
+ *
+ * 3) Cabeçalhos de segurança em toda resposta.
  */
+import type { APIContext, MiddlewareNext } from 'astro';
 import { defineMiddleware } from 'astro:middleware';
 import { lerUsuario } from './lib/session';
+import { chaveCardapio } from './lib/cache';
 
 // Rotas do painel que funcionam sem login
 const PUBLICAS_ADMIN = new Set([
@@ -20,6 +24,46 @@ const PUBLICAS_ADMIN = new Set([
 ]);
 
 const CACHE_SEGUNDOS = 30;
+
+/**
+ * CSP com 'unsafe-inline' porque o Astro gera scripts inline de hidratação.
+ * Sem nonce/hash isto continua bloqueando script externo e injeção de origem
+ * desconhecida. shortcut: nonce por resposta, quando houver build com hash.
+ */
+const CSP = [
+  "default-src 'self'",
+  "img-src 'self' data: blob: https:",
+  "media-src 'self' blob: https:",
+  "script-src 'self' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline'",
+  "font-src 'self' data:",
+  "connect-src 'self'",
+  "frame-ancestors 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "object-src 'none'",
+].join('; ');
+
+const CABECALHOS: Array<[string, string]> = [
+  ['Content-Security-Policy', CSP],
+  ['X-Content-Type-Options', 'nosniff'],
+  ['X-Frame-Options', 'DENY'],
+  ['Referrer-Policy', 'strict-origin-when-cross-origin'],
+  ['Permissions-Policy', 'camera=(), microphone=(), geolocation=()'],
+  ['Strict-Transport-Security', 'max-age=15552000; includeSubDomains'],
+];
+
+function comCabecalhos(resposta: Response): Response {
+  const headers = new Headers(resposta.headers);
+  for (const [nome, valor] of CABECALHOS) {
+    if (!headers.has(nome)) headers.set(nome, valor);
+  }
+  return new Response(resposta.body, {
+    status: resposta.status,
+    statusText: resposta.statusText,
+    headers,
+  });
+}
 
 /**
  * Cache padrão da edge (Cache API do Workers).
@@ -33,30 +77,22 @@ function cachePadrao(): Cache | undefined {
   }
 }
 
-async function respondeuCache(ctx: { request: Request; url: URL }): Promise<Response | null> {
-  // Só cacheamos o cardápio público
-  if (ctx.url.pathname !== '/') return null;
-  // Nunca cacheia respostas de erro
-  try {
-    const cache = cachePadrao();
-    if (!cache) return null;
-    // Chave estável por URL (sem headers variáveis)
-    const chave = new Request(ctx.url.toString(), { method: 'GET' });
-    return (await cache.match(chave)) ?? null;
-  } catch {
-    return null;
-  }
-}
-
-export const onRequest = defineMiddleware(async (ctx, next) => {
+async function tratar(ctx: APIContext, next: MiddlewareNext): Promise<Response> {
   const caminho = ctx.url.pathname;
 
   // ---------------------------------------------------------------
   // Cardápio público com cache na edge
   // ---------------------------------------------------------------
   if (caminho === '/') {
-    const emCache = await respondeuCache(ctx);
-    if (emCache) return emCache;
+    // A chave é a URL raiz, sem query: "/?qualquer" não cria variante órfã
+    // e a invalidação do admin (src/lib/cache.ts) acerta sempre.
+    const chave = chaveCardapio(ctx.url);
+    try {
+      const emCache = await cachePadrao()?.match(chave);
+      if (emCache) return emCache;
+    } catch {
+      /* cache é otimização, não crítico */
+    }
 
     const resposta = await next();
 
@@ -73,7 +109,6 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
 
       try {
         const cache = cachePadrao();
-        const chave = new Request(ctx.url.toString(), { method: 'GET' });
         if (cache) {
           // waitUntil: não segura a resposta do usuário
           ctx.locals.cfContext?.waitUntil?.(cache.put(chave, cacheavel.clone()));
@@ -100,10 +135,18 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
   // ---------------------------------------------------------------
   if (!caminho.startsWith('/admin')) return next();
 
-  const jaLogado = (await lerUsuario(ctx)) !== null;
-  if (jaLogado) return next();
+  // Nenhuma página do painel pode ser guardada por proxy/navegador compartilhado.
+  const semCache = (r: Response): Response => {
+    const headers = new Headers(r.headers);
+    headers.set('Cache-Control', 'private, no-store');
+    headers.set('Vary', 'Cookie');
+    return new Response(r.body, { status: r.status, statusText: r.statusText, headers });
+  };
 
-  if (PUBLICAS_ADMIN.has(caminho)) return next();
+  const jaLogado = (await lerUsuario(ctx)) !== null;
+  if (jaLogado) return semCache(await next());
+
+  if (PUBLICAS_ADMIN.has(caminho)) return semCache(await next());
 
   // Escritas sem sessão -> 401 (não redireciona AJAX/fetch)
   if (ctx.request.method !== 'GET' && ctx.request.method !== 'HEAD') {
@@ -115,4 +158,6 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
 
   const destino = `/admin/login?prox=${encodeURIComponent(caminho + ctx.url.search)}`;
   return ctx.redirect(destino, 302);
-});
+}
+
+export const onRequest = defineMiddleware(async (ctx, next) => comCabecalhos(await tratar(ctx, next)));

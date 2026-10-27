@@ -3,6 +3,11 @@
  *
  * Guarda o contador no D1 (sobrevive a restarts do Worker).
  * Regra: 5 tentativas erradas em seguida -> bloqueia 10 minutos.
+ *
+ * A chave é e-mail + IP de origem: bloquear só por e-mail permitiria que um
+ * anônimo trancasse a conta do dono com 5 palpites. O incremento é feito no
+ * próprio UPSERT (`tentativas = tentativas + 1`), atômico no D1 — um burst de
+ * requisições paralelas não escapa mais do limite.
  */
 import type { D1Like } from './db';
 
@@ -13,8 +18,8 @@ function agoraSeg(): number {
   return Math.floor(Date.now() / 1000);
 }
 
-function chave(email: string): string {
-  return email.trim().toLowerCase();
+function chave(email: string, ip: string): string {
+  return `${email.trim().toLowerCase()}|${ip}`;
 }
 
 export interface EstadoLogin {
@@ -23,25 +28,34 @@ export interface EstadoLogin {
   bloqueadoAte: number | null; // epoch seconds
 }
 
-export async function verificarBloqueio(db: D1Like, email: string): Promise<EstadoLogin> {
+/** Converte o ISO gravado no D1 em epoch seconds (aceita com e sem fuso). */
+function epochDe(valor: string): number {
+  // O D1 grava o ISO com 'Z'; Date.parse('...ZZ') devolve NaN e anulava o
+  // bloqueio na requisição seguinte. Só acrescentamos 'Z' quando falta fuso.
+  const comFuso = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(valor) ? valor : `${valor}Z`;
+  return Date.parse(comFuso) / 1000;
+}
+
+export async function verificarBloqueio(
+  db: D1Like,
+  email: string,
+  ip = 'local',
+): Promise<EstadoLogin> {
+  const k = chave(email, ip);
   const row = await db
     .prepare('SELECT tentativas, bloqueado_ate FROM login_tentativas WHERE email = ?')
-    .bind(chave(email))
+    .bind(k)
     .first<{ tentativas: number; bloqueado_ate: string | null }>();
 
   if (!row) return { bloqueado: false, restantes: MAX_TENTATIVAS, bloqueadoAte: null };
 
   if (row.bloqueado_ate) {
-    // O D1 grava o ISO com 'Z'; Date.parse('...ZZ') devolve NaN e anulava o
-    // bloqueio na requisição seguinte. Só acrescentamos 'Z' quando falta fuso.
-    const bruto = row.bloqueado_ate;
-    const comFuso = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(bruto) ? bruto : `${bruto}Z`;
-    const ate = Date.parse(comFuso) / 1000;
+    const ate = epochDe(row.bloqueado_ate);
     if (Number.isFinite(ate) && ate > agoraSeg()) {
       return { bloqueado: true, restantes: 0, bloqueadoAte: ate };
     }
     // bloqueio expirou -> zera
-    await db.prepare('DELETE FROM login_tentativas WHERE email = ?').bind(chave(email)).run();
+    await db.prepare('DELETE FROM login_tentativas WHERE email = ?').bind(k).run();
     return { bloqueado: false, restantes: MAX_TENTATIVAS, bloqueadoAte: null };
   }
 
@@ -50,42 +64,39 @@ export async function verificarBloqueio(db: D1Like, email: string): Promise<Esta
 }
 
 /** Registra uma tentativa falha. Aplica bloqueio quando atinge o limite. */
-export async function registrarTentativaFalha(db: D1Like, email: string): Promise<EstadoLogin> {
-  const e = chave(email);
+export async function registrarTentativaFalha(
+  db: D1Like,
+  email: string,
+  ip = 'local',
+): Promise<EstadoLogin> {
+  const k = chave(email, ip);
+  const ate = new Date((agoraSeg() + JANELA_BLOQUEIO_SEG) * 1000).toISOString();
+
   const row = await db
-    .prepare('SELECT tentativas FROM login_tentativas WHERE email = ?')
-    .bind(e)
-    .first<{ tentativas: number }>();
-
-  const novas = (row?.tentativas ?? 0) + 1;
-
-  if (novas >= MAX_TENTATIVAS) {
-    const ate = new Date((agoraSeg() + JANELA_BLOQUEIO_SEG) * 1000).toISOString();
-    await db
-      .prepare(
-        `INSERT INTO login_tentativas (email, tentativas, bloqueado_ate) VALUES (?, ?, ?)
-         ON CONFLICT(email) DO UPDATE SET tentativas = excluded.tentativas,
-           bloqueado_ate = excluded.bloqueado_ate`,
-      )
-      .bind(e, novas, ate)
-      .run();
-    return { bloqueado: true, restantes: 0, bloqueadoAte: Date.parse(ate) / 1000 };
-  }
-
-  await db
     .prepare(
-      `INSERT INTO login_tentativas (email, tentativas, bloqueado_ate) VALUES (?, ?, NULL)
-       ON CONFLICT(email) DO UPDATE SET tentativas = excluded.tentativas`,
+      `INSERT INTO login_tentativas (email, tentativas, bloqueado_ate) VALUES (?, 1, NULL)
+       ON CONFLICT(email) DO UPDATE SET
+         tentativas = tentativas + 1,
+         bloqueado_ate = CASE
+           WHEN tentativas + 1 >= ? THEN ?
+           ELSE bloqueado_ate
+         END
+       RETURNING tentativas, bloqueado_ate`,
     )
-    .bind(e, novas)
-    .run();
+    .bind(k, MAX_TENTATIVAS, ate)
+    .first<{ tentativas: number; bloqueado_ate: string | null }>();
 
-  return { bloqueado: false, restantes: Math.max(0, MAX_TENTATIVAS - novas), bloqueadoAte: null };
+  const tentativas = row?.tentativas ?? MAX_TENTATIVAS;
+  if (tentativas >= MAX_TENTATIVAS) {
+    const bloqueadoAte = row?.bloqueado_ate ? epochDe(row.bloqueado_ate) : Date.parse(ate) / 1000;
+    return { bloqueado: true, restantes: 0, bloqueadoAte };
+  }
+  return { bloqueado: false, restantes: Math.max(0, MAX_TENTATIVAS - tentativas), bloqueadoAte: null };
 }
 
 /** Limpa o contador após login bem-sucedido. */
-export async function limparTentativas(db: D1Like, email: string): Promise<void> {
-  await db.prepare('DELETE FROM login_tentativas WHERE email = ?').bind(chave(email)).run();
+export async function limparTentativas(db: D1Like, email: string, ip = 'local'): Promise<void> {
+  await db.prepare('DELETE FROM login_tentativas WHERE email = ?').bind(chave(email, ip)).run();
 }
 
 export const LIMITE_TENTATIVAS = MAX_TENTATIVAS;

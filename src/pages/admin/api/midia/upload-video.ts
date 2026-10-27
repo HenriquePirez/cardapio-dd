@@ -14,19 +14,12 @@
  * Devolve: { url: "<chave>", contentType }
  */
 import type { APIRoute } from 'astro';
-import { kvMidia, nomeSeguro, LIMITE_ARQUIVO } from '../../../../lib/env';
+import { kvMidia, nomeSeguro } from '../../../../lib/env';
+import { LIMITE_VIDEO_BYTES } from '../../../../lib/limites';
+import { mesmaOrigem } from '../../../../lib/http';
 
 const TIPOS_VIDEO = ['video/mp4', 'video/webm', 'video/quicktime'];
 
-function mesmaOrigem(request: Request): boolean {
-  const origin = request.headers.get('origin');
-  if (!origin) return false;
-  try {
-    return new URL(origin).origin === new URL(request.url).origin;
-  } catch {
-    return false;
-  }
-}
 
 function json(dados: unknown, status = 200): Response {
   return new Response(JSON.stringify(dados), {
@@ -46,9 +39,9 @@ export const POST: APIRoute = async (ctx) => {
 
   const nomeOriginal = ctx.request.headers.get('x-original-name') ?? 'video.mp4';
   const tamanho = Number(ctx.request.headers.get('content-length') ?? '0');
-  if (Number.isFinite(tamanho) && tamanho > LIMITE_ARQUIVO) {
+  if (Number.isFinite(tamanho) && tamanho > LIMITE_VIDEO_BYTES) {
     return json(
-      { erro: `Vídeo maior que ${Math.round(LIMITE_ARQUIVO / 1024 / 1024)} MB. Comprima antes de enviar.` },
+      { erro: `Vídeo maior que ${Math.round(LIMITE_VIDEO_BYTES / 1024 / 1024)} MB. Comprima antes de enviar.` },
       413,
     );
   }
@@ -61,9 +54,9 @@ export const POST: APIRoute = async (ctx) => {
   }
 
   if (bytes.byteLength === 0) return json({ erro: 'Arquivo vazio.' }, 400);
-  if (bytes.byteLength > LIMITE_ARQUIVO) {
+  if (bytes.byteLength > LIMITE_VIDEO_BYTES) {
     return json(
-      { erro: `Vídeo maior que ${Math.round(LIMITE_ARQUIVO / 1024 / 1024)} MB.` },
+      { erro: `Vídeo maior que ${Math.round(LIMITE_VIDEO_BYTES / 1024 / 1024)} MB.` },
       413,
     );
   }
