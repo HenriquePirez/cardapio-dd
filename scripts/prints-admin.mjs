@@ -50,6 +50,14 @@ function prepararBanco() {
   );
 }
 
+function liberarPorta() {
+  // Um wrangler antigo na mesma porta serviria dist desatualizado (CSS 404).
+  spawnSync('bash', [
+    '-c',
+    `ss -ltnp 2>/dev/null | grep ':${PORTA} ' | grep -o 'pid=[0-9]*' | cut -d= -f2 | xargs -r kill`,
+  ]);
+}
+
 async function iniciarWorker() {
   const filho = spawn('npx', ['wrangler', 'dev', '--local', `--port=${PORTA}`], {
     cwd: RAIZ,
@@ -199,7 +207,13 @@ async function print(page, arquivo, alvos) {
     });
   }, alvos);
 
-  await page.screenshot({ path: resolve(IMG, arquivo), fullPage: false });
+  // JPEG de qualidade alta: PNG 2x deixava o PDF com ~12 MB.
+  await page.screenshot({
+    path: resolve(IMG, arquivo),
+    fullPage: false,
+    type: 'jpeg',
+    quality: 88,
+  });
   await page.evaluate(() => {
     document.querySelectorAll('[data-print-annotation], [data-print-fake]').forEach((e) => e.remove());
     document.querySelectorAll('input[type="file"]').forEach((el) => {
@@ -220,6 +234,7 @@ async function ir(page, sel) {
 
 async function main() {
   prepararBanco();
+  liberarPorta();
   mkdirSync(IMG, { recursive: true });
 
   consoleEtapa('subindo wrangler dev local');
@@ -235,28 +250,20 @@ async function main() {
   const page = await contexto.newPage();
 
   try {
-    // 1) Primeiro acesso: criar conta
+    // 1) Conta de demonstração (sem print: o manual cobre só o login)
     await page.goto(`${BASE}/admin/criar-conta`, { waitUntil: 'networkidle' });
     await page.fill('#token', TOKEN);
     await page.fill('#nome', CONTA.nome);
     await page.fill('#email', CONTA.email);
     await page.fill('#senha', CONTA.senha);
     await page.fill('#senha2', CONTA.senha);
-    await page.evaluate(() => window.scrollTo(0, 0));
-    await page.waitForTimeout(200);
-    await print(page, '02-criar-conta.png', [
-      { sel: '#token', dir: 'right' },
-      { sel: '#nome', dir: 'left' },
-      { sel: '#senha', dir: 'right' },
-      { sel: 'form.form .btn-primario', dir: 'right' },
-    ]);
 
     await page.click('form.form .btn-primario');
     await page.waitForURL('**/admin', { timeout: 20000 });
 
     // 2) Painel
     await page.goto(`${BASE}/admin`, { waitUntil: 'networkidle' });
-    await print(page, '03-painel.png', [
+    await print(page, '02-painel.jpg', [
       { sel: '.admin-nav a[href="/admin/produtos"]', dir: 'bottom' },
       { sel: '.admin-nav a[href="/admin/categorias"]', dir: 'bottom' },
       { sel: '.sair-btn', dir: 'bottom' },
@@ -265,21 +272,21 @@ async function main() {
     // 3) Categorias
     await page.goto(`${BASE}/admin/categorias`, { waitUntil: 'networkidle' });
     await ir(page, '#nome');
-    await print(page, '04-categorias-form.png', [
+    await print(page, '03-categorias-form.jpg', [
       { sel: '#nome', dir: 'left' },
       { sel: '#icone', dir: 'left' },
       { sel: '#ordem', dir: 'top' },
       { sel: 'section.cartao form .btn-primario', dir: 'bottom' },
     ]);
     await ir(page, 'section.cartao:nth-of-type(2)');
-    await print(page, '05-categorias-lista.png', [
+    await print(page, '04-categorias-lista.jpg', [
       { sel: 'section.cartao:nth-of-type(2) .linha-lista', dir: 'left' },
     ]);
 
     // 4) Produtos
     await page.goto(`${BASE}/admin/produtos`, { waitUntil: 'networkidle' });
     await page.evaluate(() => window.scrollTo(0, 0));
-    await print(page, '06-produtos.png', [
+    await print(page, '05-produtos.jpg', [
       { sel: 'a[href="/admin/produtos/novo"]', dir: 'bottom' },
       { sel: 'input[name="q"]', dir: 'bottom' },
     ]);
@@ -287,23 +294,23 @@ async function main() {
     // 5) Edição de produto
     await page.goto(`${BASE}/admin/produtos/crostini`, { waitUntil: 'networkidle' });
     await page.evaluate(() => window.scrollTo(0, 0));
-    await print(page, '07-produto-dados.png', [
+    await print(page, '06-produto-dados.jpg', [
       { sel: '#nome', dir: 'left' },
       { sel: '#preco', dir: 'left' },
       { sel: '#categoria', dir: 'top' },
     ]);
 
     await ir(page, '#modalidade');
-    await print(page, '08-produto-modalidade.png', [{ sel: '#modalidade', dir: 'left' }]);
+    await print(page, '07-produto-modalidade.jpg', [{ sel: '#modalidade', dir: 'left' }]);
 
     await ir(page, '#galeria');
-    await print(page, '09-produto-galeria.png', [
+    await print(page, '08-produto-galeria.jpg', [
       { sel: '#arquivos', dir: 'left' },
       { sel: '#galeria', dir: 'bottom' },
     ]);
 
     await ir(page, '#ordem');
-    await print(page, '10-produto-opcoes.png', [
+    await print(page, '09-produto-opcoes.jpg', [
       { sel: '#ordem', dir: 'left' },
       { sel: 'input[name="destaque"]', dir: 'right' },
       { sel: 'input[name="disponivel"]', dir: 'right' },
@@ -313,12 +320,12 @@ async function main() {
     await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
     await page.evaluate(() => window.scrollTo(0, 0));
     await ir(page, '.btn-comprar');
-    await print(page, '11-cardapio-publico.png', [{ sel: '.btn-comprar', dir: 'right' }]);
+    await print(page, '10-cardapio-publico.jpg', [{ sel: '.btn-comprar', dir: 'right' }]);
 
     await page.click('.btn-comprar');
     await page.waitForSelector('#pedido-dialog:not([hidden])');
     await page.waitForTimeout(400); // fim da animação de entrada
-    await print(page, '12-comprar.png', [
+    await print(page, '11-comprar.jpg', [
       { sel: '[data-escolha="local"]', dir: 'left' },
       { sel: '[data-escolha="retirada"]', dir: 'right' },
     ]);
@@ -326,12 +333,12 @@ async function main() {
 
     // 7) Sair (dentro do painel)
     await page.goto(`${BASE}/admin`, { waitUntil: 'networkidle' });
-    await print(page, '13-sair.png', [{ sel: '.sair-btn', dir: 'bottom' }]);
+    await print(page, '12-sair.jpg', [{ sel: '.sair-btn', dir: 'bottom' }]);
 
     // 8) Login (sem sessão)
     await contexto.clearCookies();
     await page.goto(`${BASE}/admin/login`, { waitUntil: 'networkidle' });
-    await print(page, '01-login.png', [
+    await print(page, '01-login.jpg', [
       { sel: '#email', dir: 'left' },
       { sel: '#senha', dir: 'left' },
       { sel: '.login-btn', dir: 'right' },
