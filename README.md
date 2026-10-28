@@ -21,7 +21,8 @@ produtos e subir fotos/vídeos — tudo sem tocar em código.
 
 - [Escopo e aceitação](PRODUCT.md) · [Preparação local](docs/onboarding.md) ·
   [Arquitetura e decisões](docs/architecture.md) · [Design e acessibilidade](docs/design.md) ·
-  [Checagens de qualidade](docs/quality.md) · [Evidências de setup do toolkit](docs/setup.md)
+  [Checagens de qualidade](docs/quality.md) · [Evidências de setup do toolkit](docs/setup.md) ·
+  [Manual do painel (PDF)](docs/manual-admin.pdf)
 - Para agentes de IA: [AGENTS.md](AGENTS.md) (o [CLAUDE.md](CLAUDE.md) importa o mesmo)
 
 ---

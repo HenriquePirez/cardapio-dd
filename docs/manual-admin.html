@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Manual do painel · Dona Dôra</title>
+    <style>
+      :root {
+        --verde: #14532d;
+        --laranja: #f97316;
+        --texto: #1f2937;
+        --suave: #6b7280;
+        --borda: #e5e7eb;
+        --fundo: #f9fafb;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        color: var(--texto);
+        font-size: 11pt;
+        line-height: 1.5;
+        background: #fff;
+      }
+
+      h1,
+      h2,
+      h3 {
+        line-height: 1.2;
+        margin: 0;
+      }
+
+      img {
+        max-width: 100%;
+      }
+
+      /* ---------- Capa ---------- */
+      .capa {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: 250mm;
+        text-align: center;
+        break-after: page;
+      }
+
+      .capa img {
+        width: 42mm;
+        margin: 0 auto 10mm;
+      }
+
+      .capa h1 {
+        font-size: 26pt;
+        color: var(--verde);
+        margin-bottom: 4mm;
+      }
+
+      .capa p {
+        margin: 0 0 2mm;
+        color: var(--suave);
+        font-size: 12pt;
+      }
+
+      .capa .data {
+        margin-top: 14mm;
+        font-size: 10pt;
+      }
+
+      /* ---------- Sumário ---------- */
+      .sumario {
+        break-after: page;
+      }
+
+      .sumario h2 {
+        font-size: 16pt;
+        color: var(--verde);
+        margin-bottom: 6mm;
+      }
+
+      .sumario ol {
+        margin: 0;
+        padding-left: 6mm;
+      }
+
+      .sumario li {
+        margin-bottom: 2mm;
+      }
+
+      /* ---------- Seções ---------- */
+      section {
+        break-inside: auto;
+      }
+
+      .passo {
+        break-inside: avoid;
+        margin-bottom: 10mm;
+      }
+
+      .passo-cab {
+        display: flex;
+        align-items: center;
+        gap: 4mm;
+        margin-bottom: 3mm;
+      }
+
+      .passo-num {
+        flex: 0 0 auto;
+        width: 9mm;
+        height: 9mm;
+        border-radius: 50%;
+        background: var(--laranja);
+        color: #fff;
+        font-weight: 700;
+        font-size: 12pt;
+        display: grid;
+        place-items: center;
+      }
+
+      .passo h2 {
+        font-size: 15pt;
+        color: var(--verde);
+      }
+
+      .passo h3 {
+        font-size: 11.5pt;
+        margin: 4mm 0 2mm;
+      }
+
+      .passo p {
+        margin: 0 0 2.5mm;
+      }
+
+      figure {
+        margin: 3mm 0 4mm;
+        break-inside: avoid;
+      }
+
+      figure img {
+        display: block;
+        width: 100%;
+        border: 1px solid var(--borda);
+        border-radius: 2mm;
+      }
+
+      figcaption {
+        margin-top: 1.5mm;
+        font-size: 8.5pt;
+        color: var(--suave);
+      }
+
+      .dica {
+        background: #fff7ed;
+        border-left: 1.2mm solid var(--laranja);
+        padding: 3mm 4mm;
+        border-radius: 0 2mm 2mm 0;
+        margin: 3mm 0;
+        break-inside: avoid;
+      }
+
+      .dica strong {
+        color: #9a3412;
+      }
+
+      .lista-simples {
+        margin: 0 0 3mm;
+        padding-left: 6mm;
+      }
+
+      .lista-simples li {
+        margin-bottom: 1.5mm;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 3mm 0;
+        font-size: 10pt;
+        break-inside: avoid;
+      }
+
+      th,
+      td {
+        border: 1px solid var(--borda);
+        padding: 2.5mm 3mm;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        background: var(--fundo);
+      }
+
+      code {
+        background: var(--fundo);
+        border: 1px solid var(--borda);
+        border-radius: 1mm;
+        padding: 0 1mm;
+        font-size: 9.5pt;
+      }
+
+      .rodape-doc {
+        margin-top: 8mm;
+        padding-top: 3mm;
+        border-top: 1px solid var(--borda);
+        color: var(--suave);
+        font-size: 9pt;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Capa -->
+    <div class="capa">
+      <img src="../public/logo-donadora.png" alt="Logo Dona Dôra" />
+      <h1>Manual do painel</h1>
+      <p>Como cadastrar categorias, produtos e mídias do cardápio</p>
+      <p>Dona Dôra · Cardápio digital</p>
+      <p class="data">Versão 1 · outubro de 2026</p>
+    </div>
+
+    <!-- Sumário -->
+    <div class="sumario">
+      <h2>O que você encontra aqui</h2>
+      <ol>
+        <li>Entrar no painel</li>
+        <li>Primeiro acesso: criar a conta</li>
+        <li>Conhecer o painel</li>
+        <li>Categorias</li>
+        <li>Produtos: lista e busca</li>
+        <li>Cadastrar ou editar um produto</li>
+        <li>Onde o produto é vendido: local, retirada ou ambos</li>
+        <li>Fotos e vídeos</li>
+        <li>Ordem, destaque e disponibilidade</li>
+        <li>Como o cliente vê o cardápio</li>
+        <li>Sair do painel</li>
+        <li>Problemas comuns</li>
+      </ol>
+      <div class="dica">
+        <strong>Antes de começar:</strong> todas as mudanças que você salva no painel aparecem
+        no cardápio público em até 30 segundos. Não é preciso instalar nada no celular.
+      </div>
+    </div>
+
+    <section class="passo">
+      <div class="passo-cab"><span class="passo-num">1</span><h2>Entrar no painel</h2></div>
+      <p>Acesse <code>/admin</code> no endereço do cardápio. A tela de entrada pede o e-mail e a
+        senha cadastrados.</p>
+      <figure>
+        <img src="img/admin/01-login.png" alt="Tela de login do painel" />
+        <figcaption>Passos 1 a 3: preencha e-mail, senha e toque em Entrar.</figcaption>
+      </figure>
+      <p>Se a senha estiver errada cinco vezes seguidas, o acesso fica bloqueado por 10 minutos
+        naquele aparelho.</p>
+    </section>
+
+    <section class="passo">
+      <div class="passo-cab"><span class="passo-num">2</span><h2>Primeiro acesso: criar a conta</h2></div>
+      <p>Na primeira vez, o painel mostra o botão <strong>Criar conta</strong>. Ele abre o
+        formulário abaixo.</p>
+      <figure>
+        <img src="img/admin/02-criar-conta.png" alt="Formulário de criação da primeira conta" />
+        <figcaption>
+          Passos 1 a 4: código de configuração, seu nome, senha e o botão
+          <strong>Criar conta e entrar</strong>.
+        </figcaption>
+      </figure>
+      <ul class="lista-simples">
+        <li><strong>Código de configuração:</strong> é um código de uso único, entregue por quem
+          publicou o site. Não é a senha do painel.</li>
+        <li><strong>Senha:</strong> mínimo de 10 caracteres.</li>
+        <li>A conta é única e compartilhada com as pessoas de confiança da loja.</li>
+      </ul>
+    </section>
+
+    <section class="passo">
+      <div class="passo-cab"><span class="passo-num">3</span><h2>Conhecer o painel</h2></div>
+      <p>Depois de entrar, o topo do painel tem o menu e o botão de sair.</p>
+      <figure>
+        <img src="img/admin/03-painel.png" alt="Topo do painel com menu e botão Sair" />
+        <figcaption>Passos 1 e 2: menu de Produtos e Categorias. Passo 3: Sair.</figcaption>
+      </figure>
+      <table>
+        <tr><th>Menu</th><th>Para que serve</th></tr>
+        <tr><td>Painel</td><td>Visão geral com o resumo do cardápio.</td></tr>
+        <tr><td>Produtos</td><td>Criar, editar, esconder e ordenar os produtos.</td></tr>
+        <tr><td>Categorias</td><td>Criar as seções do cardápio (pizzas, massas, bebidas...).</td></tr>
+      </table>
+    </section>
+
+    <section class="passo">
+      <div class="passo-cab"><span class="passo-num">4</span><h2>Categorias</h2></div>
+      <p>Em <strong>Categorias</strong>, o formulário do topo cria uma seção nova. O nome e o
+        identificador aparecem na lista e no cardápio.</p>
+      <figure>
+        <img src="img/admin/04-categorias-form.png" alt="Formulário de categoria" />
+        <figcaption>
+          Passos 1 a 4: nome, ícone, ordem e <strong>Salvar</strong>.
+        </figcaption>
+      </figure>
+      <ul class="lista-simples">
+        <li><strong>Identificador:</strong> versão curta do nome usada no endereço. Use letras
+          minúsculas, números e hífen (ex.: <code>pizzas-salgadas</code>).</li>
+        <li><strong>Ícone:</strong> aparece ao lado do nome no cardápio.</li>
+        <li><strong>Ordem:</strong> menor número aparece primeiro. Para reordenar, edite o
+          número e salve.</li>
+      </ul>
+      <h3>Editar e excluir</h3>
+      <p>A lista abaixo do formulário mostra as categorias já cadastradas.</p>
+      <figure>
+        <img src="img/admin/05-categorias-lista.png" alt="Lista de categorias cadastradas" />
+        <figcaption>Cada linha tem os botões Editar e Excluir.</figcaption>
+      </figure>
+      <div class="dica">
+        <strong>Atenção:</strong> excluir uma categoria apaga também os produtos que estão nela.
+        Se quiser apenas esconder, edite os produtos e desmarque <strong>Disponível no
+        cardápio</strong>.
+      </div>
+    </section>
+
+    <section class="passo">
+      <div class="passo-cab"><span class="passo-num">5</span><h2>Produtos: lista e busca</h2></div>
+      <p>Em <strong>Produtos</strong> ficam todos os itens cadastrados, com busca, filtros e o
+        botão de criar um novo.</p>
+      <figure>
+        <img src="img/admin/06-produtos.png" alt="Lista de produtos com busca e botão novo produto" />
+        <figcaption>Passo 1: criar um produto. Passo 2: buscar pelo nome.</figcaption>
+      </figure>
+    </section>
+
+    <section class="passo">
+      <div class="passo-cab"><span class="passo-num">6</span><h2>Cadastrar ou editar um produto</h2></div>
+      <p>O formulário tem os dados principais. Os campos com <strong>*</strong> são
+        obrigatórios.</p>
+      <figure>
+        <img src="img/admin/07-produto-dados.png" alt="Campos de nome, preço e categoria" />
+        <figcaption>Passos 1 a 3: nome, preço e categoria.</figcaption>
+      </figure>
+      <ul class="lista-simples">
+        <li><strong>Nome:</strong> como o produto aparece para o cliente.</li>
+        <li><strong>Identificador:</strong> usado no endereço; não pode ser repetido.</li>
+        <li><strong>Preço:</strong> use ponto para os centavos (ex.: <code>28.90</code>).</li>
+        <li><strong>Categoria:</strong> define em qual seção o produto aparece.</li>
+        <li><strong>Link de compra:</strong> endereço do app de pedidos que abre na
+          <strong>retirada</strong>.</li>
+      </ul>
+    </section>
+
+    <section class="passo">
+      <div class="passo-cab"><span class="passo-num">7</span><h2>Onde o produto é vendido</h2></div>
+      <p>O campo <strong>Disponível para</strong> decide o que acontece quando o cliente toca em
+        <strong>Comprar</strong>.</p>
+      <figure>
+        <img src="img/admin/08-produto-modalidade.png" alt="Campo Disponível para" />
+        <figcaption>Escolha entre comer no local, somente retirada ou os dois.</figcaption>
+      </figure>
+      <table>
+        <tr><th>Opção</th><th>O que o cliente vê</th></tr>
+        <tr>
+          <td><strong>Comer no local e retirada</strong></td>
+          <td>Uma pergunta: “O pedido é para comer no local ou para retirada?”.</td>
+        </tr>
+        <tr>
+          <td><strong>Somente retirada (link do app)</strong></td>
+          <td>O link de compra abre direto, sem pergunta.</td>
+        </tr>
+        <tr>
+          <td><strong>Somente comer no local (totem)</strong></td>
+          <td>Aviso de que pedidos no local são feitos no totem, com foto do totem.</td>
+        </tr>
+      </table>
+    </section>
+
+    <section class="passo">
+      <div class="passo-cab"><span class="passo-num">8</span><h2>Fotos e vídeos</h2></div>
+      <p>Na seção <strong>Galeria</strong>, adicione as fotos do produto. A primeira mídia vira a
+        capa do card.</p>
+      <figure>
+        <img src="img/admin/09-produto-galeria.png" alt="Seção de galeria com envio de mídia e lista" />
+        <figcaption>Passo 1: escolher arquivos. Passo 2: revisar e ordenar a lista.</figcaption>
+      </figure>
+      <ul class="lista-simples">
+        <li>As fotos são reduzidas automaticamente antes do envio. Não precisa editar no
+          celular.</li>
+        <li>Vídeo: até 12 MB, de preferência MP4.</li>
+        <li>Use as setas da lista para mudar a ordem; a primeira imagem é a capa.</li>
+        <li>Para remover, use o botão de excluir da mídia. A remoção vale ao salvar.</li>
+      </ul>
+    </section>
+
+    <section class="passo">
+      <div class="passo-cab"><span class="passo-num">9</span><h2>Ordem, destaque e disponibilidade</h2></div>
+      <figure>
+        <img src="img/admin/10-produto-opcoes.png" alt="Campos de ordem, destaque e disponível" />
+        <figcaption>Passo 1: ordem. Passos 2 e 3: destaque e disponibilidade.</figcaption>
+      </figure>
+      <ul class="lista-simples">
+        <li><strong>Ordem:</strong> menor número aparece primeiro dentro da categoria.</li>
+        <li><strong>Destaque:</strong> coloca o produto no carrossel do topo do cardápio.</li>
+        <li><strong>Disponível no cardápio:</strong> desmarque para esconder o produto sem
+          excluir.</li>
+      </ul>
+      <div class="dica">
+        <strong>Sempre confirme:</strong> depois de mexer nas mídias, toque em
+        <strong>Salvar produto</strong> no fim do formulário. Só então as mudanças valem.
+      </div>
+    </section>
+
+    <section class="passo">
+      <div class="passo-cab"><span class="passo-num">10</span><h2>Como o cliente vê o cardápio</h2></div>
+      <p>No cardápio público, cada produto tem o botão <strong>Comprar</strong>.</p>
+      <figure>
+        <img src="img/admin/11-cardapio-publico.png" alt="Card do produto no cardápio público com botão comprar" />
+        <figcaption>O cliente toca em Comprar para iniciar o pedido.</figcaption>
+      </figure>
+      <p>Quando o produto atende os dois modos, aparece a pergunta:</p>
+      <figure>
+        <img src="img/admin/12-comprar.png" alt="Diálogo perguntando comer no local ou retirada" />
+        <figcaption>
+          Passo 1: comer no local mostra o aviso do totem. Passo 2: retirada abre o app.
+        </figcaption>
+      </figure>
+    </section>
+
+    <section class="passo">
+      <div class="passo-cab"><span class="passo-num">11</span><h2>Sair do painel</h2></div>
+      <figure>
+        <img src="img/admin/13-sair.png" alt="Botão Sair no topo do painel" />
+        <figcaption>O botão Sair encerra a sessão naquele aparelho.</figcaption>
+      </figure>
+      <p>Sempre saia ao usar um computador compartilhado.</p>
+    </section>
+
+    <section class="passo">
+      <div class="passo-cab"><span class="passo-num">12</span><h2>Problemas comuns</h2></div>
+      <table>
+        <tr><th>Situação</th><th>O que fazer</th></tr>
+        <tr>
+          <td>Salvei, mas o cardápio ainda está igual.</td>
+          <td>Espere até 30 segundos e atualize a página. Se continuar, confira se o botão
+            Salvar foi acionado.</td>
+        </tr>
+        <tr>
+          <td>O produto não aparece.</td>
+          <td>Confira se <strong>Disponível no cardápio</strong> está marcado e se há uma
+            categoria escolhida.</td>
+        </tr>
+        <tr>
+          <td>O vídeo foi recusado.</td>
+          <td>O limite é 12 MB. Comprima o arquivo antes de enviar.</td>
+        </tr>
+        <tr>
+          <td>A senha não funciona.</td>
+          <td>Após 5 erros o acesso é bloqueado por 10 minutos. Aguarde e tente de novo.</td>
+        </tr>
+        <tr>
+          <td>Preciso esconder um item sem apagar.</td>
+          <td>Desmarque <strong>Disponível no cardápio</strong> e salve.</td>
+        </tr>
+      </table>
+      <p class="rodape-doc">
+        Manual gerado a partir do próprio painel. Se um botão mudar de lugar, peça a atualização
+        dos prints: o comando <code>npm run docs:prints</code> refaz as imagens e este PDF.
+      </p>
+    </section>
+  </body>
+</html>

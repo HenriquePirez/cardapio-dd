@@ -18,7 +18,8 @@
     "db:apply:remote": "wrangler d1 execute cardapio-dd --remote --file=./migrations/0001_init.sql && wrangler d1 execute cardapio-dd --remote --file=./migrations/0002_seed.sql",
     "db:0003:local": "wrangler d1 execute cardapio-dd --local --file=./migrations/0003_modalidade.sql",
     "db:0003:remote": "wrangler d1 execute cardapio-dd --remote --file=./migrations/0003_modalidade.sql",
-    "types": "wrangler types"
+    "types": "wrangler types",
+    "docs:prints": "node scripts/prints-admin.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.4.2",
@@ -38,6 +39,7 @@
     "eslint": "^10.13.0",
     "eslint-plugin-astro": "^3.2.1",
     "globals": "^17.13.0",
+    "playwright": "^1.64.1",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.72.0",
     "vitest": "^5.0.5",

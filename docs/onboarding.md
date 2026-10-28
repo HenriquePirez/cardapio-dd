@@ -26,6 +26,10 @@ printf 'AUTH_PEPPER=%s\n' '<valor aleatório forte>' >> .dev.vars
 printf 'SETUP_TOKEN=%s\n' '<código de uso único>' >> .dev.vars
 ```
 
+Para regerar os prints e o PDF do manual do painel (requer Playwright/Chromium):
+`npm run build && npm run docs:prints` — usa o D1 local e apaga os usuários **locais** para
+recriar a conta de demonstração; nunca rode apontando para produção.
+
 `SETUP_TOKEN` é obrigatório para criar a primeira conta: a página `/admin/criar-conta`
 pede esse código. Em produção, defina com `npx wrangler secret put SETUP_TOKEN` **antes**
 do primeiro acesso; sem ele a criação de conta responde 503.
