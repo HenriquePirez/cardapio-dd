@@ -27,38 +27,45 @@ const { pedidos, totemSrc = '/totem-local.jpg' } = Astro.props;
   aria-labelledby="pd-titulo"
 >
   <div class="pd-caixa">
-    <button class="pd-fechar" type="button" aria-label="Fechar">&times;</button>
+    <button class="pd-fechar" type="button" aria-label="Fechar" data-i18n-aria="fechar">
+      &times;
+    </button>
 
     <div class="pd-vista" data-vista="pergunta">
       <p class="pd-produto" id="pd-produto"></p>
-      <h2 class="pd-titulo" id="pd-titulo">
+      <h2 class="pd-titulo" id="pd-titulo" data-i18n="pergunta">
         O pedido é para comer no local ou para retirada?
       </h2>
       <div class="pd-acoes">
         <button class="pd-btn pd-btn-local" type="button" data-escolha="local">
-          Comer no local
+          <span data-i18n="comerLocal">Comer no local</span>
         </button>
         <button class="pd-btn pd-btn-retirada" type="button" data-escolha="retirada">
-          Retirada
+          <span data-i18n="retirada">Retirada</span>
         </button>
       </div>
     </div>
 
     <div class="pd-vista" data-vista="local" hidden>
-      <h2 class="pd-titulo">Peça pelo totem</h2>
+      <h2 class="pd-titulo" data-i18n="totemTitulo">Peça pelo totem</h2>
       <img
         class="pd-totem"
         src={totemSrc}
         alt="Totem de autoatendimento do estabelecimento"
+        data-i18n-alt="totemAlt"
         loading="lazy"
         decoding="async"
       />
-      <p class="pd-texto">
+      <p class="pd-texto" data-i18n="totemTexto">
         Pedidos para comer no local são feitos somente no totem local.
       </p>
       <div class="pd-acoes">
-        <button class="pd-btn pd-btn-local" type="button" data-voltar>Voltar</button>
-        <button class="pd-btn pd-btn-retirada" type="button" data-fechar>Entendi</button>
+        <button class="pd-btn pd-btn-local" type="button" data-voltar>
+          <span data-i18n="voltar">Voltar</span>
+        </button>
+        <button class="pd-btn pd-btn-retirada" type="button" data-fechar>
+          <span data-i18n="entendi">Entendi</span>
+        </button>
       </div>
     </div>
   </div>

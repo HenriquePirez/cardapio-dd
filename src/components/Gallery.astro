@@ -31,21 +31,32 @@ const { galerias } = Astro.props;
   role="dialog"
   aria-modal="true"
   aria-label="Galeria do produto"
+  data-i18n-aria="galeriaProduto"
 >
-  <button class="lb-voltar" type="button" aria-label="Voltar">&larr;</button>
+  <button class="lb-voltar" type="button" aria-label="Voltar" data-i18n-aria="voltar">
+    &larr;
+  </button>
 
   <div class="lb-stage">
     <div class="lb-track" id="lb-track"></div>
   </div>
 
-  <div class="lb-dots" id="lb-dots" role="group" aria-label="Navegação da galeria" hidden></div>
+  <div
+    class="lb-dots"
+    id="lb-dots"
+    role="group"
+    aria-label="Navegação da galeria"
+    data-i18n-aria="navegacaoGaleria"
+    hidden
+  >
+  </div>
 
   <div class="lb-barra">
     <div class="lb-textos">
       <p class="lb-nome" id="lb-nome"></p>
     </div>
     <button class="lb-comprar" id="lb-comprar" type="button" data-comprar="">
-      Comprar
+      <span data-i18n="comprar">Comprar</span>
     </button>
   </div>
 </div>
@@ -244,6 +255,11 @@ const { galerias } = Astro.props;
 </style>
 
 <script>
+  import { traduzir, type Idioma } from '../lib/idioma';
+
+  const idiomaAtual = (): Idioma =>
+    document.documentElement.dataset.idioma === 'en' ? 'en' : 'pt';
+
   interface ItemGaleria {
     tipo: 'imagem' | 'video';
     src: string;
@@ -314,7 +330,7 @@ const { galerias } = Astro.props;
       const d = document.createElement('button');
       d.type = 'button';
       d.className = 'lb-dot';
-      d.setAttribute('aria-label', `Ir para o item ${i + 1} de ${n}`);
+      d.setAttribute('aria-label', traduzir(idiomaAtual(), 'irParaItem', { n: i + 1, total: n }));
       d.addEventListener('click', () => {
         if (track) track.scrollTo({ left: scrollDoSlide(i), behavior: 'smooth' });
       });

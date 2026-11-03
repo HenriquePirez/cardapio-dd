@@ -20,6 +20,13 @@ em código**.
   logado tem acesso total.
 - Não existe papel de desenvolvedor/expoente no produto; operação é feita só pelo painel.
 
+## Preferências do visitante
+
+O cardápio público oferece **tema claro/escuro** e **interface em português ou inglês**,
+escolhidos no cabeçalho e lembrados no navegador do visitante. A tradução cobre a interface
+(menus, botões, avisos); nomes de categorias e produtos continuam como cadastrados pelo dono.
+O painel administrativo permanece em português.
+
 ## Fluxos da primeira versão
 
 1. **Ver cardápio** — `/` lista categorias e produtos com capa, preço, destaque e galeria

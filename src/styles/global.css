@@ -15,6 +15,12 @@
   --text-dim: #6b7280;
   --accent: var(--laranja);
   --accent-2: var(--laranja-escuro);
+  /* Cor do preço/CTA textual; muda no tema escuro para manter contraste. */
+  --cor-preco: var(--laranja-aa);
+  /* Véu da barra de categorias fixa. */
+  --veu: rgba(249, 249, 249, 0.92);
+  /* Verde dos títulos de seção; clareia no tema escuro. */
+  --cor-titulo: var(--verde);
   --radius: 14px;
   --radius-sm: 10px;
   --max: 640px;
@@ -23,6 +29,22 @@
   --shadow-hover: 0 12px 28px rgba(0, 0, 0, 0.14);
   --border: #e5e7eb;
   --fonte: 'Fredoka', system-ui, sans-serif;
+}
+
+/* Tema escuro do cardápio público. O painel /admin não recebe o atributo. */
+:root[data-tema='escuro'] {
+  color-scheme: dark;
+  --bg: #11150f;
+  --bg-card: #1b2017;
+  --bg-elev: #23281f;
+  --text: #f3f4f1;
+  --text-dim: #a8b0a3;
+  --border: #2f362b;
+  --veu: rgba(17, 21, 15, 0.92);
+  --cor-preco: #fb923c;
+  --cor-titulo: #86efac;
+  --shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  --shadow-hover: 0 12px 28px rgba(0, 0, 0, 0.5);
 }
 
 * {

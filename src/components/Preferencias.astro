@@ -1,0 +1,131 @@
+---
+/**
+ * Preferências do visitante: tema claro/escuro e idioma da interface.
+ * A escolha fica em localStorage; o atributo em <html> é aplicado antes da
+ * pintura por um script inline no BaseLayout (evita flash de tema errado).
+ */
+---
+
+<div class="prefs">
+  <button class="pref" type="button" data-tema-btn>
+    <i class="fi-br-moon" aria-hidden="true"></i>
+  </button>
+  <button class="pref" type="button" data-idioma-btn>
+    <i class="fi-br-language" aria-hidden="true"></i>
+  </button>
+</div>
+
+<style>
+  .prefs {
+    display: flex;
+    gap: 6px;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  .pref {
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 1.15rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+  }
+
+  .pref:hover,
+  .pref:focus-visible {
+    background: rgba(255, 255, 255, 0.22);
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+
+  .pref:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+  }
+</style>
+
+<script>
+  import { traduzir, type ChaveTexto, type Idioma } from '../lib/idioma';
+
+  const raiz = document.documentElement;
+  const btnTema = document.querySelector<HTMLButtonElement>('[data-tema-btn]');
+  const btnIdioma = document.querySelector<HTMLButtonElement>('[data-idioma-btn]');
+
+  const idiomaAtual = (): Idioma => (raiz.dataset.idioma === 'en' ? 'en' : 'pt');
+
+  function pintarTema(): void {
+    const escuro = raiz.dataset.tema === 'escuro';
+    if (btnTema) {
+      btnTema.innerHTML = `<i class="fi-br-${escuro ? 'sun' : 'moon'}" aria-hidden="true"></i>`;
+      const rotulo = traduzir(idiomaAtual(), escuro ? 'temaClaro' : 'temaEscuro');
+      btnTema.setAttribute('aria-label', rotulo);
+      btnTema.title = rotulo;
+    }
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute('content', escuro ? '#11150f' : '#14532d');
+  }
+
+  function aplicarIdioma(): void {
+    const atual = idiomaAtual();
+    const valoresDe = (el: HTMLElement) => ({
+      n: el.dataset.n ?? '',
+      nome: el.dataset.nome ?? '',
+    });
+
+    document.querySelectorAll<HTMLElement>('[data-i18n]').forEach((el) => {
+      el.textContent = traduzir(atual, el.dataset.i18n as ChaveTexto, valoresDe(el));
+    });
+    document.querySelectorAll<HTMLElement>('[data-i18n-aria]').forEach((el) => {
+      el.setAttribute(
+        'aria-label',
+        traduzir(atual, el.dataset.i18nAria as ChaveTexto, valoresDe(el)),
+      );
+    });
+    document.querySelectorAll<HTMLElement>('[data-i18n-alt]').forEach((el) => {
+      el.setAttribute(
+        'alt',
+        traduzir(atual, el.dataset.i18nAlt as ChaveTexto, valoresDe(el)),
+      );
+    });
+
+    document.documentElement.lang = atual === 'en' ? 'en' : 'pt-BR';
+
+    if (btnIdioma) {
+      const rotulo = traduzir(atual, atual === 'en' ? 'idiomaPortugues' : 'idiomaIngles');
+      btnIdioma.setAttribute('aria-label', rotulo);
+      btnIdioma.title = rotulo;
+    }
+  }
+
+  btnTema?.addEventListener('click', () => {
+    raiz.dataset.tema = raiz.dataset.tema === 'escuro' ? 'claro' : 'escuro';
+    try {
+      localStorage.setItem('dd-tema', raiz.dataset.tema);
+    } catch {
+      /* modo privado: a escolha vale só nesta visita */
+    }
+    pintarTema();
+  });
+
+  btnIdioma?.addEventListener('click', () => {
+    const novo: Idioma = idiomaAtual() === 'en' ? 'pt' : 'en';
+    raiz.dataset.idioma = novo;
+    try {
+      localStorage.setItem('dd-idioma', novo);
+    } catch {
+      /* modo privado: a escolha vale só nesta visita */
+    }
+    aplicarIdioma();
+    pintarTema();
+  });
+
+  pintarTema();
+  aplicarIdioma();
+</script>

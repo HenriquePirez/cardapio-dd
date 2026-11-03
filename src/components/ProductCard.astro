@@ -29,6 +29,8 @@ const temVideo = capa?.tipo === 'video';
     type="button"
     data-abrir-galeria={totalMidia > 0 ? id : undefined}
     aria-label={totalMidia > 0 ? `Ver fotos de ${nome}` : `${nome} (sem fotos)`}
+    data-i18n-aria={totalMidia > 0 ? 'verFotos' : 'semFotos'}
+    data-nome={nome}
   >
     {capaSrc ? (
       <img
@@ -40,21 +42,21 @@ const temVideo = capa?.tipo === 'video';
         height="800"
       />
     ) : (
-      <div class="card-sem-img" aria-hidden="true">Sem foto</div>
+      <div class="card-sem-img" aria-hidden="true" data-i18n="semFoto">Sem foto</div>
     )}
 
     {temVideo && (
       <span class="badge-video" aria-hidden="true">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-        Vídeo
+        <span data-i18n="video">Vídeo</span>
       </span>
     )}
 
     {totalMidia > 1 && (
-      <span class="badge-fotos" aria-hidden="true">{totalMidia} mídias</span>
+      <span class="badge-fotos" aria-hidden="true" data-i18n="midias" data-n={totalMidia}>{totalMidia} mídias</span>
     )}
 
-    <span class="card-zoom" aria-hidden="true">Ampliar</span>
+    <span class="card-zoom" aria-hidden="true" data-i18n="ampliar">Ampliar</span>
   </button>
 
   <div class="card-corpo">
@@ -69,8 +71,10 @@ const temVideo = capa?.tipo === 'video';
       type="button"
       data-comprar={id}
       aria-label={`Comprar ${nome}`}
+      data-i18n-aria="comprar"
+      data-nome={nome}
     >
-      Comprar
+      <span data-i18n="comprar">Comprar</span>
     </button>
   </div>
 </article>
@@ -218,7 +222,7 @@ const temVideo = capa?.tipo === 'video';
   .card-preco {
     font-size: 1.05rem;
     font-weight: 500;
-    color: var(--laranja-aa);
+    color: var(--cor-preco);
   }
 
   .btn-comprar {

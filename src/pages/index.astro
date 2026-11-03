@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ProductCard from '../components/ProductCard.astro';
+import Preferencias from '../components/Preferencias.astro';
 import PedidoDialog from '../components/PedidoDialog.astro';
 import Gallery from '../components/Gallery.astro';
 import IconeCategoria from '../components/IconeCategoria.astro';
@@ -89,8 +90,9 @@ function capaDe(p: (typeof produtos)[number]) {
       <img class="topo-logo" src="/logo-donadora.png" alt="Logo Dona Dôra" width="568" height="573" />
       <div class="topo-textos">
         <h1 class="topo-titulo">{SITE.nome}</h1>
-        <p class="topo-sub">O sabor que começa pelos olhos</p>
+        <p class="topo-sub" data-i18n="tagline">O sabor que começa pelos olhos</p>
       </div>
+      <Preferencias />
     </div>
   </header>
 
@@ -111,14 +113,17 @@ function capaDe(p: (typeof produtos)[number]) {
   <main class="container">
     {produtos.length === 0 && (
       <div class="vazio">
-        <p>Cardápio em construção. Volte em breve! <i class="fi-br-burger-alt" aria-hidden="true"></i></p>
+        <p>
+          <span data-i18n="cardapioVazio">Cardápio em construção. Volte em breve!</span>
+          <i class="fi-br-burger-alt" aria-hidden="true"></i>
+        </p>
       </div>
     )}
 
     <!-- Destaques -->
     {destaques.length > 0 && (
       <section class="secao" aria-labelledby="destaques-h">
-        <h2 class="secao-titulo" id="destaques-h">Destaques</h2>
+        <h2 class="secao-titulo" id="destaques-h" data-i18n="destaques">Destaques</h2>
         <div class="destaque-scroll">
           {destaques.map((p) => {
             const capa = capaDe(p);
@@ -180,9 +185,9 @@ function capaDe(p: (typeof produtos)[number]) {
 
   <footer class="rodape">
     <div class="container">
-      <p>{SITE.nome} · Cardápio digital</p>
+      <p>{SITE.nome} · <span data-i18n="cardapioDigital">Cardápio digital</span></p>
       <p class="rodape-creditos">
-        Ícones por
+        <span data-i18n="iconesPor">Ícones por</span>
         <a href="https://www.flaticon.com/br/" target="_blank" rel="noopener noreferrer">Flaticon</a>
       </p>
     </div>
@@ -239,7 +244,7 @@ function capaDe(p: (typeof produtos)[number]) {
     position: sticky;
     top: calc(77px + env(safe-area-inset-top));
     z-index: 40;
-    background: rgba(249, 249, 249, 0.92);
+    background: var(--veu);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--border);
   }
@@ -298,7 +303,7 @@ function capaDe(p: (typeof produtos)[number]) {
     font-size: 1.15rem;
     font-weight: 500;
     letter-spacing: -0.01em;
-    color: var(--verde);
+    color: var(--cor-titulo);
   }
 
   .secao-desc {
