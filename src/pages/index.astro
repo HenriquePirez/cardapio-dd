@@ -97,14 +97,14 @@ function capaDe(p: (typeof produtos)[number]) {
   </header>
 
   <!-- Navegação rápida por categoria -->
-  <nav class="atalhos" aria-label="Categorias">
+  <nav class="atalhos" aria-label="Categorias" data-i18n-aria="categorias">
     <div class="container atalhos-scroll">
       {categorias
         .filter((cat) => porCategoria.has(cat.id))
         .map((cat) => (
         <a class="atalho" href={`#${cat.id}`}>
           <IconeCategoria icone={cat.icone} />
-          {cat.nome}
+          <span data-cat={cat.id} data-cat-pt={cat.nome}>{cat.nome}</span>
         </a>
       ))}
     </div>
@@ -162,9 +162,13 @@ function capaDe(p: (typeof produtos)[number]) {
           <div class="secao-cab">
             <h2 class="secao-titulo" id={`h-${cat.id}`}>
               <IconeCategoria icone={cat.icone} />
-              {cat.nome}
+              <span data-cat={cat.id} data-cat-pt={cat.nome}>{cat.nome}</span>
             </h2>
-            {cat.descricao && <p class="secao-desc">{cat.descricao}</p>}
+            {cat.descricao && (
+              <p class="secao-desc">
+                <span data-cat-desc={cat.id} data-cat-pt={cat.descricao}>{cat.descricao}</span>
+              </p>
+            )}
           </div>
           <div class="grade">
             {lista.map((p) => (

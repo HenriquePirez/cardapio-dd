@@ -42,8 +42,10 @@ bandeira do Brasil/Estados Unidos (SVG inline, sem dependência).
   marcados com `data-i18n`/`data-i18n-aria`/`data-i18n-alt`/`data-i18n-ph` são trocados por
   `src/lib/idioma.ts` (testes em `src/lib/idioma.test.ts`), aplicados por
   `src/lib/idiomaCliente.ts`. O dicionário cobre cardápio, cabeçalho do painel, login,
-  painel, listas, categorias e formulário de produto. Nomes, descrições e categorias vindos
-  do D1 **não** são traduzidos.
+  painel, listas, categorias e formulário de produto. Nomes e descrições de produtos vindos
+  do D1 **não** são traduzidos. Categorias usam um mapa fixo por id
+  (`CATEGORIAS_EN`/`CATEGORIAS_DESC_EN` em `src/lib/idioma.ts`); ids novos caem no texto em
+  português até o mapa ser atualizado.
 - Um script inline no `BaseLayout` aplica tema e idioma antes da primeira pintura, evitando
   flash. As escolhas valem só no navegador do visitante; nada é gravado no banco.
 

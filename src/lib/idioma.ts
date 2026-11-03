@@ -275,3 +275,24 @@ export function traduzir(
 }
 
 export type { Chave as ChaveTexto };
+
+/**
+ * Nomes e descrições de categoria em inglês, por id.
+ * shortcut: mapa fixo, migrar para colunas nome_en/descricao_en no D1 quando o
+ * dono criar categorias novas; ids ausentes caem no texto em português.
+ */
+export const CATEGORIAS_EN: Record<string, string> = {
+  'pizzas-gigante': 'Giant pizzas',
+  'pizzas-grande': 'Large pizzas',
+  bebidas: 'Drinks',
+  combos: 'Combos',
+  entradas: 'Starters',
+};
+
+export const CATEGORIAS_DESC_EN: Record<string, string> = {
+  'pizzas-gigante': 'Giant pizzas, 8 slices, up to 2 flavors',
+  'pizzas-grande': 'Large pizzas, 6 slices',
+  bebidas: 'Sodas, juices and frozen desserts',
+  combos: 'Pasta or pizza combos with a drink',
+  entradas: 'Light starters to enjoy',
+};

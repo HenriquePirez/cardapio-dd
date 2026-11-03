@@ -2,7 +2,13 @@
  * Aplicação do idioma no documento. Separado do componente de controles para
  * funcionar também em páginas sem os botões (login do painel, por exemplo).
  */
-import { traduzir, type ChaveTexto, type Idioma } from './idioma';
+import {
+  CATEGORIAS_DESC_EN,
+  CATEGORIAS_EN,
+  traduzir,
+  type ChaveTexto,
+  type Idioma,
+} from './idioma';
 
 export const idiomaDocumento = (): Idioma =>
   document.documentElement.dataset.idioma === 'en' ? 'en' : 'pt';
@@ -33,6 +39,15 @@ export function aplicarIdioma(): void {
       'placeholder',
       traduzir(atual, el.dataset.i18nPh as ChaveTexto, valoresDe(el)),
     );
+  });
+
+  document.querySelectorAll<HTMLElement>('[data-cat]').forEach((el) => {
+    const pt = el.dataset.catPt ?? '';
+    el.textContent = atual === 'en' ? (CATEGORIAS_EN[el.dataset.cat ?? ''] ?? pt) : pt;
+  });
+  document.querySelectorAll<HTMLElement>('[data-cat-desc]').forEach((el) => {
+    const pt = el.dataset.catPt ?? '';
+    el.textContent = atual === 'en' ? (CATEGORIAS_DESC_EN[el.dataset.catDesc ?? ''] ?? pt) : pt;
   });
 
   document.documentElement.lang = atual === 'en' ? 'en' : 'pt-BR';
