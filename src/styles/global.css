@@ -4,6 +4,9 @@
   --verde-escuro: #0f3d21;
   --laranja: #f97316;
   --laranja-escuro: #ea580c;
+  /* Laranja com contraste AA sobre branco (5.2:1) para texto e fundo de CTA. */
+  --laranja-aa: #c2410c;
+  --laranja-aa-hover: #9a3412;
 
   --bg: #f9f9f9; /* fundo claro, igual às seções da landing */
   --bg-card: #ffffff;

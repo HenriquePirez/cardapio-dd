@@ -97,7 +97,9 @@ function capaDe(p: (typeof produtos)[number]) {
   <!-- Navegação rápida por categoria -->
   <nav class="atalhos" aria-label="Categorias">
     <div class="container atalhos-scroll">
-      {categorias.map((cat) => (
+      {categorias
+        .filter((cat) => porCategoria.has(cat.id))
+        .map((cat) => (
         <a class="atalho" href={`#${cat.id}`}>
           <IconeCategoria icone={cat.icone} />
           {cat.nome}
@@ -235,7 +237,7 @@ function capaDe(p: (typeof produtos)[number]) {
 
   .atalhos {
     position: sticky;
-    top: 68px;
+    top: calc(77px + env(safe-area-inset-top));
     z-index: 40;
     background: rgba(249, 249, 249, 0.92);
     backdrop-filter: blur(10px);
@@ -256,6 +258,10 @@ function capaDe(p: (typeof produtos)[number]) {
   }
 
   .atalho {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
     flex-shrink: 0;
     padding: 8px 14px;
     border-radius: 999px;
@@ -265,19 +271,19 @@ function capaDe(p: (typeof produtos)[number]) {
     font-size: 0.85rem;
     font-weight: 500;
     white-space: nowrap;
-    scroll-margin-top: 130px;
+    scroll-margin-top: 137px;
     transition: background 0.2s, color 0.2s, border-color 0.2s;
   }
 
   .atalho:active {
-    background: var(--laranja);
-    border-color: var(--laranja);
+    background: var(--laranja-aa);
+    border-color: var(--laranja-aa);
     color: #fff;
   }
 
   .secao {
     padding-top: 26px;
-    scroll-margin-top: 128px;
+    scroll-margin-top: 137px;
   }
 
   .secao-cab {
@@ -342,7 +348,12 @@ function capaDe(p: (typeof produtos)[number]) {
     justify-content: space-between;
     gap: 8px;
     padding: 26px 12px 12px;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.85), transparent);
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.92) 0%,
+      rgba(0, 0, 0, 0.78) 60%,
+      transparent 100%
+    );
     color: #fff;
     text-align: left;
   }

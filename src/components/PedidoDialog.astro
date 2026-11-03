@@ -56,7 +56,10 @@ const { pedidos, totemSrc = '/totem-local.jpg' } = Astro.props;
       <p class="pd-texto">
         Pedidos para comer no local são feitos somente no totem local.
       </p>
-      <button class="pd-btn pd-btn-retirada" type="button" data-fechar>Entendi</button>
+      <div class="pd-acoes">
+        <button class="pd-btn pd-btn-local" type="button" data-voltar>Voltar</button>
+        <button class="pd-btn pd-btn-retirada" type="button" data-fechar>Entendi</button>
+      </div>
     </div>
   </div>
 </div>
@@ -158,7 +161,7 @@ const { pedidos, totemSrc = '/totem-local.jpg' } = Astro.props;
   }
 
   .pd-btn-retirada {
-    background: var(--laranja);
+    background: var(--laranja-aa);
     color: #fff;
   }
 
@@ -267,7 +270,12 @@ const { pedidos, totemSrc = '/totem-local.jpg' } = Astro.props;
 
   pd?.querySelector('[data-escolha="local"]')?.addEventListener('click', () => {
     vista('local');
-    pd?.querySelector<HTMLElement>('[data-fechar]')?.focus();
+    pd?.querySelector<HTMLElement>('[data-voltar]')?.focus();
+  });
+
+  pd?.querySelector('[data-voltar]')?.addEventListener('click', () => {
+    vista('pergunta');
+    pd?.querySelector<HTMLElement>('[data-escolha="local"]')?.focus();
   });
 
   // Foto ausente (arquivo ainda não enviado): some com a imagem quebrada.

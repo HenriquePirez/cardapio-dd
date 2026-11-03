@@ -24,3 +24,7 @@ npm-debug.log*
 # segredos locais do wrangler (NÃO versionar)
 .dev.vars
 .superpowers/
+
+# impeccable: binário e índices baixados pelo instalador (por plataforma)
+.opencode/skills/impeccable/scripts/bin/
+.opencode/skills/impeccable/scripts/data/

@@ -27,6 +27,7 @@ export default defineConfig([
     'coverage/**',
     '.agents/**',
     '.superpowers/**',
+    '.opencode/**',
     'public/**',
     'worker-configuration.d.ts',
     '**/*.tsbuildinfo',
