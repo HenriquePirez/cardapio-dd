@@ -1,0 +1,12 @@
+---
+import Cardapio from '../../components/Cardapio.astro';
+import { db } from '../../lib/env';
+import { cardapioCompleto, obterLojaPorSlug } from '../../lib/db';
+
+const slug = Astro.params.slug ?? '';
+const loja = /^[a-z0-9-]+$/.test(slug) ? await obterLojaPorSlug(db(), slug) : null;
+if (!loja) return new Response('Loja não encontrada.', { status: 404 });
+const { categorias, produtos } = await cardapioCompleto(db(), loja.id);
+---
+
+<Cardapio loja={loja} categorias={categorias} produtos={produtos} />

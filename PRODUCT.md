@@ -17,7 +17,8 @@ em código**.
 - **Cliente final:** visita o cardápio pelo navegador do celular (pt-BR), sem instalar nada.
 - **Dono do cardápio:** conta **única** do painel `/admin`, criada na primeira utilização e
   compartilhada com até 2 pessoas de confiança. Sem papéis/permissionamento: quem está
-  logado tem acesso total.
+  logado tem acesso total. A mesma conta pode administrar **várias lojas** (ex.: Dona Dôra
+  Ipatinga e Dona Dôra Timóteo), cada uma com cardápio, logo e cores próprios.
 - Não existe papel de desenvolvedor/expoente no produto; operação é feita só pelo painel.
 
 ## Preferências do visitante
@@ -28,11 +29,22 @@ escolhidos no cabeçalho e lembrados no navegador do visitante. A tradução cob
 O painel administrativo oferece as mesmas preferências de tema e idioma; a tradução cobre
 cabeçalho, login, painel, listas, categorias e formulário de produto.
 
+## Lojas e identidade (SaaS local)
+
+Cada loja tem uma URL pública estável: a loja principal (`padrao = 1`) fica em `/` e as
+demais em `/loja/<slug>`. No painel, o seletor do cabeçalho troca a loja ativa (cookie
+`loja_ativa`); o dono cria novas lojas em `/admin/loja`.
+
+O branding é editável sem deploy: nome, slogan, descrição, logo (KV), **duas cores livres**
+(marca e destaque, com tons de contraste derivados automaticamente) e padrões de tema
+(claro/escuro) e idioma (pt/en). Não há cadastro público nem cobrança: a criação de lojas é
+assistida pelo dono já autenticado.
+
 ## Fluxos da primeira versão
 
-1. **Ver cardápio** — `/` lista categorias e produtos com capa, preço, destaque e galeria
-   (foto/vídeo com lightbox e seek). Entrada: visita. Resultado: cardápio renderizado com
-   cache na edge (mudanças aparecem em ~30s).
+1. **Ver cardápio** — `/` (loja principal) ou `/loja/<slug>` lista categorias e produtos com
+   capa, preço, destaque e galeria (foto/vídeo com lightbox e seek). Entrada: visita.
+   Resultado: cardápio renderizado com cache na edge por URL (mudanças aparecem em ~30s).
 2. **Comprar** — toque no botão abre o fluxo de pedido conforme a `modalidade` do produto:
    **retirada** vai direto para o `comprar_url` (http/https, nova aba); **local** mostra o
    aviso de que pedidos no local são feitos no totem; **ambos** pergunta
@@ -49,22 +61,27 @@ cabeçalho, login, painel, listas, categorias e formulário de produto.
    navegador ou vídeo bruto; poster gerado automaticamente; exclusão remove objetos do KV).
 7. **Servir mídia** — `/media/<chave>` lê do KV com suporte a Range (206) para o seek do
    vídeo.
+8. **Configurar a loja** — `/admin/loja`: logo, nome, slogan, descrição, duas cores, tema e
+   idioma padrão. A mesma tela cria outra loja para a conta.
+9. **Trocar de loja** — seletor no cabeçalho do painel; todas as categorias, produtos e
+   mídias passam a ser lidos/gravados com o `loja_id` ativo.
 
 ## MVP (entregue e em produção)
 
 Cardápio público com cache · painel com login único e proteções · CRUD de categorias e
-produtos · upload/otimização de mídia em KV com limpeza de órfãos · deploy automático
-Git → Workers Builds.
+produtos · upload/otimização de mídia em KV com limpeza de órfãos · tema/idioma ·
+**multi-loja local** (branding, URLs por loja, isolamento por `loja_id`) · deploy
+automático Git → Workers Builds (a versão multi-loja ainda não foi implantada).
 
 ## Fora de escopo
 
 Carrinho/pagamento/emissão de pedido (fica no app externo) · múltiplos usuários com papéis ·
-multi-tenancy · app nativo · R2 (exige cartão — ver `README.md`) · i18n · analytics ·
-painel de métricas · SEO avançado/sitemap.
+cadastro público de lojas/cobrança · domínio próprio por loja · app nativo · R2 (exige
+cartão — ver `README.md`) · analytics · painel de métricas · SEO avançado/sitemap.
 
 ## Requisitos
 
-- Mobile-first, em **português (pt-BR)**, moeda **BRL**.
+- Mobile-first, com padrão de idioma por loja (**pt-BR** ou **en**), moeda **BRL**.
 - Fotos otimizadas no navegador (thumbnail WebP ≤1600px, lightbox JPEG ≤1920px); vídeo ≤12 MB
   no painel (15 MB no endpoint) com poster automático.
 - Segurança: senha com hash **PBKDF2-SHA256 + pepper** (segredo fora do banco), senha mínima
@@ -102,6 +119,8 @@ painel de métricas · SEO avançado/sitemap.
 - O cliente vê o cardápio completo no celular, abre a galeria e conclui o pedido pelo
   caminho certo: link de retirada ou aviso do totem para consumo no local.
 - O dono cadastra categoria/produto/mídia pelo painel sem deploy nem edição de código.
+- O dono administra mais de uma loja na mesma conta; cada loja vê apenas o seu cardápio,
+  branding e mídias, e a loja principal continua em `/`.
 - Escritas sem sessão retornam 401, leituras sem sessão redirecionam ao login; 5 falhas de
   login bloqueiam por 10 min.
 - Excluir produto/mídia remove os objetos do KV (sem órfãos consumindo a cota de 1 GB).

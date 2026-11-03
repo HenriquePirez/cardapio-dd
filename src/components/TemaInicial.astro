@@ -1,13 +1,36 @@
+---
+/**
+ * Aplica tema e idioma antes da primeira pintura (sem flash).
+ * Ordem: escolha salva > padrão da loja > sistema (quando não há loja, ex.:
+ * login do painel). O padrão da loja vem nos data-attributes de <html>.
+ */
+---
+
 <script is:inline>
-  // Aplica tema e idioma salvos antes da primeira pintura (sem flash).
   (() => {
+    const raiz = document.documentElement;
+    const temaLoja = raiz.dataset.temaPadrao;
+    const idiomaLoja = raiz.dataset.idiomaPadrao;
     try {
+      const salvo = localStorage.getItem('dd-tema');
       const tema =
-        localStorage.getItem('dd-tema') ||
-        (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'escuro' : 'claro');
-      document.documentElement.dataset.tema = tema;
-      document.documentElement.dataset.idioma =
-        localStorage.getItem('dd-idioma') === 'en' ? 'en' : 'pt';
+        salvo === 'claro' || salvo === 'escuro'
+          ? salvo
+          : temaLoja === 'claro' || temaLoja === 'escuro'
+            ? temaLoja
+            : window.matchMedia('(prefers-color-scheme: dark)').matches
+              ? 'escuro'
+              : 'claro';
+      raiz.dataset.tema = tema;
+
+      const idiomaSalvo = localStorage.getItem('dd-idioma');
+      raiz.dataset.idioma =
+        idiomaSalvo === 'en' || idiomaSalvo === 'pt'
+          ? idiomaSalvo
+          : idiomaLoja === 'en'
+            ? 'en'
+            : 'pt';
+
       if (tema === 'escuro') {
         document.querySelector('meta[name="theme-color"]').content = '#11150f';
       }

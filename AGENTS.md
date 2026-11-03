@@ -49,9 +49,12 @@
 ## Padrões e documentação
 
 - **Persistência:** D1 + KV (exceção registrada ao padrão do toolkit; razão em
-  `PRODUCT.md` e `docs/architecture.md`). Queries via prepared statements parametrizados em
-  `src/lib/db.ts`; sem N+1; sem migrations automáticas em build/request.
-- **Fronteiras:** páginas/components falam com `src/lib/*`; bindings só via `src/lib/env.ts`.
+  `PRODUCT.md` e `docs/architecture.md`). Multi-loja: tabela `lojas` e `loja_id` em
+  categorias/produtos/mídia; toda query recebe o `lojaId` ativo. Queries via prepared
+  statements parametrizados em `src/lib/db.ts`; sem N+1; sem migrations automáticas em
+  build/request.
+- **Fronteiras:** páginas falam com `src/lib/*`; componentes recebem dados prontos (não
+  importam `src/lib/db` em runtime); bindings só via `src/lib/env.ts`.
 - Valide entradas e chaves com os helpers existentes (`src/lib/env.ts`, `src/lib/auth.ts`);
   não introduza dependências de validação sem necessidade nova.
 - Segredos fora do repositório (`.dev.vars` é gitignored); erros públicos sem segredos nem

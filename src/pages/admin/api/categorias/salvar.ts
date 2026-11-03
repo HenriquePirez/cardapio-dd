@@ -39,10 +39,11 @@ export const POST: APIRoute = async (ctx) => {
   if (!Number.isInteger(ordem) || ordem < 0) return voltar('/admin/categorias?erro=ordem');
 
   const d1 = db();
+  const loja = ctx.locals.loja!;
 
   // Valor legado fora da lista é preservado quando o select não mudou.
   // A comparação usa o banco, não o hidden do formulário (que o cliente forja).
-  const atual = idOriginal ? await obterCategoria(d1, idOriginal) : null;
+  const atual = idOriginal ? await obterCategoria(d1, loja.id, idOriginal) : null;
   const iconeOriginal = atual?.icone ?? '';
   const icone = iconeEnviado === iconeOriginal ? iconeOriginal : normalizarIcone(iconeEnviado);
 
@@ -50,11 +51,11 @@ export const POST: APIRoute = async (ctx) => {
   // A ordem importa: a categoria NOVA precisa existir antes do UPDATE, senão o
   // FK (produtos.categoria_id -> categorias.id) rejeita a mudança.
   if (idOriginal && idOriginal !== id) {
-    const existente = await obterCategoria(d1, id);
+    const existente = await obterCategoria(d1, loja.id, id);
     if (existente) return voltar('/admin/categorias?editar=' + encodeURIComponent(idOriginal));
 
     // 1) cria já a categoria com o novo slug
-    await salvarCategoria(d1, {
+    await salvarCategoria(d1, loja.id, {
       id,
       nome,
       icone: icone || null,
@@ -64,19 +65,22 @@ export const POST: APIRoute = async (ctx) => {
 
     // 2) move os produtos para o novo slug
     await d1
-      .prepare('UPDATE produtos SET categoria_id = ? WHERE categoria_id = ?')
-      .bind(id, idOriginal)
+      .prepare('UPDATE produtos SET categoria_id = ? WHERE loja_id = ? AND categoria_id = ?')
+      .bind(id, loja.id, idOriginal)
       .run();
 
     // 3) remove a categoria antiga (sem produtos apontando para ela)
-    await d1.prepare('DELETE FROM categorias WHERE id = ?').bind(idOriginal).run();
+    await d1
+      .prepare('DELETE FROM categorias WHERE loja_id = ? AND id = ?')
+      .bind(loja.id, idOriginal)
+      .run();
 
     // O cardápio público ("/") é cacheado na edge: purga para a mudança aparecer na hora.
-    await invalidarCardapio(ctx.request);
+    await invalidarCardapio(ctx.request, loja.slug);
     return voltar('/admin/categorias?msg=ok');
   }
 
-  const existente = await obterCategoria(d1, id);
+  const existente = await obterCategoria(d1, loja.id, id);
   if (!existente && idOriginal) {
     // era inédito e agora quer usar um slug que já existe
     return voltar('/admin/categorias?editar=' + encodeURIComponent(idOriginal));
@@ -86,7 +90,7 @@ export const POST: APIRoute = async (ctx) => {
     return voltar('/admin/categorias?erro=slug-em-uso');
   }
 
-  await salvarCategoria(d1, {
+  await salvarCategoria(d1, loja.id, {
     id,
     nome,
     icone: icone || null,
@@ -95,7 +99,7 @@ export const POST: APIRoute = async (ctx) => {
   });
 
   // O cardápio público ("/") é cacheado na edge: purga para a mudança aparecer na hora.
-  await invalidarCardapio(ctx.request);
+  await invalidarCardapio(ctx.request, loja.slug);
 
   return voltar('/admin/categorias?msg=ok');
 };

@@ -11,6 +11,8 @@ import { lerUsuario } from '../lib/session';
 import Preferencias from '../components/Preferencias.astro';
 import TemaInicial from '../components/TemaInicial.astro';
 import AplicarIdioma from '../components/AplicarIdioma.astro';
+import { cssPaleta, paletaLoja } from '../lib/cores';
+import { urlMidia } from '../lib/env';
 
 interface Props {
   titulo: string;
@@ -19,6 +21,10 @@ interface Props {
 
 const { titulo, descricao = 'Gerenciamento do cardápio' } = Astro.props;
 const usuario = await lerUsuario(Astro);
+const loja = Astro.locals.loja ?? null;
+const lojas = Astro.locals.lojas ?? [];
+const paleta = loja ? paletaLoja(loja.cor_marca, loja.cor_acento) : null;
+const logoAdmin = loja?.logo_chave ? urlMidia(loja.logo_chave) : '/logo-donadora.png';
 const caminho = Astro.url.pathname;
 const ativo = (p: string) => (caminho === p || caminho.startsWith(p + '/') ? 'ativo' : '');
 
@@ -36,8 +42,9 @@ function sair() {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="robots" content="noindex, nofollow" />
-    <meta name="theme-color" content="#14532d" />
+    <meta name="theme-color" content={paleta?.marca ?? '#14532d'} />
     <TemaInicial />
+    {paleta && <style is:inline set:html={cssPaleta(paleta)}></style>}
     <AplicarIdioma />
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
@@ -50,10 +57,22 @@ function sair() {
     {usuario && (
       <header class="admin-topo">
         <div class="admin-topo-inner">
-          <a class="admin-logo" href="/admin" aria-label="Dona Dôra · Admin">
-            <img src="/logo-donadora.png" alt="Dona Dôra" width="568" height="573" />
+          <a class="admin-logo" href="/admin" aria-label={`${loja?.nome ?? 'Dona Dôra'} · Admin`}>
+            <img src={logoAdmin} alt={loja?.nome ?? 'Dona Dôra'} width="568" height="573" />
             <span>Admin</span>
           </a>
+
+          {lojas.length > 1 && (
+            <form class="admin-loja" method="get" action="/admin/trocar-loja">
+              <label class="sr-only" for="loja-slug" data-i18n="trocarLoja">Trocar loja</label>
+              <select id="loja-slug" name="slug">
+                {lojas.map((l) => (
+                  <option value={l.slug} selected={l.id === loja?.id}>{l.nome}</option>
+                ))}
+              </select>
+              <button type="submit" aria-label="Trocar loja"><i class="fi-br-arrow-right" aria-hidden="true"></i></button>
+            </form>
+          )}
 
           <nav class="admin-nav" aria-label="Navegação do painel" data-i18n-aria="adminNav">
             <a href="/admin" class={ativo('/admin') && caminho === '/admin' ? 'ativo' : ''}
@@ -64,6 +83,9 @@ function sair() {
             >
             <a href="/admin/categorias" class={ativo('/admin/categorias')}
               ><span data-i18n="categorias">Categorias</span></a
+            >
+            <a href="/admin/loja" class={ativo('/admin/loja')}
+              ><span data-i18n="loja">Loja</span></a
             >
           </nav>
 
@@ -146,10 +168,10 @@ function sair() {
     position: sticky;
     top: 0;
     z-index: 50;
-    background: #14532d;
+    background: var(--verde);
     color: #fff;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    border-bottom: 3px solid #f97316;
+    border-bottom: 3px solid var(--laranja);
   }
 
   .admin-topo-inner {
@@ -214,8 +236,45 @@ function sair() {
   }
 
   .admin-nav a.ativo {
-    background: #f97316;
+    background: var(--laranja-aa);
     color: #fff;
+  }
+
+  .admin-loja {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .admin-loja select {
+    max-width: 170px;
+    padding: 6px 8px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    font: inherit;
+    font-size: 0.85rem;
+  }
+
+  .admin-loja select option {
+    color: #111827;
+  }
+
+  .admin-loja button {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 8px;
+    background: transparent;
+    color: #fff;
+  }
+
+  .admin-loja button:hover {
+    background: rgba(255, 255, 255, 0.15);
   }
 
   .admin-usuario {
@@ -319,7 +378,7 @@ function sair() {
   .campo input:focus,
   .campo textarea:focus,
   .campo select:focus {
-    outline: 2px solid #f97316;
+    outline: 2px solid var(--laranja);
     outline-offset: 1px;
     border-color: transparent;
   }

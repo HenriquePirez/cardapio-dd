@@ -5,29 +5,48 @@ import '@fontsource/fredoka/latin-500.css';
 import '@flaticon/flaticon-uicons/css/bold/rounded.css';
 import { SITE } from '../config';
 import TemaInicial from '../components/TemaInicial.astro';
+import { ACENTO_PADRAO, MARCA_PADRAO, cssPaleta, paletaLoja } from '../lib/cores';
+import { urlMidia } from '../lib/env';
+import type { Loja } from '../lib/db';
 
 interface Props {
+  /** Loja dona do cardápio; define marca, textos e padrões de tema/idioma. */
+  loja?: Loja | null;
   titulo?: string;
   descricao?: string;
 }
 
-const { titulo = SITE.nome, descricao = SITE.descricao } = Astro.props;
-const tituloCompleto = titulo === SITE.nome ? titulo : `${titulo} · ${SITE.nome}`;
+const { loja = null } = Astro.props;
+const nome = loja?.nome ?? SITE.nome;
+const descricao = Astro.props.descricao ?? loja?.descricao ?? SITE.descricao;
+const titulo = Astro.props.titulo ?? nome;
+const tituloCompleto = titulo === nome ? titulo : `${titulo} · ${nome}`;
+
+const paleta = paletaLoja(loja?.cor_marca ?? MARCA_PADRAO, loja?.cor_acento ?? ACENTO_PADRAO);
+const temaPadrao = loja?.tema_padrao ?? 'claro';
+const idiomaPadrao = loja?.idioma_padrao ?? 'pt';
+const favicon = loja?.logo_chave ? urlMidia(loja.logo_chave) : '/favicon.ico';
 ---
 
 <!doctype html>
-<html lang={SITE.idioma}>
+<html
+  lang={idiomaPadrao === 'en' ? 'en' : 'pt-BR'}
+  data-tema-padrao={temaPadrao}
+  data-idioma-padrao={idiomaPadrao}
+  data-cor-marca={paleta.marca}
+>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#14532d" />
-    <TemaInicial />
+    <meta name="theme-color" content={paleta.marca} />
+    <TemaInicial temaPadrao={temaPadrao} idiomaPadrao={idiomaPadrao} />
+    <style is:inline set:html={cssPaleta(paleta)}></style>
     <title>{tituloCompleto}</title>
     <meta name="description" content={descricao} />
     <meta property="og:title" content={tituloCompleto} />
     <meta property="og:description" content={descricao} />
     <meta property="og:type" content="website" />
-    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" href={favicon} sizes={loja?.logo_chave ? 'any' : '48x48'} />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />

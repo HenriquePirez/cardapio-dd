@@ -128,7 +128,7 @@ export const TIPOS_ACEITOS = [
 ] as const;
 
 /** Prefixos de chave permitidos (mesmos gerados pelo upload do admin). */
-export const PREFIXOS_MIDIA = ['fotos/', 'videos/'] as const;
+export const PREFIXOS_MIDIA = ['fotos/', 'videos/', 'lojas/'] as const;
 
 /**
  * Valida uma chave de mídia antes de gravar/ler.

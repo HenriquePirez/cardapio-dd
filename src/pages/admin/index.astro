@@ -6,7 +6,12 @@ import { urlMidia } from '../../lib/env';
 import IconeCategoria from '../../components/IconeCategoria.astro';
 
 const d1 = db();
-const [categorias, produtos] = await Promise.all([listarCategorias(d1), listarProdutos(d1)]);
+const loja = Astro.locals.loja!;
+const urlCardapio = loja.padrao === 1 ? '/' : `/loja/${loja.slug}`;
+const [categorias, produtos] = await Promise.all([
+  listarCategorias(d1, loja.id),
+  listarProdutos(d1, loja.id),
+]);
 
 const destaques = produtos.filter((p) => p.destaque === 1);
 const indisponiveis = produtos.filter((p) => p.disponivel === 0);
@@ -28,7 +33,7 @@ const estatisticas = [
     </div>
     <div class="acoes">
       <a href="/admin/produtos/novo" class="btn btn-primario"><span data-i18n="novoProduto">+ Novo produto</span></a>
-      <a href="/" target="_blank" rel="noopener" class="btn btn-secundario" data-i18n="verCardapio">Ver cardápio ↗</a>
+      <a href={urlCardapio} target="_blank" rel="noopener" class="btn btn-secundario" data-i18n="verCardapio">Ver cardápio ↗</a>
     </div>
   </div>
 

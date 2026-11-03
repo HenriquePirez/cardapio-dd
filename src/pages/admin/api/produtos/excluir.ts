@@ -23,12 +23,13 @@ export const POST: APIRoute = async (ctx) => {
   const id = String(form.get('id') ?? '').trim().toLowerCase();
   if (id) {
     const d1 = db();
+    const loja = ctx.locals.loja!;
     // Coleta os caminhos ANTES do CASCADE apagar as linhas.
-    const midias = await listarMidiasPorProdutos(d1, [id]);
-    await excluirProduto(d1, id);
+    const midias = await listarMidiasPorProdutos(d1, loja.id, [id]);
+    await excluirProduto(d1, loja.id, id);
     await apagarObjetos(midias.flatMap(caminhosDaMidia));
     // O cardápio público ("/") é cacheado na edge: purga para a mudança aparecer na hora.
-    await invalidarCardapio(ctx.request);
+    await invalidarCardapio(ctx.request, loja.slug);
   }
 
   return new Response(null, {

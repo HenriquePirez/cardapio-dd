@@ -10,7 +10,7 @@
  * conseguem sobrescrever a senha um do outro.
  */
 import type { APIRoute } from 'astro';
-import { criarPrimeiroUsuario } from '../../../lib/db';
+import { criarPrimeiroUsuario, garantirLojaDoUsuario } from '../../../lib/db';
 import { db, pepperObrigatorio, setupToken } from '../../../lib/env';
 import { hashSenha, validarSenha } from '../../../lib/auth';
 import { criarSessao } from '../../../lib/session';
@@ -77,6 +77,7 @@ export const POST: APIRoute = async (ctx) => {
   // Já existe conta (duplo clique, corrida ou painel em uso): manda ao login.
   if (!criado) return ctx.redirect('/admin/login', 303);
 
+  await garantirLojaDoUsuario(d1, id);
   await criarSessao(ctx, { id, email, nome });
 
   return ctx.redirect('/admin', 303);

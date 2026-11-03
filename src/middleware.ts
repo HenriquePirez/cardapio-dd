@@ -14,6 +14,8 @@ import type { APIContext, MiddlewareNext } from 'astro';
 import { defineMiddleware } from 'astro:middleware';
 import { lerUsuario } from './lib/session';
 import { chaveCardapio } from './lib/cache';
+import { db } from './lib/env';
+import { garantirLojaDoUsuario, listarLojasDoUsuario } from './lib/db';
 
 // Rotas do painel que funcionam sem login
 const PUBLICAS_ADMIN = new Set([
@@ -83,7 +85,7 @@ async function tratar(ctx: APIContext, next: MiddlewareNext): Promise<Response> 
   // ---------------------------------------------------------------
   // Cardápio público com cache na edge
   // ---------------------------------------------------------------
-  if (caminho === '/') {
+  if (caminho === '/' || caminho.startsWith('/loja/')) {
     // A chave é a URL raiz, sem query: "/?qualquer" não cria variante órfã
     // e a invalidação do admin (src/lib/cache.ts) acerta sempre.
     const chave = chaveCardapio(ctx.url);
@@ -143,8 +145,21 @@ async function tratar(ctx: APIContext, next: MiddlewareNext): Promise<Response> 
     return new Response(r.body, { status: r.status, statusText: r.statusText, headers });
   };
 
-  const jaLogado = (await lerUsuario(ctx)) !== null;
-  if (jaLogado) return semCache(await next());
+  const usuario = await lerUsuario(ctx);
+  const jaLogado = usuario !== null;
+
+  if (jaLogado) {
+    // Loja ativa: cookie do seletor, sempre validada contra as lojas do dono.
+    const lojas = await listarLojasDoUsuario(db(), usuario.id);
+    let loja = lojas[0] ?? (await garantirLojaDoUsuario(db(), usuario.id));
+    const escolhida = ctx.cookies.get('loja_ativa')?.value;
+    if (escolhida) {
+      loja = lojas.find((l) => l.id === escolhida) ?? loja;
+    }
+    ctx.locals.loja = loja;
+    ctx.locals.lojas = lojas.length ? lojas : [loja];
+    return semCache(await next());
+  }
 
   if (PUBLICAS_ADMIN.has(caminho)) return semCache(await next());
 

@@ -9,13 +9,15 @@ const { id } = Astro.params;
 const msg = Astro.url.searchParams.get('msg');
 
 const d1 = db();
-const produto = id ? await obterProduto(d1, id) : null;
+const loja = Astro.locals.loja!;
+const urlCardapio = loja.padrao === 1 ? '/' : `/loja/${loja.slug}`;
+const produto = id ? await obterProduto(d1, loja.id, id) : null;
 
 if (!produto) {
   return Astro.redirect('/admin/produtos?msg=nao-encontrado');
 }
 
-const categorias = await listarCategorias(d1);
+const categorias = await listarCategorias(d1, loja.id);
 ---
 
 <AdminLayout titulo={`Editar: ${produto.nome}`}>
@@ -33,5 +35,6 @@ const categorias = await listarCategorias(d1);
     </div>
   )}
 
-  <ProductForm produto={produto} categorias={categorias} />
+  <ProductForm
+    urlCardapio={urlCardapio} produto={produto} categorias={categorias} />
 </AdminLayout>

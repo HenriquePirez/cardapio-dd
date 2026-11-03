@@ -9,10 +9,11 @@ import type { Categoria, Midia, Produto } from '../lib/db';
 
 interface Props {
   produto?: Produto & { midia: Midia[] };
+  urlCardapio?: string;
   categorias: Categoria[];
 }
 
-const { produto, categorias } = Astro.props;
+const { produto, categorias, urlCardapio = '/' } = Astro.props;
 
 const modoEdicao = !!produto;
 const modalidade = produto?.modalidade ?? 'ambos';
@@ -70,7 +71,10 @@ const galeria = (produto?.midia ?? []).map((m) => ({
         <div class="campo">
           <label for="preco" data-i18n="preco">Preço (R$)</label>
           <input id="preco" name="preco" type="number" step="0.01" min="0" required
-            inputmode="decimal" value={produto?.preco ?? ''} placeholder="28.90" data-i18n-ph="precoPlaceholder" />
+            inputmode="decimal"
+            value={produto ? (produto.preco_centavos / 100).toFixed(2) : ''}
+            placeholder="28.90"
+            data-i18n-ph="precoPlaceholder" />
         </div>
         <div class="campo">
           <label for="categoria" data-i18n="categoria">Categoria</label>
@@ -173,7 +177,7 @@ const galeria = (produto?.midia ?? []).map((m) => ({
     <button class="btn btn-primario" type="submit" data-i18n="salvarProduto">Salvar produto</button>
     <a href="/admin/produtos" class="btn btn-secundario" data-i18n="cancelar">Cancelar</a>
     {modoEdicao && (
-      <a href="/" target="_blank" rel="noopener" class="btn btn-secundario" data-i18n="verCardapio">Ver cardápio ↗</a>
+      <a href={urlCardapio} target="_blank" rel="noopener" class="btn btn-secundario" data-i18n="verCardapio">Ver cardápio ↗</a>
     )}
   </div>
 </form>

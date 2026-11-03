@@ -21,11 +21,12 @@ apenas para seguir exemplos.
 
 ```
 src/
-├── middleware.ts          # cache da edge em "/" (30s) + guarda de sessão em /admin/*
-├── config.ts              # SITE (nome/descrição/idioma) + formatarPreco()
+├── middleware.ts          # cache por URL (30s) + sessão/loja ativa em /admin/*
+├── config.ts              # padrões globais (SITE) + formatarPreco()
 ├── env.d.ts               # tipos de App.SessionData e Cloudflare.Env
 ├── lib/
-│   ├── db.ts              # acesso ao D1 tipado (funções por tabela; prepared statements)
+│   ├── db.ts              # D1 tipado; toda leitura/escrita recebe lojaId
+│   ├── cores.ts           # validação de hex e derivação de tons acessíveis por loja
 │   ├── env.ts             # bindings D1/KV + urlMidia() + validação de chaves de mídia
 │   ├── auth.ts            # PBKDF2-SHA256 (Web Crypto) com pepper + promoção de hash legado
 │   ├── session.ts         # cria/lê/destrói sessão (KV via driver do adapter)
@@ -33,15 +34,16 @@ src/
 │   ├── midia.ts           # apaga objetos do KV (evita órfãos)
 │   ├── cache.ts           # helpers do cache da edge
 │   └── icone.ts           # helpers de emoji/ícone
-├── components/            # ProductCard, Gallery (lightbox), ProductForm (CRUD + upload)
+├── components/            # Cardapio (vitrine), ProductCard, Gallery, ProductForm
 ├── layouts/               # BaseLayout (cardápio), AdminLayout (painel)
 ├── pages/
-│   ├── index.astro        # cardápio público (lê do D1, cacheado na edge)
+│   ├── index.astro        # cardápio da loja principal (/)
+│   ├── loja/[slug].astro  # cardápio das demais lojas
 │   ├── media/[...chave].ts# serve mídia do KV (Range/206)
-│   └── admin/             # login, criar-conta, CRUD, APIs internas
+│   └── admin/             # login, criar-conta, CRUD, /admin/loja, APIs internas
 ├── styles/global.css      # tokens de tema (fonte única de design)
 scripts/                   # gerar-favicon.mjs, gerar-placeholders.mjs (dev util)
-migrations/                # 0001_init.sql (schema), 0002_seed.sql (dados de exemplo)
+migrations/                # 0001 init, 0002 seed, 0003 modalidade, 0004 multi-loja
 ```
 
 Não existe camada de serviço/domain: a apresentação (páginas/components) chama
@@ -49,8 +51,14 @@ Não existe camada de serviço/domain: a apresentação (páginas/components) ch
 
 ## Fronteiras e fluxo
 
-- **Leitura pública:** `pages/index.astro` → `lib/db.ts` → D1; resposta com `Cache-Control`
-  de 30s aplicado/gravado pelo `middleware.ts` (Cache API da edge; só `/` e só status 200).
+- **Leitura pública:** `pages/index.astro` (loja `padrao`) e `pages/loja/[slug].astro`
+  → `lib/db.ts` → D1, sempre com `loja.id`; a resposta tem `Cache-Control` de 30s
+  aplicado/gravado pelo `middleware.ts` (Cache API da edge; só `/` e `/loja/*`, só status 200,
+  chave pela URL sem query). `components/Cardapio.astro` recebe loja/categorias/produtos
+  prontos — componente não acessa D1.
+- **Loja ativa no painel:** middleware lê a sessão, lista as lojas do usuário e valida o
+  cookie `loja_ativa`; ausente → primeira loja (ou cria/adota uma). APIs e páginas usam
+  `Astro.locals.loja`; toda query de categoria/produto/mídia inclui `loja_id`.
 - **Escrita do painel:** páginas `/admin` + APIs `/admin/api/*` → middleware exige sessão
   (GET sem sessão → redirect; métodos de escrita → **401**) → APIs validam mesma origem
   (CSRF) → `lib/db.ts` com prepared statements parametrizados → D1.
@@ -63,13 +71,16 @@ Não existe camada de serviço/domain: a apresentação (páginas/components) ch
 
 ## Dados e migrações
 
-- Schema: `migrations/0001_init.sql` — `categorias`, `produtos`, `produto_midia`,
-  `usuarios`, `login_tentativas`. Seed: `migrations/0002_seed.sql`.
+- Schema: `migrations/0001_init.sql` (`categorias`, `produtos`, `produto_midia`,
+  `usuarios`, `login_tentativas`), `0003_modalidade.sql`, e `0004_saas_lojas.sql`
+  (`lojas`; `loja_id` em categorias/produtos/mídia; PK composta; preço em centavos).
+  Seed: `migrations/0002_seed.sql`. A 0004 copia os dados existentes para a loja
+  `dona-dora` (rebuild das tabelas) — aplicar só com backup (`wrangler d1 export`).
 - **Aplicação manual e explícita** (nunca em build/request):
   `npm run db:apply:local` / `npm run db:apply:remote` (`wrangler d1 execute`).
 - Sem ORM: SQL direto, tipado em `src/lib/db.ts`, com prepared statements e projeções
   explícitas; listagens limitadas.
-- Migração nova = escrever `migrations/0003_*.sql` e aplicar no destino apropriado
+- Migração nova = escrever `migrations/0005_*.sql` (ou próximo número) e aplicar no destino apropriado
   (local primeiro). **Produção não é ambiente de teste.**
 
 ## Decisões
@@ -81,6 +92,9 @@ Não existe camada de serviço/domain: a apresentação (páginas/components) ch
 | PBKDF2 40k iterações + pepper | workerd limita a 100k; 40k ≈12 ms medido | OWASP 600k (inviável) | runtime permitir mais iterações |
 | Vídeo como corpo bruto | multipart caro em CPU no plano free | multipart unificado | limite de CPU mudar |
 | Conta única sem papéis | produto é de um dono + até 2 ajudantes | RBAC | múltiplos perfis |
+| `loja_id` em toda query + PKs compostas | D1/SQLite não tem RLS; isolamento testado no código | schema por banco/loja | muitas lojas ou exigência de RLS |
+| Duas cores livres com derivação AA | branding sem depender de paleta fixa | lista de temas prontos | pedido de identidade visual avançada |
+| Logo em KV (`lojas/`) | mesmo caminho da mídia, sem R2 | bucket R2 | migrar mídia para R2 |
 
 ## Manutenção
 

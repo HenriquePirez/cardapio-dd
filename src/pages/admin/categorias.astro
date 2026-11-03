@@ -7,8 +7,9 @@ import IconeCategoria from '../../components/IconeCategoria.astro';
 import { AVISOS_CATEGORIA, ehSucesso } from '../../lib/mensagens';
 
 const d1 = db();
-const categorias = await listarCategorias(d1);
-const produtos = await listarProdutos(d1);
+const loja = Astro.locals.loja!;
+const categorias = await listarCategorias(d1, loja.id);
+const produtos = await listarProdutos(d1, loja.id);
 
 const edicao = Astro.url.searchParams.get('editar');
 const mensagem = Astro.url.searchParams.get('msg');

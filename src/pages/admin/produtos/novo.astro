@@ -5,7 +5,9 @@ import { db } from '../../../lib/env';
 import { listarCategorias } from '../../../lib/db';
 import { AVISOS_PRODUTO, ehSucesso } from '../../../lib/mensagens';
 
-const categorias = await listarCategorias(db());
+const loja = Astro.locals.loja!;
+const urlCardapio = loja.padrao === 1 ? '/' : `/loja/${loja.slug}`;
+const categorias = await listarCategorias(db(), loja.id);
 const msg = Astro.url.searchParams.get('msg');
 ---
 
@@ -33,5 +35,6 @@ const msg = Astro.url.searchParams.get('msg');
     </div>
   )}
 
-  <ProductForm categorias={categorias} />
+  <ProductForm
+    urlCardapio={urlCardapio} categorias={categorias} />
 </AdminLayout>
