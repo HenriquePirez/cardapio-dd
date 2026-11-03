@@ -520,3 +520,15 @@ export async function garantirLojaDoUsuario(db: D1Like, usuarioId: string): Prom
   });
   return loja;
 }
+
+/** Registra o aceite dos documentos legais no login/criação de conta. */
+export async function registrarAceite(
+  db: D1Like,
+  usuarioId: string,
+  versao: string,
+): Promise<void> {
+  await db
+    .prepare("UPDATE usuarios SET aceite_em = datetime('now'), aceite_versao = ? WHERE id = ?")
+    .bind(versao, usuarioId)
+    .run();
+}

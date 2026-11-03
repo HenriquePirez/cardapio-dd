@@ -73,11 +73,29 @@ produtos · upload/otimização de mídia em KV com limpeza de órfãos · tema/
 **multi-loja local** (branding, URLs por loja, isolamento por `loja_id`) · deploy
 automático Git → Workers Builds (a versão multi-loja ainda não foi implantada).
 
+## Transparência, privacidade e acessibilidade
+
+- Páginas públicas: `/privacidade`, `/termos`, `/cookies`, `/reembolso` e
+  `/exclusao-de-dados`, linkadas no rodapé do cardápio e do painel.
+- Banner de cookies com “Aceitar todos” e “Rejeitar opcionais”; analytics só carrega com
+  aceite. A escolha pode ser refeita pelo link “Preferências de cookies”.
+- Formulários de login e criação de conta exigem aceite dos Termos e da Política e registram
+  data/versão em `usuarios.aceite_em`/`aceite_versao`.
+- Dados de contato do responsável no rodapé: Henrique Pires, telefone e e-mail. Sem CNPJ
+  informado até o momento.
+- Coleta mínima: conta do painel (nome, e-mail, senha com hash) e conteúdo da loja; não há
+  cadastro público, CPF, endereço ou dados de pagamento neste sistema.
+- Exclusão de dados por solicitação identificada em `/exclusao-de-dados` (e-mail com prazo
+  de resposta de 15 dias), pois a conta é única e a remoção é irreversível.
+- Acessibilidade: atalho “Pular para o conteúdo”, foco visível, imagens com texto
+  alternativo, botões com rótulo e contraste derivado por loja.
+
 ## Fora de escopo
 
 Carrinho/pagamento/emissão de pedido (fica no app externo) · múltiplos usuários com papéis ·
 cadastro público de lojas/cobrança · domínio próprio por loja · app nativo · R2 (exige
-cartão — ver `README.md`) · analytics · painel de métricas · SEO avançado/sitemap.
+cartão — ver `README.md`) · painel de métricas · SEO avançado/sitemap. Analytics é opcional
+e desativado sem `GA_ID`/`META_PIXEL_ID`; não há CRM nem envio de e-mail pelo sistema.
 
 ## Requisitos
 

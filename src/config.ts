@@ -2,6 +2,21 @@
  * Configuração central do cardápio.
  * Troque os valores abaixo quando for para produção.
  */
+/** Responsável pelo tratamento de dados e contato exibido nas páginas legais. */
+export const EMPRESA = {
+  nome: 'Henrique Pires',
+  telefone: '31995242304',
+  telefoneExibicao: '(31) 99524-2304',
+  telefoneLink: '+5531995242304',
+  email: 'hpnogueira1@gmail.com',
+} as const;
+
+/** Versão dos documentos legais; registrada no aceite do painel. */
+export const LEGAL = {
+  versao: '2026-11-03',
+  atualizadoEm: '03/11/2026',
+} as const;
+
 export const SITE = {
   nome: 'Dona Dôra',
   descricao: 'Pizzas artesanais, massas e lasanhas — veja as fotos e faça seu pedido.',

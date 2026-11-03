@@ -5,6 +5,7 @@ import '@fontsource/fredoka/latin-500.css';
 import '@flaticon/flaticon-uicons/css/bold/rounded.css';
 import { SITE } from '../config';
 import TemaInicial from '../components/TemaInicial.astro';
+import ConsentimentoCookies from '../components/ConsentimentoCookies.astro';
 import { ACENTO_PADRAO, MARCA_PADRAO, cssPaleta, paletaLoja } from '../lib/cores';
 import { urlMidia } from '../lib/env';
 import type { Loja } from '../lib/db';
@@ -53,6 +54,8 @@ const favicon = loja?.logo_chave ? urlMidia(loja.logo_chave) : '/favicon.ico';
     <link rel="preconnect" href="/" />
   </head>
   <body>
+    <a class="pular-conteudo" href="#conteudo">Pular para o conteúdo</a>
     <slot />
+    <ConsentimentoCookies />
   </body>
 </html>

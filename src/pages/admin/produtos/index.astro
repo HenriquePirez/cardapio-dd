@@ -94,7 +94,7 @@ const nomeCat = (id: string) => categorias.find((c) => c.id === id)?.nome ?? id;
           return (
             <div class="linha-lista">
               {src ? (
-                <img class="miniatura" src={src} alt="" loading="lazy" decoding="async" />
+                <img class="miniatura" src={src} alt={`Miniatura de ${p.nome}`} loading="lazy" decoding="async" />
               ) : (
                 <span class="miniatura sem"><i class="fi-br-images" aria-hidden="true"></i></span>
               )}

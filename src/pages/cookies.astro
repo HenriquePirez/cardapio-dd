@@ -1,0 +1,60 @@
+---
+import LegalLayout from '../layouts/LegalLayout.astro';
+import { EMPRESA } from '../config';
+import { db } from '../lib/env';
+import { obterLojaPadrao } from '../lib/db';
+
+const loja = await obterLojaPadrao(db());
+---
+
+<LegalLayout titulo="Política de Cookies" loja={loja}>
+  <p>
+    Cookies e armazenamento local ajudam o cardápio a funcionar e, com a sua permissão, a medir
+    o acesso. Você escolhe no banner exibido no primeiro acesso e pode mudar a decisão quando
+    quiser pelo link “Preferências de cookies” no rodapé.
+  </p>
+
+  <h2>1. Essenciais (sempre ativos)</h2>
+  <ul>
+    <li>
+      <strong>Sessão do painel:</strong> cookie necessário para manter o responsável logado no
+      painel administrativo. Sem ele, o login não funciona. A sessão expira em até 7 dias.
+    </li>
+    <li>
+      <strong>Preferências locais:</strong> tema (claro/escuro) e idioma (português/inglês)
+      ficam no armazenamento do navegador para lembrar a escolha. Não identificam você.
+    </li>
+    <li>
+      <strong>Escolha de cookies:</strong> a sua decisão de aceitar ou rejeitar medição também
+      fica no navegador.
+    </li>
+  </ul>
+
+  <h2>2. Medição (opcionais)</h2>
+  <p>
+    Se você escolher “Aceitar todos”, o cardápio pode carregar o Google Analytics e o Meta Pixel
+    para contar visitas e entender quais páginas são mais usadas. Esses cookies só são criados
+    depois do aceite. Sem aceite — ou se nenhum identificador estiver configurado — nenhum
+    script de medição é carregado.
+  </p>
+  <p>
+    Fornecedores possíveis: Google (Google Analytics) e Meta Platforms (Meta Pixel). Consulte
+    as políticas deles para saber como tratam os dados. A base legal é o seu consentimento,
+    que pode ser revogado a qualquer momento.
+  </p>
+
+  <h2>3. Como gerenciar</h2>
+  <p>
+    Use o botão “Preferências de cookies” no rodapé para reabrir o banner e escolher de novo.
+    Você também pode apagar cookies e dados do site nas configurações do navegador. Bloquear
+    cookies essenciais pode impedir o login no painel.
+  </p>
+
+  <h2>4. Contato</h2>
+  <p>
+    Dúvidas sobre cookies ou privacidade:
+    <a href={`mailto:${EMPRESA.email}`}>{EMPRESA.email}</a> ·
+    <a href={`tel:${EMPRESA.telefoneLink}`}>{EMPRESA.telefoneExibicao}</a>. Veja também a
+    <a href="/privacidade">Política de Privacidade</a>.
+  </p>
+</LegalLayout>

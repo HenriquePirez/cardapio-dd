@@ -6,7 +6,7 @@
  * - Proteção CSRF: exige Origin da mesma origem
  */
 import type { APIRoute } from 'astro';
-import { obterUsuario, contarUsuarios, trocarSenha } from '../../../lib/db';
+import { obterUsuario, contarUsuarios, trocarSenha, registrarAceite } from '../../../lib/db';
 import {
   conferirSenha,
   hashSenha,
@@ -23,6 +23,7 @@ import {
   limparTentativas,
 } from '../../../lib/login-guard';
 import { mesmaOrigem } from '../../../lib/http';
+import { LEGAL } from '../../../config';
 
 
 export const POST: APIRoute = async (ctx) => {
@@ -39,9 +40,13 @@ export const POST: APIRoute = async (ctx) => {
 
   const email = String(form.get('email') ?? '').trim();
   const senha = String(form.get('senha') ?? '');
+  const aceite = String(form.get('aceite') ?? '');
 
   if (!email || !senha) {
     return redirecionar('/admin/login?erro=campos');
+  }
+  if (aceite !== '1') {
+    return redirecionar('/admin/login?erro=aceite');
   }
 
   const d1 = db();
@@ -79,6 +84,7 @@ export const POST: APIRoute = async (ctx) => {
   }
 
   await limparTentativas(d1, email, ip);
+  await registrarAceite(d1, usuario.id, LEGAL.versao);
 
   // Upgrade transparente: se o hash gravado usa menos iterações que o código
   // atual (ou ficou sem pepper depois de o segredo ser definido), regrava já

@@ -59,14 +59,15 @@ não por default.
 
 ## Estratégia de testes
 
-- **Cobertura atual:** lógica crítica de `src/lib` e SQL — 60 testes:
+- **Cobertura atual:** lógica crítica de `src/lib` e SQL — 63 testes:
   - `auth.test.ts`: PBKDF2 (hash/verificação/pepper/hash legado/erros de formato).
   - `login-guard.test.ts`: rate-limit com D1 fake em memória, incluindo regressão do
     bug corrigido em 2026-10-26 (bloqueio anulado por `Date.parse('...ZZ')` → NaN).
   - `env.test.ts`: chaves de mídia, tipos MIME, `urlMidia`.
   - `config.test.ts`: `formatarPreco` (BRL).
   - `cores.test.ts`: hex livre, contraste AA do CTA e legibilidade no tema escuro.
-  - `db.test.ts`: aplica as migrações 0001–0004 num SQLite real (`node:sqlite`, Node 24),
+  - `consentimento.test.ts`: leitura/serialização da escolha de cookies (versão/JSON inválido).
+  - `db.test.ts`: aplica as migrações 0001–0005 num SQLite real (`node:sqlite`, Node 24),
     valida a cópia dos dados para `dona-dora`, isolamento por `loja_id`, PK composta e
     bloqueio de exclusão de categoria com produtos.
 - `cloudflare:workers` é substituído por stub (`tests/cloudflare-workers-stub.ts`)

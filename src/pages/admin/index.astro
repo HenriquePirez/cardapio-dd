@@ -72,7 +72,7 @@ const estatisticas = [
           return (
             <div class="linha-lista">
               {src ? (
-                <img class="miniatura" src={src} alt="" loading="lazy" decoding="async" />
+                <img class="miniatura" src={src} alt={`Miniatura de ${p.nome}`} loading="lazy" decoding="async" />
               ) : (
                 <span class="miniatura" aria-hidden="true" />
               )}

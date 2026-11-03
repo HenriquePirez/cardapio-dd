@@ -1,0 +1,119 @@
+---
+import LegalLayout from '../layouts/LegalLayout.astro';
+import { EMPRESA } from '../config';
+import { db } from '../lib/env';
+import { obterLojaPadrao } from '../lib/db';
+
+const loja = await obterLojaPadrao(db());
+---
+
+<LegalLayout titulo="Política de Privacidade" loja={loja}>
+  <p>
+    Esta política explica como os dados pessoais são tratados neste cardápio digital e no
+    painel administrativo, em conformidade com a Lei Geral de Proteção de Dados (LGPD —
+    Lei nº 13.709/2018).
+  </p>
+
+  <h2>1. Quem é o responsável</h2>
+  <p>
+    O responsável pelo tratamento é <strong>{EMPRESA.nome}</strong>, contato
+    <a href={`mailto:${EMPRESA.email}`}>{EMPRESA.email}</a> e telefone
+    <a href={`tel:${EMPRESA.telefoneLink}`}>{EMPRESA.telefoneExibicao}</a>.
+  </p>
+
+  <h2>2. Quais dados são tratados</h2>
+  <ul>
+    <li>
+      <strong>Conta do painel:</strong> nome, e-mail e senha. A senha é armazenada apenas como
+      hash criptográfico; não é possível ler a senha original.
+    </li>
+    <li>
+      <strong>Dados da loja:</strong> nome, slogan, descrição, logo, cores, categorias,
+      produtos, preços, textos e mídias enviados pelo responsável pela loja.
+    </li>
+    <li>
+      <strong>Registros técnicos:</strong> data e hora de acesso, endereço IP e identificadores
+      de segurança usados para prevenir abuso, limitar tentativas de login e manter o serviço
+      disponível.
+    </li>
+    <li>
+      <strong>Preferências no navegador:</strong> tema, idioma e escolha de cookies, guardados
+      no próprio dispositivo.
+    </li>
+    <li>
+      <strong>Medição de audiência:</strong> somente com o seu consentimento, dados de acesso
+      podem ser enviados ao Google Analytics e/ou ao Meta Pixel.
+    </li>
+  </ul>
+  <p>
+    <strong>Coleta mínima:</strong> não pedimos CPF, endereço, dados de pagamento ou outros
+    dados que não sejam necessários para operar o cardápio e o painel.
+  </p>
+
+  <h2>3. Para que usamos os dados</h2>
+  <ul>
+    <li>autenticar o acesso ao painel e proteger a conta;</li>
+    <li>publicar e manter o cardápio da loja;</li>
+    <li>responder solicitações de suporte e de exclusão de dados;</li>
+    <li>medir audiência, quando você autoriza cookies de medição;</li>
+    <li>cumprir obrigações legais e exercer direitos.</li>
+  </ul>
+
+  <h2>4. Bases legais</h2>
+  <p>
+    Tratamos dados para executar o serviço solicitado (art. 7º, V), por legítimo interesse na
+    segurança e melhoria do serviço (art. 7º, IX) e por consentimento para cookies de medição
+    (art. 7º, I). O consentimento pode ser retirado a qualquer momento.
+  </p>
+
+  <h2>5. Cookies e medição</h2>
+  <p>
+    Cookies essenciais mantêm a sessão do painel e não dependem de consentimento. Cookies de
+    medição são opcionais e só carregam após “Aceitar” no banner. Detalhes e como mudar a
+    escolha: <a href="/cookies">Política de Cookies</a>.
+  </p>
+
+  <h2>6. Compartilhamento</h2>
+  <p>
+    Não vendemos dados pessoais. O serviço usa a infraestrutura da Cloudflare (hospedagem,
+    banco de dados e armazenamento). Se o cliente tocar em “Comprar”, ele será levado a um site
+    externo de pedidos e pagamentos, que possui as próprias políticas. Quando autorizados,
+    Google e Meta podem receber dados de navegação para medição. Esses fornecedores podem
+    processar dados fora do Brasil, com as salvaguardas contratuais aplicáveis.
+  </p>
+
+  <h2>7. Por quanto tempo guardamos</h2>
+  <p>
+    Dados da conta e da loja ficam enquanto o serviço estiver ativo. Registros de segurança são
+    mantidos pelo prazo necessário à prevenção de abuso. Após pedido de exclusão, os dados são
+    eliminados, ressalvados os que a lei obrigar a manter.
+  </p>
+
+  <h2>8. Seus direitos</h2>
+  <p>
+    Você pode pedir confirmação de tratamento, acesso, correção, anonimização, portabilidade,
+    eliminação, informação sobre compartilhamento e revogação do consentimento. Use a página
+    <a href="/exclusao-de-dados">Exclusão de dados</a> ou escreva para
+    <a href={`mailto:${EMPRESA.email}`}>{EMPRESA.email}</a>. Responderemos em até 15 dias.
+  </p>
+
+  <h2>9. Segurança</h2>
+  <p>
+    O acesso ao painel usa senha com hash e pepper, sessão protegida, limite de tentativas e
+    verificação de origem nas escritas. O site em produção usa HTTPS. Nenhum sistema é
+    totalmente imune a incidentes; se houver incidente relevante, os titulares serão
+    comunicados conforme a LGPD.
+  </p>
+
+  <h2>10. Menores de idade</h2>
+  <p>
+    O painel é destinado a maiores de 18 anos. O cardápio pode ser consultado por qualquer
+    pessoa; não coletamos intencionalmente dados de crianças e adolescentes.
+  </p>
+
+  <h2>11. Alterações</h2>
+  <p>
+    Esta política pode ser atualizada. A data e a versão no topo identificam a redação vigente.
+    Mudanças relevantes serão destacadas no cardápio.
+  </p>
+</LegalLayout>

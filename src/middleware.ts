@@ -29,17 +29,17 @@ const CACHE_SEGUNDOS = 30;
 
 /**
  * CSP com 'unsafe-inline' porque o Astro gera scripts inline de hidratação.
- * Sem nonce/hash isto continua bloqueando script externo e injeção de origem
- * desconhecida. shortcut: nonce por resposta, quando houver build com hash.
+ * Scripts externos só são permitidos nos provedores de analytics; o banner só
+ * os injeta após o aceite. shortcut: nonce por resposta, quando houver build com hash.
  */
 const CSP = [
   "default-src 'self'",
   "img-src 'self' data: blob: https:",
   "media-src 'self' blob: https:",
-  "script-src 'self' 'unsafe-inline'",
+  "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://connect.facebook.net",
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self' data:",
-  "connect-src 'self'",
+  "connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com https://connect.facebook.net https://www.facebook.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",

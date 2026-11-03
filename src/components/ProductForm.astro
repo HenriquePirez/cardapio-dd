@@ -173,6 +173,11 @@ const galeria = (produto?.midia ?? []).map((m) => ({
     </section>
   </div>
 
+  <p class="aviso-privacidade">
+    Os dados e mídias deste formulário são usados apenas para publicar o catálogo da loja.
+    <a href="/privacidade" target="_blank" rel="noopener">Política de Privacidade</a>.
+  </p>
+
   <div class="barra-salvar">
     <button class="btn btn-primario" type="submit" data-i18n="salvarProduto">Salvar produto</button>
     <a href="/admin/produtos" class="btn btn-secundario" data-i18n="cancelar">Cancelar</a>
@@ -267,7 +272,7 @@ const galeria = (produto?.midia ?? []).map((m) => ({
       li.innerHTML = `
         ${
           src
-            ? `<img class="g-thumb" src="${esc(src)}" alt="" loading="lazy" decoding="async" />`
+            ? `<img class="g-thumb" src="${esc(src)}" alt="${esc(item.alt || 'Prévia da mídia do produto')}" loading="lazy" decoding="async" />`
             : `<i class="g-thumb g-vazio ${iconeClasse(item.tipo)}" aria-hidden="true"></i>`
         }
         <div class="g-info">
@@ -767,6 +772,17 @@ const galeria = (produto?.midia ?? []).map((m) => ({
     font-size: 0.78rem;
     color: #6b7280;
     line-height: 1.45;
+  }
+
+  .aviso-privacidade {
+    margin: 18px 0 0;
+    font-size: 0.78rem;
+    color: var(--adm-dim);
+  }
+
+  .aviso-privacidade a {
+    color: var(--cor-preco);
+    text-decoration: underline;
   }
 
   .barra-salvar {

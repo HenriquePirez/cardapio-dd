@@ -40,7 +40,12 @@ if (jaExiste) {
         {erro === 'campos' && 'Preencha todos os campos.'}
         {erro === 'divergentes' && 'As senhas não coincidem.'}
         {erro === 'token' && 'Código de configuração inválido.'}
-        {erro !== 'campos' && erro !== 'divergentes' && erro !== 'token' && erro}
+        {erro === 'aceite' && 'Leia e aceite os Termos de Uso e a Política de Privacidade.'}
+        {erro !== 'campos' &&
+          erro !== 'divergentes' &&
+          erro !== 'token' &&
+          erro !== 'aceite' &&
+          erro}
       </div>
     )}
 
@@ -104,6 +109,15 @@ if (jaExiste) {
           placeholder="repita a senha"
         />
       </div>
+
+      <label class="campo-aceite">
+        <input type="checkbox" name="aceite" value="1" required />
+        <span>
+          Li e aceito os <a href="/termos" target="_blank" rel="noopener">Termos de Uso</a> e a
+          <a href="/privacidade" target="_blank" rel="noopener">Política de Privacidade</a>, e
+          concordo com o tratamento de dados descrito.
+        </span>
+      </label>
 
       <button class="btn btn-primario btn-largo" type="submit">Criar conta e entrar</button>
     </form>

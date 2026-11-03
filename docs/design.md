@@ -29,7 +29,9 @@ o padrão da loja Dona Dôra.
 Componentes: `Cardapio` (vitrine completa da loja, recebe dados prontos), `ProductCard`
 (card do produto), `Gallery` (lightbox quadrado 1:1 estilo Instagram — bolinhas de
 navegação, seta `←`, swipe, vídeo sob demanda), `ProductForm` (formulário + galeria/upload),
-`BaseLayout` (cardápio), `AdminLayout` (painel com seletor de loja). Não há biblioteca de UI
+`BaseLayout` (cardápio), `AdminLayout` (painel com seletor de loja),
+`ConsentimentoCookies` (banner), `RodapeLegal` (contato e links legais) e `LegalLayout`
+(páginas de privacidade, termos, cookies, reembolso e exclusão). Não há biblioteca de UI
 (Tailwind/shadcn não adotados) — CSS próprio com classes globais.
 
 ## Branding por loja
@@ -78,14 +80,19 @@ aplica o corte legado de emojis). Testes: `src/lib/icone.test.ts`.
 
 ## Interação
 
-Critérios em uso no código: HTML semântico, utilitário `.sr-only` (`global.css`), controles
-de formulário com elementos reais (`button`, inputs com rótulos), botões com `cursor: pointer`,
-`img/video` com `max-width: 100%`. Critique de 03/11/2026 medida no cardápio público:
+Critérios em uso no código: HTML semântico, atalho “Pular para o conteúdo”, foco visível
+global, utilitário `.sr-only` (`global.css`), controles de formulário com elementos reais
+(`button`, inputs com rótulos), botões com `cursor: pointer`, `img/video` com
+`max-width: 100%` e texto alternativo nas imagens de conteúdo. Critique de 03/11/2026 medida no cardápio público:
 contraste de preço/CTA em 5,18:1, alvos de toque principais em 44px, foco preso e devolvido
 no lightbox e no diálogo de compra, Esc fecha ambos. `prefers-reduced-motion` segue não
 tratado.
 
 ## Layout e estados
+
+Páginas legais usam o mesmo layout mobile-first, com título de seção, data/versão e links
+legais no rodapé. O banner de cookies é fixo na parte inferior, com dois botões de 44px e
+reabertura pelo rodapé.
 
 Mobile-first, coluna única limitada a `--max: 640px` com `container`; o painel usa o mesmo
 token de largura. O lightbox do `Gallery` mostra toda mídia num quadrado 1:1 do menor

@@ -1,0 +1,85 @@
+---
+import LegalLayout from '../layouts/LegalLayout.astro';
+import { EMPRESA } from '../config';
+import { db } from '../lib/env';
+import { obterLojaPadrao } from '../lib/db';
+
+const loja = await obterLojaPadrao(db());
+---
+
+<LegalLayout titulo="Termos de Uso" loja={loja}>
+  <p>
+    Estes termos regem o uso do cardápio digital e do painel administrativo. Ao acessar ou usar
+    o serviço, você declara que leu e concorda com estas regras e com a
+    <a href="/privacidade">Política de Privacidade</a>.
+  </p>
+
+  <h2>1. O que é o serviço</h2>
+  <p>
+    O serviço é uma <strong>vitrine digital</strong> de categorias e produtos de uma ou mais
+    lojas. Ele exibe fotos, vídeos, descrições e preços. O cardápio <strong>não processa
+    pedidos, pagamentos, notas fiscais ou entregas</strong>. Ao tocar em “Comprar”, o usuário é
+    direcionado ao site externo de pedidos e pagamentos indicado pelo lojista.
+  </p>
+
+  <h2>2. Conta do painel</h2>
+  <p>
+    A conta é pessoal e deve ser usada apenas por pessoas autorizadas pelo responsável. O
+    titular deve manter a senha em sigilo e comunicar qualquer uso indevido. A conta pode
+    administrar mais de uma loja; cada loja responde pelo seu próprio conteúdo.
+  </p>
+
+  <h2>3. Conteúdo e responsabilidades do lojista</h2>
+  <p>
+    O lojista é responsável pelas informações que publica, incluindo nomes, descrições, preços,
+    disponibilidade, fotos, vídeos e links de compra. As imagens devem ser próprias ou ter
+    licença de uso comercial. Preços e condições exibidos no cardápio devem corresponder ao
+    que é praticado no site de compra.
+  </p>
+
+  <h2>4. Uso permitido</h2>
+  <ul>
+    <li>consultar o cardápio e compartilhar o link da loja;</li>
+    <li>administrar a loja quando autorizado pelo titular da conta;</li>
+    <li>enviar conteúdo lícito, próprio ou devidamente licenciado.</li>
+  </ul>
+  <p>É proibido tentar acessar contas alheias, burlar a segurança, publicar conteúdo ilegal ou usar o serviço para fraude.</p>
+
+  <h2>5. Direitos de imagem e propriedade intelectual</h2>
+  <p>
+    A marca, os textos, o código e os elementos visuais do serviço pertencem aos seus
+    respectivos titulares. Ícones do Flaticon são usados com a licença gratuita que exige
+    atribuição, exibida no rodapé. Fotos e vídeos enviados pelo lojista continuam dele, que
+    autoriza apenas a exibição necessária para o funcionamento do cardápio.
+  </p>
+
+  <h2>6. Links externos</h2>
+  <p>
+    O serviço contém links para sites de terceiros, inclusive o site de pedidos e pagamentos.
+    Não controlamos esses sites e não respondemos por preços, prazos, pagamentos, cancelamentos
+    ou atendimento prestados por eles. Consulte a
+    <a href="/reembolso">Política de Reembolso</a>.
+  </p>
+
+  <h2>7. Disponibilidade e limitação</h2>
+  <p>
+    Buscamos manter o serviço disponível, mas ele pode passar por manutenção, falhas de
+    fornecedores ou interrupções. O serviço é fornecido no estado em que se encontra, sem
+    garantia de resultado comercial ou de ausência total de erros, respeitados os direitos do
+    consumidor previstos na lei.
+  </p>
+
+  <h2>8. Privacidade</h2>
+  <p>
+    O tratamento de dados pessoais é descrito na <a href="/privacidade">Política de
+    Privacidade</a>. Para excluir dados, use a página
+    <a href="/exclusao-de-dados">Exclusão de dados</a>.
+  </p>
+
+  <h2>9. Alterações e contato</h2>
+  <p>
+    Estes termos podem ser atualizados; a versão vigente é identificada no topo. Dúvidas:
+    <a href={`mailto:${EMPRESA.email}`}>{EMPRESA.email}</a> ·
+    <a href={`tel:${EMPRESA.telefoneLink}`}>{EMPRESA.telefoneExibicao}</a>.
+  </p>
+</LegalLayout>

@@ -27,6 +27,7 @@ src/
 ├── lib/
 │   ├── db.ts              # D1 tipado; toda leitura/escrita recebe lojaId
 │   ├── cores.ts           # validação de hex e derivação de tons acessíveis por loja
+│   ├── consentimento.ts   # leitura/serialização da escolha de cookies
 │   ├── env.ts             # bindings D1/KV + urlMidia() + validação de chaves de mídia
 │   ├── auth.ts            # PBKDF2-SHA256 (Web Crypto) com pepper + promoção de hash legado
 │   ├── session.ts         # cria/lê/destrói sessão (KV via driver do adapter)
@@ -34,11 +35,13 @@ src/
 │   ├── midia.ts           # apaga objetos do KV (evita órfãos)
 │   ├── cache.ts           # helpers do cache da edge
 │   └── icone.ts           # helpers de emoji/ícone
-├── components/            # Cardapio (vitrine), ProductCard, Gallery, ProductForm
+├── components/            # Cardapio, ProductCard, Gallery, ProductForm, ConsentimentoCookies, RodapeLegal
 ├── layouts/               # BaseLayout (cardápio), AdminLayout (painel)
 ├── pages/
 │   ├── index.astro        # cardápio da loja principal (/)
 │   ├── loja/[slug].astro  # cardápio das demais lojas
+│   ├── privacidade.astro, termos.astro, cookies.astro,
+│   ├── reembolso.astro, exclusao-de-dados.astro
 │   ├── media/[...chave].ts# serve mídia do KV (Range/206)
 │   └── admin/             # login, criar-conta, CRUD, /admin/loja, APIs internas
 ├── styles/global.css      # tokens de tema (fonte única de design)
@@ -66,21 +69,29 @@ Não existe camada de serviço/domain: a apresentação (páginas/components) ch
   `lib/login-guard.ts` (rate-limit em D1) + `lib/session.ts` (sessão em KV `SESSION`).
 - **Mídia:** upload (multipart p/ foto; corpo bruto p/ vídeo) → KV `MEDIA` → servida por
   `/media/<chave>` com Range → exclusões em `lib/midia.ts` no fluxo do painel.
+- **Consentimento e analytics:** `ConsentimentoCookies.astro` lê/grava a escolha em
+  `localStorage` (`dd-consentimento`) e só injeta GA4/Meta Pixel após aceite. IDs vêm de
+  `GA_ID`/`META_PIXEL_ID` via `lib/env.ts`; vazios = nenhum script externo. O CSP libera só
+  os domínios desses provedores.
+- **Documentos legais:** páginas estáticas em `src/pages/*` com `LegalLayout` e
+  `RodapeLegal`; dados do responsável em `src/config.ts` (`EMPRESA`). Login e criação de
+  conta exigem aceite e registram versão/data em `usuarios`.
 - O código de servidor é dono de environment/binding: tudo passa por `lib/env.ts`
   (nenhuma página toca `env.DB`/`env.MEDIA` diretamente).
 
 ## Dados e migrações
 
 - Schema: `migrations/0001_init.sql` (`categorias`, `produtos`, `produto_midia`,
-  `usuarios`, `login_tentativas`), `0003_modalidade.sql`, e `0004_saas_lojas.sql`
-  (`lojas`; `loja_id` em categorias/produtos/mídia; PK composta; preço em centavos).
+  `usuarios`, `login_tentativas`), `0003_modalidade.sql`, `0004_saas_lojas.sql`
+  (`lojas`; `loja_id` em categorias/produtos/mídia; PK composta; preço em centavos) e
+  `0005_aceite_legal.sql` (`usuarios.aceite_em`, `usuarios.aceite_versao`).
   Seed: `migrations/0002_seed.sql`. A 0004 copia os dados existentes para a loja
   `dona-dora` (rebuild das tabelas) — aplicar só com backup (`wrangler d1 export`).
 - **Aplicação manual e explícita** (nunca em build/request):
   `npm run db:apply:local` / `npm run db:apply:remote` (`wrangler d1 execute`).
 - Sem ORM: SQL direto, tipado em `src/lib/db.ts`, com prepared statements e projeções
   explícitas; listagens limitadas.
-- Migração nova = escrever `migrations/0005_*.sql` (ou próximo número) e aplicar no destino apropriado
+- Migração nova = escrever `migrations/0006_*.sql` (ou próximo número) e aplicar no destino apropriado
   (local primeiro). **Produção não é ambiente de teste.**
 
 ## Decisões

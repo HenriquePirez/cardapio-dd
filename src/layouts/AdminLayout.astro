@@ -13,6 +13,8 @@ import TemaInicial from '../components/TemaInicial.astro';
 import AplicarIdioma from '../components/AplicarIdioma.astro';
 import { cssPaleta, paletaLoja } from '../lib/cores';
 import { urlMidia } from '../lib/env';
+import ConsentimentoCookies from '../components/ConsentimentoCookies.astro';
+import RodapeLegal from '../components/RodapeLegal.astro';
 
 interface Props {
   titulo: string;
@@ -54,6 +56,7 @@ function sair() {
     <meta name="description" content={descricao} />
   </head>
   <body class="admin-body">
+    <a class="pular-conteudo" href="#conteudo">Pular para o conteúdo</a>
     {usuario && (
       <header class="admin-topo">
         <div class="admin-topo-inner">
@@ -99,14 +102,19 @@ function sair() {
       </header>
     )}
 
-    <main class="admin-main">
+    <main class="admin-main" id="conteudo">
       <slot />
     </main>
 
-    <p class="admin-creditos">
-      <span data-i18n="iconesPor">Ícones por</span>
-      <a href="https://www.flaticon.com/br/" target="_blank" rel="noopener noreferrer">Flaticon</a>
-    </p>
+    <footer class="admin-creditos">
+      <RodapeLegal />
+      <p class="admin-flaticon">
+        <span data-i18n="iconesPor">Ícones por</span>
+        <a href="https://www.flaticon.com/br/" target="_blank" rel="noopener noreferrer">Flaticon</a>
+      </p>
+    </footer>
+
+    <ConsentimentoCookies />
 
     <script>
       // Guarda o token de sessão (cookie SameSite) e injeta como header em
@@ -161,6 +169,34 @@ function sair() {
 
   .admin-creditos a {
     color: inherit;
+    text-decoration: underline;
+  }
+
+  .admin-flaticon {
+    margin: 8px 0 0;
+  }
+
+  .campo-aceite {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    margin: 14px 0;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    color: var(--adm-label);
+    text-align: left;
+  }
+
+  .campo-aceite input {
+    width: 18px;
+    height: 18px;
+    margin: 2px 0 0;
+    flex-shrink: 0;
+    accent-color: var(--laranja);
+  }
+
+  .campo-aceite a {
+    color: var(--cor-preco);
     text-decoration: underline;
   }
 

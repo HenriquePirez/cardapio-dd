@@ -5,6 +5,7 @@ import Preferencias from '../components/Preferencias.astro';
 import PedidoDialog from '../components/PedidoDialog.astro';
 import Gallery from '../components/Gallery.astro';
 import IconeCategoria from '../components/IconeCategoria.astro';
+import RodapeLegal from '../components/RodapeLegal.astro';
 import { urlMidia } from '../lib/env';
 import type { Categoria, Loja, Midia, Produto } from '../lib/db';
 import { formatarPreco } from '../config';
@@ -118,7 +119,7 @@ const slogan = loja.slogan || 'O sabor que começa pelos olhos';
     </div>
   </nav>
 
-  <main class="container">
+  <main class="container" id="conteudo">
     {produtos.length === 0 && (
       <div class="vazio">
         <p>
@@ -198,6 +199,7 @@ const slogan = loja.slogan || 'O sabor que começa pelos olhos';
   <footer class="rodape">
     <div class="container">
       <p>{loja.nome} · <span data-i18n="cardapioDigital">Cardápio digital</span></p>
+      <RodapeLegal />
       <p class="rodape-creditos">
         <span data-i18n="iconesPor">Ícones por</span>
         <a href="https://www.flaticon.com/br/" target="_blank" rel="noopener noreferrer">Flaticon</a>
