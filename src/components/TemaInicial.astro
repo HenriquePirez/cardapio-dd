@@ -1,0 +1,18 @@
+<script is:inline>
+  // Aplica tema e idioma salvos antes da primeira pintura (sem flash).
+  (() => {
+    try {
+      const tema =
+        localStorage.getItem('dd-tema') ||
+        (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'escuro' : 'claro');
+      document.documentElement.dataset.tema = tema;
+      document.documentElement.dataset.idioma =
+        localStorage.getItem('dd-idioma') === 'en' ? 'en' : 'pt';
+      if (tema === 'escuro') {
+        document.querySelector('meta[name="theme-color"]').content = '#11150f';
+      }
+    } catch {
+      /* armazenamento bloqueado: mantém o padrão */
+    }
+  })();
+</script>

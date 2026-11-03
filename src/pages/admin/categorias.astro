@@ -31,10 +31,10 @@ const contagem = (id: string) => produtos.filter((p) => p.categoria_id === id).l
 <AdminLayout titulo="Categorias">
   <div class="barra-acoes">
     <div>
-      <h1 class="admin-h1">Categorias</h1>
-      <p class="admin-sub">Seções do cardápio (ex: Lanches, Bebidas).</p>
+      <h1 class="admin-h1" data-i18n="categorias">Categorias</h1>
+      <p class="admin-sub" data-i18n="secoesCardapio">Seções do cardápio (ex: Lanches, Bebidas).</p>
     </div>
-    <a href="/admin" class="btn btn-secundario">← Painel</a>
+    <a href="/admin" class="btn btn-secundario" data-i18n="painel">← Painel</a>
   </div>
 
   {aviso && (
@@ -46,13 +46,13 @@ const contagem = (id: string) => produtos.filter((p) => p.categoria_id === id).l
   <div class="duas-colunas">
     <!-- Formulário -->
     <section class="cartao">
-      <h2>{alvo ? `Editar: ${alvo.nome}` : 'Nova categoria'}</h2>
+      <h2>{alvo ? `Editar: ${alvo.nome}` : <span data-i18n="novaCategoria">Nova categoria</span>}</h2>
 
       <form method="post" action="/admin/api/categorias/salvar">
         <input type="hidden" name="id_original" value={alvo?.id ?? ''} />
 
         <div class="campo">
-          <label for="id">Identificador (slug)</label>
+          <label for="id" data-i18n="idSlug">Identificador (slug)</label>
           <input
             id="id"
             name="id"
@@ -61,21 +61,21 @@ const contagem = (id: string) => produtos.filter((p) => p.categoria_id === id).l
             pattern="[a-z0-9\-]+"
             title="Somente letras minúsculas, números e hífen"
             value={alvo?.id ?? ''}
-            placeholder="ex: lanches"
+            placeholder="ex: lanches" data-i18n-ph="slugCatPlaceholder"
           />
-          <small>Usado nas URLs e no banco. Sem espaços/acentos.</small>
+          <small data-i18n="slugAjuda">Usado nas URLs e no banco. Sem espaços/acentos.</small>
         </div>
 
         <div class="campo">
-          <label for="nome">Nome exibido</label>
-          <input id="nome" name="nome" type="text" required value={alvo?.nome ?? ''} placeholder="ex: Lanches" />
+          <label for="nome" data-i18n="nomeExibido">Nome exibido</label>
+          <input id="nome" name="nome" type="text" required value={alvo?.nome ?? ''} placeholder="ex: Lanches" data-i18n-ph="nomeCatPlaceholder" />
         </div>
 
         <div class="grade-campos">
           <div class="campo">
-            <label for="icone">Ícone</label>
+            <label for="icone" data-i18n="icone">Ícone</label>
             <select id="icone" name="icone">
-              <option value="">Sem ícone</option>
+              <option value="" data-i18n="semIcone">Sem ícone</option>
               {alvo?.icone && !(ICONES_CATEGORIA as readonly string[]).includes(alvo.icone) && (
                 <option value={alvo.icone} selected>
                   Atual: {alvo.icone}
@@ -89,11 +89,11 @@ const contagem = (id: string) => produtos.filter((p) => p.categoria_id === id).l
                 ))}
               </optgroup>
             </select>
-            <small>Ícone exibido ao lado do nome da seção no cardápio.</small>
+            <small data-i18n="iconeAjuda">Ícone exibido ao lado do nome da seção no cardápio.</small>
             <i class="prev-icone" id="prev-icone" aria-hidden="true"></i>
           </div>
           <div class="campo">
-            <label for="ordem">Ordem</label>
+            <label for="ordem" data-i18n="ordem">Ordem</label>
             <input
               id="ordem"
               name="ordem"
@@ -102,30 +102,30 @@ const contagem = (id: string) => produtos.filter((p) => p.categoria_id === id).l
               step="1"
               value={alvo?.ordem ?? categorias.length + 1}
             />
-            <small>Menor aparece primeiro.</small>
+            <small data-i18n="ordemAjuda">Menor aparece primeiro.</small>
           </div>
         </div>
 
         <div class="campo">
-          <label for="descricao">Descrição (opcional)</label>
-          <textarea id="descricao" name="descricao" placeholder="Texto curto exibido no topo da seção">
+          <label for="descricao" data-i18n="descricaoOpcional">Descrição (opcional)</label>
+          <textarea id="descricao" name="descricao" placeholder="Texto curto exibido no topo da seção" data-i18n-ph="descCatPlaceholder">
             {alvo?.descricao ?? ''}
           </textarea>
         </div>
 
         <div class="acoes-form">
-          <button class="btn btn-primario" type="submit">Salvar</button>
-          {alvo && <a href="/admin/categorias" class="btn btn-secundario">Cancelar</a>}
+          <button class="btn btn-primario" type="submit" data-i18n="salvar">Salvar</button>
+          {alvo && <a href="/admin/categorias" class="btn btn-secundario" data-i18n="cancelar">Cancelar</a>}
         </div>
       </form>
     </section>
 
     <!-- Lista -->
     <section class="cartao">
-      <h2>Cadastradas ({categorias.length})</h2>
+      <h2><span data-i18n="cadastradas" data-n={categorias.length}>Cadastradas ({categorias.length})</span></h2>
 
       {categorias.length === 0 ? (
-        <p class="vazio">Nenhuma categoria ainda.</p>
+        <p class="vazio" data-i18n="nenhumaCategoriaAinda">Nenhuma categoria ainda.</p>
       ) : (
         <div>
           {categorias.map((c) => (
@@ -133,10 +133,10 @@ const contagem = (id: string) => produtos.filter((p) => p.categoria_id === id).l
               <IconeCategoria icone={c.icone} classe="miniatura icone" reserva />
               <div class="cresce">
                 <div class="titulo">{c.nome}</div>
-                <div class="sub">{c.id} · {contagem(c.id)} produto(s)</div>
+                <div class="sub">{c.id} · {contagem(c.id)} <span data-i18n="produtosCount">produto(s)</span></div>
               </div>
               <div class="acoes">
-                <a href={`/admin/categorias?editar=${encodeURIComponent(c.id)}`} class="btn btn-secundario btn-sm">
+                <a href={`/admin/categorias?editar=${encodeURIComponent(c.id)}`} class="btn btn-secundario btn-sm" data-i18n="editar">
                   Editar
                 </a>
                 <form
@@ -145,7 +145,7 @@ const contagem = (id: string) => produtos.filter((p) => p.categoria_id === id).l
                   data-excluir
                 >
                   <input type="hidden" name="id" value={c.id} />
-                  <button type="submit" class="btn btn-perigo btn-sm">Excluir</button>
+                  <button type="submit" class="btn btn-perigo btn-sm" data-i18n="excluir">Excluir</button>
                 </form>
               </div>
             </div>

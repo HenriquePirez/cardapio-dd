@@ -12,10 +12,10 @@ const msg = Astro.url.searchParams.get('msg');
 <AdminLayout titulo="Novo produto">
   <div class="barra-acoes">
     <div>
-      <h1 class="admin-h1">Novo produto</h1>
-      <p class="admin-sub">Preencha os dados e envie as fotos/vídeos.</p>
+      <h1 class="admin-h1" data-i18n="novoProdutoTitulo">Novo produto</h1>
+      <p class="admin-sub" data-i18n="preenchaDados">Preencha os dados e envie as fotos/vídeos.</p>
     </div>
-    <a href="/admin/produtos" class="btn btn-secundario">← Produtos</a>
+    <a href="/admin/produtos" class="btn btn-secundario" data-i18n="produtos">← Produtos</a>
   </div>
 
   {msg && AVISOS_PRODUTO[msg] && (
@@ -26,8 +26,10 @@ const msg = Astro.url.searchParams.get('msg');
 
   {categorias.length === 0 && (
     <div class="aviso aviso-erro">
-      Você precisa de ao menos <strong>uma categoria</strong> antes de cadastrar produtos.
-      <a href="/admin/categorias"> Criar categoria →</a>
+      <span data-i18n="precisaAoMenos">Você precisa de ao menos</span>
+      <strong data-i18n="umaCategoria">uma categoria</strong>
+      <span data-i18n="antesProdutos">antes de cadastrar produtos.</span>
+      <a href="/admin/categorias" data-i18n="criarCategoria">Criar categoria →</a>
     </div>
   )}
 

@@ -30,16 +30,20 @@ biblioteca de UI (Tailwind/shadcn não adotados) — CSS próprio com classes gl
 
 ## Preferências do visitante
 
-`Preferencias.astro` adiciona dois botões de 44px no cabeçalho do cardápio (Uicons
-`fi-br-moon`/`fi-br-sun` e `fi-br-language`):
+`Preferencias.astro` adiciona dois botões compactos (32px, só o ícone, sem círculo) no
+cabeçalho do cardápio e do painel: lua/brilho (Uicons `fi-br-moon` / `fi-br-brightness`) e
+bandeira do Brasil/Estados Unidos (SVG inline, sem dependência).
 
 - **Tema:** `data-tema="claro|escuro"` em `<html>`, persistido em `localStorage` (`dd-tema`);
   sem escolha salva, segue `prefers-color-scheme`. O tema escuro sobrescreve os tokens em
-  `:root[data-tema='escuro']` — o painel `/admin` não recebe o atributo.
-- **Idioma:** `data-idioma="pt|en"` em `<html>` e `lang` correspondente; textos marcados com
-  `data-i18n`/`data-i18n-aria`/`data-i18n-alt` são trocados por `src/lib/idioma.ts`
-  (testes em `src/lib/idioma.test.ts`). Nomes, descrições e categorias vindos do D1 **não**
-  são traduzidos.
+  `:root[data-tema='escuro']`, incluindo os tokens `--adm-*` usados pelo painel `/admin`.
+- **Idioma:** botão de bandeira abre uma lista (Português/English) e a bandeira passa a
+  refletir a escolha. `data-idioma="pt|en"` em `<html>` e `lang` correspondente; textos
+  marcados com `data-i18n`/`data-i18n-aria`/`data-i18n-alt`/`data-i18n-ph` são trocados por
+  `src/lib/idioma.ts` (testes em `src/lib/idioma.test.ts`), aplicados por
+  `src/lib/idiomaCliente.ts`. O dicionário cobre cardápio, cabeçalho do painel, login,
+  painel, listas, categorias e formulário de produto. Nomes, descrições e categorias vindos
+  do D1 **não** são traduzidos.
 - Um script inline no `BaseLayout` aplica tema e idioma antes da primeira pintura, evitando
   flash. As escolhas valem só no navegador do visitante; nada é gravado no banco.
 

@@ -8,6 +8,9 @@ import '@fontsource/fredoka/latin-400.css';
 import '@fontsource/fredoka/latin-500.css';
 import '@flaticon/flaticon-uicons/css/bold/rounded.css';
 import { lerUsuario } from '../lib/session';
+import Preferencias from '../components/Preferencias.astro';
+import TemaInicial from '../components/TemaInicial.astro';
+import AplicarIdioma from '../components/AplicarIdioma.astro';
 
 interface Props {
   titulo: string;
@@ -22,7 +25,7 @@ const ativo = (p: string) => (caminho === p || caminho.startsWith(p + '/') ? 'at
 function sair() {
   return `
     <form method="post" action="/admin/api/logout" class="sair-form" data-csrf="1">
-      <button type="submit" class="sair-btn">Sair</button>
+      <button type="submit" class="sair-btn" data-i18n="sair">Sair</button>
     </form>`;
 }
 ---
@@ -34,6 +37,8 @@ function sair() {
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="robots" content="noindex, nofollow" />
     <meta name="theme-color" content="#14532d" />
+    <TemaInicial />
+    <AplicarIdioma />
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
@@ -50,11 +55,19 @@ function sair() {
             <span>Admin</span>
           </a>
 
-          <nav class="admin-nav" aria-label="Navegação do painel">
-            <a href="/admin" class={ativo('/admin') && caminho === '/admin' ? 'ativo' : ''}>Painel</a>
-            <a href="/admin/produtos" class={ativo('/admin/produtos')}>Produtos</a>
-            <a href="/admin/categorias" class={ativo('/admin/categorias')}>Categorias</a>
+          <nav class="admin-nav" aria-label="Navegação do painel" data-i18n-aria="adminNav">
+            <a href="/admin" class={ativo('/admin') && caminho === '/admin' ? 'ativo' : ''}
+              ><span data-i18n="painel">Painel</span></a
+            >
+            <a href="/admin/produtos" class={ativo('/admin/produtos')}
+              ><span data-i18n="produtos">Produtos</span></a
+            >
+            <a href="/admin/categorias" class={ativo('/admin/categorias')}
+              ><span data-i18n="categorias">Categorias</span></a
+            >
           </nav>
+
+          <Preferencias rotulo="Preferências do painel" />
 
           <div class="admin-usuario">
             <span class="admin-nome" title={usuario.email}>{usuario.nome}</span>
@@ -69,7 +82,7 @@ function sair() {
     </main>
 
     <p class="admin-creditos">
-      Ícones por
+      <span data-i18n="iconesPor">Ícones por</span>
       <a href="https://www.flaticon.com/br/" target="_blank" rel="noopener noreferrer">Flaticon</a>
     </p>
 
@@ -109,8 +122,8 @@ function sair() {
 
 <style is:global>
   .admin-body {
-    background: #f5f6f8;
-    color: #111827;
+    background: var(--adm-bg);
+    color: var(--adm-text);
     min-height: 100vh;
     margin: 0;
     font-family: var(--fonte);
@@ -121,7 +134,7 @@ function sair() {
     padding: 10px 16px calc(12px + env(safe-area-inset-bottom));
     text-align: center;
     font-size: 0.72rem;
-    color: #9ca3af;
+    color: var(--adm-dim);
   }
 
   .admin-creditos a {
@@ -253,13 +266,13 @@ function sair() {
 
   .admin-sub {
     margin: 0 0 22px;
-    color: #6b7280;
+    color: var(--adm-dim);
     font-size: 0.92rem;
   }
 
   .cartao {
-    background: #fff;
-    border: 1px solid #e5e7eb;
+    background: var(--adm-card);
+    border: 1px solid var(--adm-border);
     border-radius: 14px;
     padding: 18px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -280,7 +293,7 @@ function sair() {
     display: block;
     font-size: 0.84rem;
     font-weight: 500;
-    color: #374151;
+    color: var(--adm-label);
     margin-bottom: 5px;
   }
 
@@ -289,12 +302,12 @@ function sair() {
   .campo select {
     width: 100%;
     padding: 10px 12px;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--adm-input-border);
     border-radius: 9px;
     font-size: 15px;
     font-family: inherit;
-    background: #fff;
-    color: #111827;
+    background: var(--adm-card);
+    color: var(--adm-text);
     box-sizing: border-box;
   }
 
@@ -356,19 +369,19 @@ function sair() {
   }
 
   .btn-secundario {
-    background: #fff;
-    border-color: #d1d5db;
-    color: #374151;
+    background: var(--adm-card);
+    border-color: var(--adm-input-border);
+    color: var(--adm-label);
   }
 
   .btn-perigo {
-    background: #fff;
-    border-color: #fecaca;
-    color: #dc2626;
+    background: var(--adm-card);
+    border-color: var(--adm-perigo-borda);
+    color: var(--adm-perigo);
   }
 
   .btn-perigo:hover {
-    background: #fef2f2;
+    background: var(--adm-erro-bg);
   }
 
   .btn-sm {
@@ -385,15 +398,15 @@ function sair() {
   }
 
   .aviso-erro {
-    background: #fef2f2;
-    color: #b91c1c;
-    border: 1px solid #fecaca;
+    background: var(--adm-erro-bg);
+    color: var(--adm-erro-texto);
+    border: 1px solid var(--adm-perigo-borda);
   }
 
   .aviso-ok {
-    background: #f0fdf4;
-    color: #15803d;
-    border: 1px solid #bbf7d0;
+    background: var(--adm-ok-bg);
+    color: var(--adm-ok-texto);
+    border: 1px solid var(--adm-ok-borda);
   }
 
   .linha-lista {
@@ -431,7 +444,7 @@ function sair() {
     height: 52px;
     border-radius: 9px;
     object-fit: cover;
-    background: #e5e7eb;
+    background: var(--adm-border);
     flex-shrink: 0;
   }
 

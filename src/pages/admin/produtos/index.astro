@@ -33,12 +33,12 @@ const nomeCat = (id: string) => categorias.find((c) => c.id === id)?.nome ?? id;
 <AdminLayout titulo="Produtos">
   <div class="barra-acoes">
     <div>
-      <h1 class="admin-h1">Produtos</h1>
+      <h1 class="admin-h1" data-i18n="produtos">Produtos</h1>
       <p class="admin-sub">{produtos.length} cadastrado(s).</p>
     </div>
     <div class="acoes">
-      <a href="/admin/produtos/novo" class="btn btn-primario">+ Novo produto</a>
-      <a href="/admin" class="btn btn-secundario">← Painel</a>
+      <a href="/admin/produtos/novo" class="btn btn-primario" data-i18n="novoProduto">+ Novo produto</a>
+      <a href="/admin" class="btn btn-secundario" data-i18n="painel">← Painel</a>
     </div>
   </div>
 
@@ -55,20 +55,20 @@ const nomeCat = (id: string) => categorias.find((c) => c.id === id)?.nome ?? id;
         type="search"
         name="q"
         value={Astro.url.searchParams.get('q') ?? ''}
-        placeholder="Buscar por nome…"
-        aria-label="Buscar produto"
+        placeholder="Buscar por nome…" data-i18n-ph="buscarPorNome"
+        aria-label="Buscar produto" data-i18n-aria="buscarProduto"
       />
-      <select name="filtro" aria-label="Filtrar">
-        <option value="">Todos</option>
-        <option value="destaque" selected={filtro === 'destaque'}>Destaques</option>
-        <option value="indisponivel" selected={filtro === 'indisponivel'}>Indisponíveis</option>
-        <option value="sem-midia" selected={filtro === 'sem-midia'}>Sem mídia</option>
+      <select name="filtro" aria-label="Filtrar" data-i18n-aria="filtrar">
+        <option value="" data-i18n="todos">Todos</option>
+        <option value="destaque" selected={filtro === 'destaque'} data-i18n="destaquesFiltro">Destaques</option>
+        <option value="indisponivel" selected={filtro === 'indisponivel'} data-i18n="indisponiveis">Indisponíveis</option>
+        <option value="sem-midia" selected={filtro === 'sem-midia'} data-i18n="semMidia">Sem mídia</option>
         {categorias.map((c) => (
           <option value={c.id} selected={filtro === c.id}>{c.nome}</option>
         ))}
       </select>
-      <button class="btn btn-secundario" type="submit">Filtrar</button>
-      {(filtro || busca) && <a href="/admin/produtos" class="btn btn-secundario">Limpar</a>}
+      <button class="btn btn-secundario" type="submit" data-i18n="filtrar">Filtrar</button>
+      {(filtro || busca) && <a href="/admin/produtos" class="btn btn-secundario" data-i18n="limpar">Limpar</a>}
     </form>
   </section>
 
@@ -76,7 +76,7 @@ const nomeCat = (id: string) => categorias.find((c) => c.id === id)?.nome ?? id;
     {lista.length === 0 ? (
       <p class="vazio">
         {produtos.length === 0 ? (
-          <>Nenhum produto ainda. <a href="/admin/produtos/novo">Cadastre o primeiro →</a></>
+          <><span data-i18n="nenhumProduto">Nenhum produto ainda.</span> <a href="/admin/produtos/novo" data-i18n="cadastrePrimeiro">Cadastre o primeiro →</a></>
         ) : (
           'Nenhum produto encontrado com esses critérios.'
         )}
@@ -101,8 +101,8 @@ const nomeCat = (id: string) => categorias.find((c) => c.id === id)?.nome ?? id;
               <div class="cresce">
                 <div class="titulo">
                   {p.nome}
-                  {p.destaque === 1 && <span class="tag tag-destaque">destaque</span>}
-                  {p.disponivel === 0 && <span class="tag tag-oculto">oculto</span>}
+                  {p.destaque === 1 && <span class="tag tag-destaque" data-i18n="destaque">destaque</span>}
+                  {p.disponivel === 0 && <span class="tag tag-oculto" data-i18n="oculto">oculto</span>}
                 </div>
                 <div class="sub">
                   {nomeCat(p.categoria_id)} · R$ {p.preco.toFixed(2).replace('.', ',')} ·
@@ -111,10 +111,10 @@ const nomeCat = (id: string) => categorias.find((c) => c.id === id)?.nome ?? id;
               </div>
 
               <div class="acoes">
-                <a href={`/admin/produtos/${p.id}`} class="btn btn-secundario btn-sm">Editar</a>
+                <a href={`/admin/produtos/${p.id}`} class="btn btn-secundario btn-sm" data-i18n="editar">Editar</a>
                 <form method="post" action="/admin/api/produtos/excluir" data-excluir>
                   <input type="hidden" name="id" value={p.id} />
-                  <button type="submit" class="btn btn-perigo btn-sm">Excluir</button>
+                  <button type="submit" class="btn btn-perigo btn-sm" data-i18n="excluir">Excluir</button>
                 </form>
               </div>
             </div>
@@ -164,7 +164,7 @@ const nomeCat = (id: string) => categorias.find((c) => c.id === id)?.nome ?? id;
     border-radius: 9px;
     font-size: 15px;
     font-family: inherit;
-    background: #fff;
+    background: var(--adm-card);
   }
 
   .busca-form input:focus,

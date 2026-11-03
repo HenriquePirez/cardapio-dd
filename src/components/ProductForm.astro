@@ -49,33 +49,33 @@ const galeria = (produto?.midia ?? []).map((m) => ({
   <div class="duas-colunas">
     <!-- Dados -->
     <section class="cartao">
-      <h2>Dados do produto</h2>
+      <h2 data-i18n="dadosProduto">Dados do produto</h2>
 
       <div class="campo">
-        <label for="nome">Nome</label>
+        <label for="nome" data-i18n="nome">Nome</label>
         <input id="nome" name="nome" type="text" required value={produto?.nome ?? ''}
-          placeholder="ex: X-Burger Clássico" />
+          placeholder="ex: X-Burger Clássico" data-i18n-ph="nomePlaceholder" />
       </div>
 
       <div class="campo">
-        <label for="id">Identificador (slug)</label>
+        <label for="id" data-i18n="idSlug">Identificador (slug)</label>
         <input id="id" name="id" type="text" required pattern="[a-z0-9\-]+"
           title="Somente letras minúsculas, números e hífen"
-          value={produto?.id ?? ''} placeholder="ex: x-burger-classico"
+          value={produto?.id ?? ''} placeholder="ex: x-burger-classico" data-i18n-ph="slugPlaceholder"
           readonly={modoEdicao} />
-        <small>{modoEdicao ? 'Não é possível mudar após a criação.' : 'Usado nas URLs. Sem espaços.'}</small>
+        <small data-i18n={modoEdicao ? 'slugFixo' : 'slugUsado'}>{modoEdicao ? 'Não é possível mudar após a criação.' : 'Usado nas URLs. Sem espaços.'}</small>
       </div>
 
       <div class="grade-campos">
         <div class="campo">
-          <label for="preco">Preço (R$)</label>
+          <label for="preco" data-i18n="preco">Preço (R$)</label>
           <input id="preco" name="preco" type="number" step="0.01" min="0" required
-            inputmode="decimal" value={produto?.preco ?? ''} placeholder="28.90" />
+            inputmode="decimal" value={produto?.preco ?? ''} placeholder="28.90" data-i18n-ph="precoPlaceholder" />
         </div>
         <div class="campo">
-          <label for="categoria">Categoria</label>
+          <label for="categoria" data-i18n="categoria">Categoria</label>
           <select id="categoria" name="categoria" required>
-            <option value="">Escolha…</option>
+            <option value="" data-i18n="escolha">Escolha…</option>
             {categorias.map((c) => (
               <option value={c.id} selected={produto?.categoria_id === c.id}>
                 {c.nome}
@@ -83,38 +83,38 @@ const galeria = (produto?.midia ?? []).map((m) => ({
             ))}
           </select>
           {categorias.length === 0 && (
-            <small><a href="/admin/categorias">Crie uma categoria primeiro →</a></small>
+            <small><a href="/admin/categorias" data-i18n="crieCategoria">Crie uma categoria primeiro →</a></small>
           )}
         </div>
       </div>
 
       <div class="campo">
-        <label for="descricao">Descrição</label>
-        <textarea id="descricao" name="descricao" placeholder="Ingredientes, tamanho, etc."
+        <label for="descricao" data-i18n="descricao">Descrição</label>
+        <textarea id="descricao" name="descricao" placeholder="Ingredientes, tamanho, etc." data-i18n-ph="descricaoPlaceholder"
         >{produto?.descricao ?? ''}</textarea>
       </div>
 
       <div class="campo">
-        <label for="comprar_url">Link de compra (app)</label>
+        <label for="comprar_url" data-i18n="linkCompra">Link de compra (app)</label>
         <input id="comprar_url" name="comprar_url" type="url" required
-          value={produto?.comprar_url ?? ''} placeholder="https://app.exemplo.com/comprar?produto=…" />
-        <small>Ao tocar em “Comprar”, o cliente é levado para este link.</small>
+          value={produto?.comprar_url ?? ''} placeholder="https://app.exemplo.com/comprar?produto=…" data-i18n-ph="linkPlaceholder" />
+        <small data-i18n="linkAjuda">Ao tocar em “Comprar”, o cliente é levado para este link.</small>
       </div>
 
       <div class="campo">
-        <label for="modalidade">Disponível para</label>
+        <label for="modalidade" data-i18n="disponivelPara">Disponível para</label>
         <select id="modalidade" name="modalidade">
-          <option value="ambos" selected={modalidade === 'ambos'}>
+          <option value="ambos" selected={modalidade === 'ambos'} data-i18n="localRetirada">
             Comer no local e retirada
           </option>
-          <option value="retirada" selected={modalidade === 'retirada'}>
+          <option value="retirada" selected={modalidade === 'retirada'} data-i18n="somenteRetirada">
             Somente retirada (link do app)
           </option>
-          <option value="local" selected={modalidade === 'local'}>
+          <option value="local" selected={modalidade === 'local'} data-i18n="somenteLocal">
             Somente comer no local (totem)
           </option>
         </select>
-        <small>
+        <small data-i18n="explicacaoComprar">
           Com “comer no local e retirada”, o cliente escolhe ao tocar em Comprar.
           Só local abre o aviso do totem; só retirada vai direto ao link.
         </small>
@@ -122,19 +122,19 @@ const galeria = (produto?.midia ?? []).map((m) => ({
 
       <div class="grade-campos">
         <div class="campo">
-          <label for="ordem">Ordem</label>
+          <label for="ordem" data-i18n="ordem">Ordem</label>
           <input id="ordem" name="ordem" type="number" min="0" step="1" value={produto?.ordem ?? 1} />
-          <small>Menor aparece primeiro na categoria.</small>
+          <small data-i18n="menorAparece">Menor aparece primeiro na categoria.</small>
         </div>
         <div class="campo">
-          <label for="preco2">Opções</label>
+          <label for="preco2" data-i18n="opcoes">Opções</label>
           <label class="check">
             <input type="checkbox" name="destaque" value="1" checked={produto?.destaque === 1} />
-            <i class="fi-br-star" aria-hidden="true"></i> Destaque (carrossel do topo)
+            <i class="fi-br-star" aria-hidden="true"></i> <span data-i18n="destaqueCarrossel">Destaque (carrossel do topo)</span>
           </label>
           <label class="check">
             <input type="checkbox" name="disponivel" value="1" checked={produto ? produto.disponivel === 1 : true} />
-            <i class="fi-br-eye" aria-hidden="true"></i> Disponível no cardápio
+            <i class="fi-br-eye" aria-hidden="true"></i> <span data-i18n="disponivelCardapio">Disponível no cardápio</span>
           </label>
         </div>
       </div>
@@ -142,14 +142,14 @@ const galeria = (produto?.midia ?? []).map((m) => ({
 
     <!-- Galeria -->
     <section class="cartao">
-      <h2>Galeria (fotos e vídeo)</h2>
+      <h2 data-i18n="galeriaMidias">Galeria (fotos e vídeo)</h2>
 
       <div class="campo">
-        <label for="arquivos">Adicionar mídia</label>
+        <label for="arquivos" data-i18n="adicionarMidia">Adicionar mídia</label>
         <input id="arquivos" name="arquivos" type="file" accept="image/*,video/*" multiple />
         <small>
-          <strong>Fotos:</strong> são otimizadas no navegador (até 1920px / WebP) antes de subir.<br />
-          <strong>Vídeo:</strong> limite de <strong>12 MB</strong> (o servidor recusa acima disso). Comprima antes, por exemplo:<br />
+          <strong data-i18n="fotos">Fotos:</strong> <span data-i18n="fotosOtimizadas">são otimizadas no navegador (até 1920px / WebP) antes de subir.</span><br />
+          <strong data-i18n="video">Vídeo:</strong> <span data-i18n="limiteDe">limite de</span> <strong>12 MB</strong> <span data-i18n="videoResto">(o servidor recusa acima disso). Comprima antes, por exemplo:</span><br />
           <code>ffmpeg -i in.mp4 -vf "scale=1280:-2" -c:v libx264 -crf 26 -preset slow -movflags +faststart -an out.mp4</code>
         </small>
       </div>
@@ -162,16 +162,18 @@ const galeria = (produto?.midia ?? []).map((m) => ({
       <ul class="galeria" id="galeria" aria-live="polite"></ul>
 
       <p class="dica-galeria">
-        Arraste para reordenar, ou use as setas. A <strong>primeira mídia</strong> vira a capa do card.
+        <span data-i18n="arrasteReordenar">Arraste para reordenar, ou use as setas. A</span>
+        <strong data-i18n="primeiraMidia">primeira mídia</strong>
+        <span data-i18n="viraCapa">vira a capa do card.</span>
       </p>
     </section>
   </div>
 
   <div class="barra-salvar">
-    <button class="btn btn-primario" type="submit">Salvar produto</button>
-    <a href="/admin/produtos" class="btn btn-secundario">Cancelar</a>
+    <button class="btn btn-primario" type="submit" data-i18n="salvarProduto">Salvar produto</button>
+    <a href="/admin/produtos" class="btn btn-secundario" data-i18n="cancelar">Cancelar</a>
     {modoEdicao && (
-      <a href="/" target="_blank" rel="noopener" class="btn btn-secundario">Ver cardápio ↗</a>
+      <a href="/" target="_blank" rel="noopener" class="btn btn-secundario" data-i18n="verCardapio">Ver cardápio ↗</a>
     )}
   </div>
 </form>
@@ -641,7 +643,7 @@ const galeria = (produto?.midia ?? []).map((m) => ({
     position: relative;
     font-size: 0.8rem;
     font-weight: 500;
-    color: #111827;
+    color: var(--adm-text);
   }
 
   /* ---- galeria ---- */
@@ -659,8 +661,8 @@ const galeria = (produto?.midia ?? []).map((m) => ({
     align-items: center;
     gap: 11px;
     padding: 9px;
-    background: #f9fafb;
-    border: 1px solid #e5e7eb;
+    background: var(--adm-elev);
+    border: 1px solid var(--adm-border);
     border-radius: 11px;
     cursor: grab;
   }
@@ -732,8 +734,8 @@ const galeria = (produto?.midia ?? []).map((m) => ({
   :global(.g-btn) {
     width: 30px;
     height: 30px;
-    border: 1px solid #d1d5db;
-    background: #fff;
+    border: 1px solid var(--adm-input-border);
+    background: var(--adm-card);
     border-radius: 7px;
     font-size: 0.85rem;
     cursor: pointer;

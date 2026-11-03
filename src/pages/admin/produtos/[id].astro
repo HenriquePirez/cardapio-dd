@@ -21,10 +21,10 @@ const categorias = await listarCategorias(d1);
 <AdminLayout titulo={`Editar: ${produto.nome}`}>
   <div class="barra-acoes">
     <div>
-      <h1 class="admin-h1">Editar produto</h1>
-      <p class="admin-sub">Altere os dados, a galeria e o link de compra.</p>
+      <h1 class="admin-h1" data-i18n="editarProduto">Editar produto</h1>
+      <p class="admin-sub" data-i18n="altereDados">Altere os dados, a galeria e o link de compra.</p>
     </div>
-    <a href="/admin/produtos" class="btn btn-secundario">← Produtos</a>
+    <a href="/admin/produtos" class="btn btn-secundario" data-i18n="produtos">← Produtos</a>
   </div>
 
   {msg && AVISOS_PRODUTO[msg] && (

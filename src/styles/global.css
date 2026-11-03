@@ -29,6 +29,22 @@
   --shadow-hover: 0 12px 28px rgba(0, 0, 0, 0.14);
   --border: #e5e7eb;
   --fonte: 'Fredoka', system-ui, sans-serif;
+  /* Superfícies do painel /admin. */
+  --adm-bg: #f5f6f8;
+  --adm-card: #ffffff;
+  --adm-elev: #f9fafb;
+  --adm-text: #111827;
+  --adm-dim: #6b7280;
+  --adm-label: #374151;
+  --adm-border: #e5e7eb;
+  --adm-input-border: #d1d5db;
+  --adm-perigo: #dc2626;
+  --adm-perigo-borda: #fecaca;
+  --adm-erro-bg: #fef2f2;
+  --adm-erro-texto: #b91c1c;
+  --adm-ok-bg: #f0fdf4;
+  --adm-ok-texto: #15803d;
+  --adm-ok-borda: #bbf7d0;
 }
 
 /* Tema escuro do cardápio público. O painel /admin não recebe o atributo. */
@@ -45,6 +61,21 @@
   --cor-titulo: #86efac;
   --shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
   --shadow-hover: 0 12px 28px rgba(0, 0, 0, 0.5);
+  --adm-bg: #0d110c;
+  --adm-card: #171c14;
+  --adm-elev: #1f251b;
+  --adm-text: #f1f3ef;
+  --adm-dim: #a3ab9e;
+  --adm-label: #d5dbd1;
+  --adm-border: #2b3227;
+  --adm-input-border: #3a4236;
+  --adm-perigo: #f87171;
+  --adm-perigo-borda: #7f1d1d;
+  --adm-erro-bg: #2a1515;
+  --adm-erro-texto: #fca5a5;
+  --adm-ok-bg: #14251a;
+  --adm-ok-texto: #86efac;
+  --adm-ok-borda: #166534;
 }
 
 * {

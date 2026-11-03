@@ -13,22 +13,22 @@ const indisponiveis = produtos.filter((p) => p.disponivel === 0);
 const semMidia = produtos.filter((p) => p.midia.length === 0);
 
 const estatisticas = [
-  { rotulo: 'Produtos', valor: produtos.length, href: '/admin/produtos' },
-  { rotulo: 'Categorias', valor: categorias.length, href: '/admin/categorias' },
-  { rotulo: 'Destaques', valor: destaques.length, href: '/admin/produtos?filtro=destaque' },
-  { rotulo: 'Sem mídia', valor: semMidia.length, href: '/admin/produtos?filtro=sem-midia' },
+  { rotulo: 'Produtos', chave: 'produtos', valor: produtos.length, href: '/admin/produtos' },
+  { rotulo: 'Categorias', chave: 'categorias', valor: categorias.length, href: '/admin/categorias' },
+  { rotulo: 'Destaques', chave: 'destaquesFiltro', valor: destaques.length, href: '/admin/produtos?filtro=destaque' },
+  { rotulo: 'Sem mídia', chave: 'semMidia', valor: semMidia.length, href: '/admin/produtos?filtro=sem-midia' },
 ];
 ---
 
 <AdminLayout titulo="Painel">
   <div class="barra-acoes">
     <div>
-      <h1 class="admin-h1">Painel</h1>
-      <p class="admin-sub">Visão geral do cardápio.</p>
+      <h1 class="admin-h1" data-i18n="painel">Painel</h1>
+      <p class="admin-sub" data-i18n="visaoGeral">Visão geral do cardápio.</p>
     </div>
     <div class="acoes">
-      <a href="/admin/produtos/novo" class="btn btn-primario">+ Novo produto</a>
-      <a href="/" target="_blank" rel="noopener" class="btn btn-secundario">Ver cardápio ↗</a>
+      <a href="/admin/produtos/novo" class="btn btn-primario"><span data-i18n="novoProduto">+ Novo produto</span></a>
+      <a href="/" target="_blank" rel="noopener" class="btn btn-secundario" data-i18n="verCardapio">Ver cardápio ↗</a>
     </div>
   </div>
 
@@ -36,7 +36,7 @@ const estatisticas = [
     {estatisticas.map((s) => (
       <a href={s.href} class="stat">
         <span class="stat-valor">{s.valor}</span>
-        <span class="stat-rotulo">{s.rotulo}</span>
+        <span class="stat-rotulo" data-i18n={s.chave}>{s.rotulo}</span>
       </a>
     ))}
   </div>
@@ -49,10 +49,11 @@ const estatisticas = [
   )}
 
   <section class="cartao">
-    <h2>Últimos produtos</h2>
+    <h2 data-i18n="ultimosProdutos">Últimos produtos</h2>
     {produtos.length === 0 ? (
       <p class="vazio">
-        Nenhum produto ainda. <a href="/admin/produtos/novo">Cadastre o primeiro →</a>
+        <span data-i18n="nenhumProduto">Nenhum produto ainda.</span>
+        <a href="/admin/produtos/novo" data-i18n="cadastrePrimeiro">Cadastre o primeiro →</a>
       </p>
     ) : (
       <div>
@@ -77,14 +78,19 @@ const estatisticas = [
                   {p.destaque === 1 && (
                     <>
                       {' · '}
-                      <i class="fi-br-star" aria-hidden="true"></i> destaque
+                      <i class="fi-br-star" aria-hidden="true"></i> <span data-i18n="destaque">destaque</span>
                     </>
                   )}
-                  {p.disponivel === 0 ? ' · oculto' : ''}
+                  {p.disponivel === 0 && (
+                    <>
+                      {' · '}
+                      <span data-i18n="oculto">oculto</span>
+                    </>
+                  )}
                 </div>
               </div>
               <div class="acoes">
-                <a href={`/admin/produtos/${p.id}`} class="btn btn-secundario btn-sm">Editar</a>
+                <a href={`/admin/produtos/${p.id}`} class="btn btn-secundario btn-sm" data-i18n="editar">Editar</a>
               </div>
             </div>
           );
@@ -94,10 +100,11 @@ const estatisticas = [
   </section>
 
   <section class="cartao">
-    <h2>Categorias</h2>
+    <h2 data-i18n="categorias">Categorias</h2>
     {categorias.length === 0 ? (
       <p class="vazio">
-        Nenhuma categoria. <a href="/admin/categorias">Criar →</a>
+        <span data-i18n="nenhumaCategoria">Nenhuma categoria.</span>
+        <a href="/admin/categorias" data-i18n="criar">Criar →</a>
       </p>
     ) : (
       <div>
@@ -111,7 +118,7 @@ const estatisticas = [
               </div>
             </div>
             <div class="acoes">
-              <a href="/admin/categorias" class="btn btn-secundario btn-sm">Editar</a>
+              <a href="/admin/categorias" class="btn btn-secundario btn-sm" data-i18n="editar">Editar</a>
             </div>
           </div>
         ))}
@@ -135,8 +142,8 @@ const estatisticas = [
   }
 
   .stat {
-    background: #fff;
-    border: 1px solid #e5e7eb;
+    background: var(--adm-card);
+    border: 1px solid var(--adm-border);
     border-radius: 14px;
     padding: 16px;
     display: flex;

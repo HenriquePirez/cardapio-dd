@@ -25,7 +25,8 @@ em código**.
 O cardápio público oferece **tema claro/escuro** e **interface em português ou inglês**,
 escolhidos no cabeçalho e lembrados no navegador do visitante. A tradução cobre a interface
 (menus, botões, avisos); nomes de categorias e produtos continuam como cadastrados pelo dono.
-O painel administrativo permanece em português.
+O painel administrativo oferece as mesmas preferências de tema e idioma; a tradução cobre
+cabeçalho, login, painel, listas, categorias e formulário de produto.
 
 ## Fluxos da primeira versão
 

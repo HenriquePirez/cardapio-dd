@@ -38,8 +38,8 @@ const msg = erro ? mensagens[erro] : null;
   <AdminLayout titulo="Entrar">
     <div class="caixa-login">
       <div class="login-marca"><i class="fi-br-settings" aria-hidden="true"></i></div>
-      <h1 class="login-titulo">Entrar no painel</h1>
-      <p class="login-sub">Gerencie categorias, produtos e mídias do cardápio.</p>
+      <h1 class="login-titulo" data-i18n="entrarPainel">Entrar no painel</h1>
+      <p class="login-sub" data-i18n="loginSub">Gerencie categorias, produtos e mídias do cardápio.</p>
 
       {msg && <div class="aviso aviso-erro" role="alert">{msg}</div>}
 
@@ -47,7 +47,7 @@ const msg = erro ? mensagens[erro] : null;
         {prox && <input type="hidden" name="prox" value={prox} />}
 
         <div class="campo">
-          <label for="email">E-mail</label>
+          <label for="email" data-i18n="email">E-mail</label>
           <input
             id="email"
             name="email"
@@ -60,7 +60,7 @@ const msg = erro ? mensagens[erro] : null;
         </div>
 
         <div class="campo">
-          <label for="senha">Senha</label>
+          <label for="senha" data-i18n="senha">Senha</label>
           <input
             id="senha"
             name="senha"
@@ -71,7 +71,7 @@ const msg = erro ? mensagens[erro] : null;
           />
         </div>
 
-        <button class="btn btn-primario login-btn" type="submit">Entrar</button>
+        <button class="btn btn-primario login-btn" type="submit"><span data-i18n="entrar">Entrar</span></button>
       </form>
 
       <p class="login-rodape">
@@ -85,8 +85,8 @@ const msg = erro ? mensagens[erro] : null;
   .caixa-login {
     max-width: 400px;
     margin: 6vh auto 0;
-    background: #fff;
-    border: 1px solid #e5e7eb;
+    background: var(--adm-card);
+    border: 1px solid var(--adm-border);
     border-radius: 16px;
     padding: 30px 26px;
     box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
@@ -107,7 +107,7 @@ const msg = erro ? mensagens[erro] : null;
 
   .login-sub {
     margin: 0 0 22px;
-    color: #6b7280;
+    color: var(--adm-dim);
     font-size: 0.9rem;
     line-height: 1.45;
   }
@@ -129,7 +129,7 @@ const msg = erro ? mensagens[erro] : null;
   }
 
   .login-rodape a {
-    color: #ea580c;
+    color: var(--cor-preco);
     font-weight: 500;
     text-decoration: none;
   }

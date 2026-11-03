@@ -1,107 +1,233 @@
 ---
 /**
- * Preferências do visitante: tema claro/escuro e idioma da interface.
+ * Preferências do visitante: tema claro/escuro e idioma (pt/en).
  * A escolha fica em localStorage; o atributo em <html> é aplicado antes da
- * pintura por um script inline no BaseLayout (evita flash de tema errado).
+ * pintura pelo `TemaInicial` (evita flash de tema errado).
  */
+interface Props {
+  /** Rótulo do grupo; o painel usa um nome diferente do cardápio. */
+  rotulo?: string;
+}
+
+const { rotulo = 'Preferências' } = Astro.props;
 ---
 
-<div class="prefs">
+<div class="prefs" data-prefs aria-label={rotulo}>
   <button class="pref" type="button" data-tema-btn>
     <i class="fi-br-moon" aria-hidden="true"></i>
   </button>
-  <button class="pref" type="button" data-idioma-btn>
-    <i class="fi-br-language" aria-hidden="true"></i>
-  </button>
+
+  <div class="idioma">
+    <button
+      class="pref"
+      type="button"
+      data-idioma-btn
+      aria-haspopup="listbox"
+      aria-expanded="false"
+    >
+      <span class="bandeira" data-bandeira="br">
+        <svg viewBox="0 0 28 20" width="22" height="16" aria-hidden="true">
+          <rect width="28" height="20" fill="#009b3a"></rect>
+          <path d="M14 2.2 25.6 10 14 17.8 2.4 10Z" fill="#fedf00"></path>
+          <circle cx="14" cy="10" r="4.1" fill="#002776"></circle>
+          <path d="M9.8 8.7c2.8-.7 5.7-.3 8 1" stroke="#fff" stroke-width="1.2" fill="none"></path>
+        </svg>
+      </span>
+      <span class="bandeira" data-bandeira="us" hidden>
+        <svg viewBox="0 0 28 20" width="22" height="16" aria-hidden="true">
+          <rect width="28" height="20" fill="#fff"></rect>
+          <g fill="#b22234">
+            <rect width="28" height="1.54"></rect>
+            <rect y="3.08" width="28" height="1.54"></rect>
+            <rect y="6.16" width="28" height="1.54"></rect>
+            <rect y="9.24" width="28" height="1.54"></rect>
+            <rect y="12.32" width="28" height="1.54"></rect>
+            <rect y="15.4" width="28" height="1.54"></rect>
+            <rect y="18.48" width="28" height="1.52"></rect>
+          </g>
+          <rect width="12" height="10.8" fill="#3c3b6e"></rect>
+          <g fill="#fff">
+            <circle cx="2.5" cy="2.4" r="0.7"></circle>
+            <circle cx="6" cy="2.4" r="0.7"></circle>
+            <circle cx="9.5" cy="2.4" r="0.7"></circle>
+            <circle cx="4.2" cy="5.2" r="0.7"></circle>
+            <circle cx="7.7" cy="5.2" r="0.7"></circle>
+            <circle cx="2.5" cy="8" r="0.7"></circle>
+            <circle cx="6" cy="8" r="0.7"></circle>
+            <circle cx="9.5" cy="8" r="0.7"></circle>
+          </g>
+        </svg>
+      </span>
+    </button>
+
+    <ul class="idiomas" data-idiomas role="listbox" aria-label="Idioma" hidden>
+      <li><button type="button" role="option" data-opcao="pt" aria-selected="false">Português</button></li>
+      <li><button type="button" role="option" data-opcao="en" aria-selected="false">English</button></li>
+    </ul>
+  </div>
 </div>
 
 <style>
   .prefs {
     display: flex;
-    gap: 6px;
+    align-items: center;
+    gap: 4px;
     margin-left: auto;
     flex-shrink: 0;
   }
 
+  .idioma {
+    position: relative;
+  }
+
   .pref {
-    width: 44px;
-    height: 44px;
+    width: 32px;
+    height: 32px;
     display: grid;
     place-items: center;
-    border: 1px solid rgba(255, 255, 255, 0.28);
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
     color: #fff;
-    font-size: 1.15rem;
+    font-size: 1.1rem;
     line-height: 1;
     cursor: pointer;
-    transition: background 0.2s, border-color 0.2s;
+    opacity: 0.85;
+    transition: opacity 0.2s;
   }
 
   .pref:hover,
   .pref:focus-visible {
-    background: rgba(255, 255, 255, 0.22);
-    border-color: rgba(255, 255, 255, 0.5);
+    opacity: 1;
   }
 
   .pref:focus-visible {
     outline: 2px solid #fff;
     outline-offset: 2px;
   }
+
+  .bandeira {
+    display: block;
+    line-height: 0;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .bandeira[hidden] {
+    display: none;
+  }
+
+  .idiomas {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 60;
+    min-width: 150px;
+    margin: 0;
+    padding: 6px;
+    list-style: none;
+    background: var(--bg-card);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+  }
+
+  .idiomas[hidden] {
+    display: none;
+  }
+
+  .idiomas button {
+    display: block;
+    width: 100%;
+    padding: 9px 10px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: 0.9rem;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .idiomas button:hover,
+  .idiomas button:focus-visible {
+    background: var(--bg-elev);
+  }
+
+  .idiomas button[aria-selected='true'] {
+    font-weight: 500;
+    color: var(--cor-preco);
+  }
+
+  .idiomas button:focus-visible {
+    outline: 2px solid var(--cor-preco);
+    outline-offset: -2px;
+  }
 </style>
 
 <script>
-  import { traduzir, type ChaveTexto, type Idioma } from '../lib/idioma';
+  import { traduzir, type Idioma } from '../lib/idioma';
+  import { aplicarIdioma as aplicarTextos, idiomaDocumento } from '../lib/idiomaCliente';
 
   const raiz = document.documentElement;
   const btnTema = document.querySelector<HTMLButtonElement>('[data-tema-btn]');
   const btnIdioma = document.querySelector<HTMLButtonElement>('[data-idioma-btn]');
+  const menu = document.querySelector<HTMLElement>('[data-idiomas]');
 
-  const idiomaAtual = (): Idioma => (raiz.dataset.idioma === 'en' ? 'en' : 'pt');
+  const idiomaAtual = (): Idioma => idiomaDocumento();
 
-  function pintarTema(): void {
+  function fecharMenu(): void {
+    if (!menu) return;
+    menu.hidden = true;
+    btnIdioma?.setAttribute('aria-expanded', 'false');
+  }
+
+  function abrirMenu(): void {
+    if (!menu) return;
+    menu.hidden = false;
+    btnIdioma?.setAttribute('aria-expanded', 'true');
+    menu.querySelector<HTMLButtonElement>(`[data-opcao="${idiomaAtual()}"]`)?.focus();
+  }
+
+  function pintar(): void {
     const escuro = raiz.dataset.tema === 'escuro';
+    const atual = idiomaAtual();
+
     if (btnTema) {
-      btnTema.innerHTML = `<i class="fi-br-${escuro ? 'sun' : 'moon'}" aria-hidden="true"></i>`;
-      const rotulo = traduzir(idiomaAtual(), escuro ? 'temaClaro' : 'temaEscuro');
+      btnTema.innerHTML = `<i class="fi-br-${escuro ? 'brightness' : 'moon'}" aria-hidden="true"></i>`;
+      const rotulo = traduzir(atual, escuro ? 'temaClaro' : 'temaEscuro');
       btnTema.setAttribute('aria-label', rotulo);
       btnTema.title = rotulo;
     }
+
     document
       .querySelector('meta[name="theme-color"]')
       ?.setAttribute('content', escuro ? '#11150f' : '#14532d');
-  }
 
-  function aplicarIdioma(): void {
-    const atual = idiomaAtual();
-    const valoresDe = (el: HTMLElement) => ({
-      n: el.dataset.n ?? '',
-      nome: el.dataset.nome ?? '',
+    const bandeira = atual === 'en' ? 'us' : 'br';
+    document.querySelectorAll<HTMLElement>('[data-bandeira]').forEach((el) => {
+      el.hidden = el.dataset.bandeira !== bandeira;
     });
-
-    document.querySelectorAll<HTMLElement>('[data-i18n]').forEach((el) => {
-      el.textContent = traduzir(atual, el.dataset.i18n as ChaveTexto, valoresDe(el));
-    });
-    document.querySelectorAll<HTMLElement>('[data-i18n-aria]').forEach((el) => {
-      el.setAttribute(
-        'aria-label',
-        traduzir(atual, el.dataset.i18nAria as ChaveTexto, valoresDe(el)),
-      );
-    });
-    document.querySelectorAll<HTMLElement>('[data-i18n-alt]').forEach((el) => {
-      el.setAttribute(
-        'alt',
-        traduzir(atual, el.dataset.i18nAlt as ChaveTexto, valoresDe(el)),
-      );
-    });
-
-    document.documentElement.lang = atual === 'en' ? 'en' : 'pt-BR';
 
     if (btnIdioma) {
-      const rotulo = traduzir(atual, atual === 'en' ? 'idiomaPortugues' : 'idiomaIngles');
+      const rotulo = traduzir(atual, 'idioma');
       btnIdioma.setAttribute('aria-label', rotulo);
       btnIdioma.title = rotulo;
     }
+
+    menu
+      ?.querySelectorAll<HTMLButtonElement>('[data-opcao]')
+      .forEach((el) => el.setAttribute('aria-selected', String(el.dataset.opcao === atual)));
+
+    document.documentElement.lang = atual === 'en' ? 'en' : 'pt-BR';
+  }
+
+  function atualizarTudo(): void {
+    aplicarTextos();
+    pintar();
   }
 
   btnTema?.addEventListener('click', () => {
@@ -111,21 +237,40 @@
     } catch {
       /* modo privado: a escolha vale só nesta visita */
     }
-    pintarTema();
+    pintar();
   });
 
   btnIdioma?.addEventListener('click', () => {
-    const novo: Idioma = idiomaAtual() === 'en' ? 'pt' : 'en';
-    raiz.dataset.idioma = novo;
-    try {
-      localStorage.setItem('dd-idioma', novo);
-    } catch {
-      /* modo privado: a escolha vale só nesta visita */
-    }
-    aplicarIdioma();
-    pintarTema();
+    if (!menu) return;
+    if (menu.hidden) abrirMenu();
+    else fecharMenu();
   });
 
-  pintarTema();
-  aplicarIdioma();
+  menu?.addEventListener('click', (e) => {
+    const alvo = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-opcao]');
+    if (!alvo) return;
+    raiz.dataset.idioma = alvo.dataset.opcao === 'en' ? 'en' : 'pt';
+    try {
+      localStorage.setItem('dd-idioma', raiz.dataset.idioma);
+    } catch {
+      /* modo privado */
+    }
+    fecharMenu();
+    atualizarTudo();
+    btnIdioma?.focus();
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!menu || menu.hidden) return;
+    if (!(e.target as HTMLElement).closest('[data-prefs]')) fecharMenu();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && menu && !menu.hidden) {
+      fecharMenu();
+      btnIdioma?.focus();
+    }
+  });
+
+  atualizarTudo();
 </script>
