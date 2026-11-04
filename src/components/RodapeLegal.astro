@@ -1,0 +1,91 @@
+---
+/** Rodapé legal compartilhado (cardápio, painel e páginas legais). */
+import { EMPRESA } from '../config';
+
+const ano = new Date().getFullYear();
+---
+
+<div class="rodape-legal">
+  <nav class="rodape-legal-links" aria-label="Informações legais">
+    <a href="/privacidade">Privacidade</a>
+    <a href="/termos">Termos de Uso</a>
+    <a href="/cookies">Cookies</a>
+    <a href="/reembolso">Reembolso</a>
+    <a href="/exclusao-de-dados">Excluir meus dados</a>
+    <button type="button" class="rodape-legal-btn" data-consent-abrir>
+      Preferências de cookies
+    </button>
+  </nav>
+  <p class="rodape-legal-empresa">
+    Responsável: {EMPRESA.nome} ·
+    <a href={`tel:${EMPRESA.telefoneLink}`}>{EMPRESA.telefoneExibicao}</a> ·
+    <a href={`mailto:${EMPRESA.email}`}>{EMPRESA.email}</a>
+  </p>
+  <p class="rodape-legal-copy">
+    Ao usar este site, você concorda com os Termos de Uso e a Política de Privacidade.
+  </p>
+  <p class="rodape-legal-copy">© {ano} {EMPRESA.nome}. Todos os direitos reservados.</p>
+</div>
+
+<style>
+  .rodape-legal {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+    font-size: 0.76rem;
+    line-height: 1.5;
+    text-align: center;
+    opacity: 0.9;
+  }
+
+  .rodape-legal-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px 14px;
+  }
+
+  .rodape-legal a,
+  .rodape-legal-btn {
+    color: inherit;
+    text-decoration: underline;
+    font: inherit;
+  }
+
+  .rodape-legal-links a,
+  .rodape-legal-btn {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    padding: 2px 0;
+  }
+
+  .rodape-legal-btn {
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    text-underline-offset: 2px;
+  }
+
+  .rodape-legal a:hover,
+  .rodape-legal-btn:hover {
+    opacity: 1;
+  }
+
+  .rodape-legal a:focus-visible,
+  .rodape-legal-btn:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+
+  .rodape-legal-empresa,
+  .rodape-legal-copy {
+    margin: 0;
+  }
+
+  .rodape-legal-empresa a {
+    display: inline-block;
+    padding: 3px 0;
+  }
+</style>

@@ -14,6 +14,8 @@ import type { APIContext, MiddlewareNext } from 'astro';
 import { defineMiddleware } from 'astro:middleware';
 import { lerUsuario } from './lib/session';
 import { chaveCardapio } from './lib/cache';
+import { db } from './lib/env';
+import { garantirLojaDoUsuario, ehUsuarioMaster, listarLojasDoUsuario } from './lib/db';
 
 // Rotas do painel que funcionam sem login
 const PUBLICAS_ADMIN = new Set([
@@ -27,17 +29,17 @@ const CACHE_SEGUNDOS = 30;
 
 /**
  * CSP com 'unsafe-inline' porque o Astro gera scripts inline de hidratação.
- * Sem nonce/hash isto continua bloqueando script externo e injeção de origem
- * desconhecida. shortcut: nonce por resposta, quando houver build com hash.
+ * Scripts externos só são permitidos nos provedores de analytics; o banner só
+ * os injeta após o aceite. shortcut: nonce por resposta, quando houver build com hash.
  */
 const CSP = [
   "default-src 'self'",
   "img-src 'self' data: blob: https:",
   "media-src 'self' blob: https:",
-  "script-src 'self' 'unsafe-inline'",
+  "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://connect.facebook.net",
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self' data:",
-  "connect-src 'self'",
+  "connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com https://connect.facebook.net https://www.facebook.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
@@ -83,7 +85,7 @@ async function tratar(ctx: APIContext, next: MiddlewareNext): Promise<Response> 
   // ---------------------------------------------------------------
   // Cardápio público com cache na edge
   // ---------------------------------------------------------------
-  if (caminho === '/') {
+  if (caminho === '/' || caminho.startsWith('/loja/')) {
     // A chave é a URL raiz, sem query: "/?qualquer" não cria variante órfã
     // e a invalidação do admin (src/lib/cache.ts) acerta sempre.
     const chave = chaveCardapio(ctx.url);
@@ -143,8 +145,24 @@ async function tratar(ctx: APIContext, next: MiddlewareNext): Promise<Response> 
     return new Response(r.body, { status: r.status, statusText: r.statusText, headers });
   };
 
-  const jaLogado = (await lerUsuario(ctx)) !== null;
-  if (jaLogado) return semCache(await next());
+  const usuario = await lerUsuario(ctx);
+  const jaLogado = usuario !== null;
+
+  if (jaLogado) {
+    // Loja ativa: cookie do seletor, sempre validada contra as lojas do dono.
+    const lojas = await listarLojasDoUsuario(db(), usuario.id);
+    let loja = lojas[0] ?? (await garantirLojaDoUsuario(db(), usuario.id));
+    const escolhida = ctx.cookies.get('loja_ativa')?.value;
+    if (escolhida) {
+      loja = lojas.find((l) => l.id === escolhida) ?? loja;
+    }
+    ctx.locals.loja = loja;
+    ctx.locals.lojas = lojas.length ? lojas : [loja];
+    ctx.locals.usuarioMaster = await ehUsuarioMaster(db(), usuario.id);
+    return semCache(await next());
+  }
+
+  ctx.locals.usuarioMaster = false;
 
   if (PUBLICAS_ADMIN.has(caminho)) return semCache(await next());
 

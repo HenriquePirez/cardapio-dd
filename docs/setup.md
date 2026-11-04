@@ -152,3 +152,22 @@ não versionado).
   confirmar o destino do link de compra (ambos dependem de definição externa).
 - **Manutenção:** reaplicar o setup preserva tudo (idempotência testada); após mudanças
   materiais de client/modelo/instruções, reexecutar os smoke cases do harness.
+
+
+## Analytics, consentimento e documentos legais (2026-11-03)
+
+- **IDs opcionais:** `GA_ID` (formato `G-...`) e `META_PIXEL_ID` (somente dígitos) são lidos
+  em runtime por `src/lib/env.ts` (`analyticsIds`). Configure em `.dev.vars` no local ou como
+  variável/segredo do Worker em produção. Sem IDs válidos, nenhum script de terceiro é
+  carregado.
+- **Consentimento:** o banner grava a escolha em `localStorage` (`dd-consentimento`) e só
+  injeta GA4/Meta após “Aceitar todos”. “Rejeitar opcionais” mantém apenas cookies
+  essenciais. O link “Preferências de cookies” no rodapé reabre o banner.
+- **CSP:** `src/middleware.ts` libera `googletagmanager.com` e `connect.facebook.net` em
+  `script-src`, além dos endpoints de medição em `connect-src`. Revisar ao trocar de provedor.
+- **Aceite legal:** `migrations/0005_aceite_legal.sql` adiciona `aceite_em`/`aceite_versao`
+  em `usuarios`; login e criação de conta exigem a caixa de aceite e registram a versão de
+  `src/config.ts` (`LEGAL`).
+- **Documentos:** `/privacidade`, `/termos`, `/cookies`, `/reembolso` e
+  `/exclusao-de-dados`; contato do responsável em `src/config.ts` (`EMPRESA`). Revisar o
+  conteúdo jurídico antes de publicar em produção.

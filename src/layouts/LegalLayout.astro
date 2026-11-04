@@ -1,0 +1,119 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import RodapeLegal from '../components/RodapeLegal.astro';
+import { EMPRESA, LEGAL } from '../config';
+import type { Loja } from '../lib/db';
+
+interface Props {
+  titulo: string;
+  loja: Loja | null;
+}
+
+const { titulo, loja } = Astro.props;
+---
+
+<BaseLayout loja={loja} titulo={titulo}>
+  <header class="legal-topo">
+    <div class="container legal-topo-inner">
+      <a href="/">← Voltar ao cardápio</a>
+      <span>{EMPRESA.nome}</span>
+    </div>
+  </header>
+
+  <main class="container legal" id="conteudo" tabindex="-1">
+    <h1>{titulo}</h1>
+    <p class="legal-data">Atualizado em {LEGAL.atualizadoEm} · Versão {LEGAL.versao}</p>
+    <slot />
+  </main>
+
+  <footer class="legal-rodape">
+    <div class="container">
+      <RodapeLegal />
+    </div>
+  </footer>
+</BaseLayout>
+
+<style>
+  .legal-topo {
+    background: var(--verde);
+    color: #fff;
+    border-bottom: 3px solid var(--laranja);
+  }
+
+  .legal-topo-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-top: 14px;
+    padding-bottom: 14px;
+    font-size: 0.85rem;
+  }
+
+  .legal-topo a {
+    text-decoration: underline;
+  }
+
+  .legal {
+    padding-top: 28px;
+    font-size: 0.92rem;
+    line-height: 1.65;
+  }
+
+  .legal h1 {
+    margin: 0 0 4px;
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: var(--cor-titulo);
+  }
+
+  .legal-data {
+    margin: 0 0 24px;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+  }
+
+  .legal :global(h2) {
+    margin: 26px 0 8px;
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: var(--cor-titulo);
+  }
+
+  .legal :global(p),
+  .legal :global(ul),
+  .legal :global(ol) {
+    margin: 0 0 12px;
+  }
+
+  .legal :global(ul),
+  .legal :global(ol) {
+    padding-left: 20px;
+  }
+
+  .legal :global(li) {
+    margin-bottom: 6px;
+  }
+
+  .legal :global(a) {
+    color: var(--cor-preco);
+    text-decoration: underline;
+  }
+
+  .legal :global(.destaque-legal) {
+    display: block;
+    margin: 18px 0;
+    padding: 14px 16px;
+    border-left: 3px solid var(--laranja);
+    background: var(--bg-card);
+    border-radius: 0 10px 10px 0;
+  }
+
+  .legal-rodape {
+    margin-top: 40px;
+    padding: 22px 0 calc(26px + env(safe-area-inset-bottom));
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    color: var(--text-dim);
+  }
+</style>

@@ -19,7 +19,7 @@ import {
 import { apagarObjetos, caminhosDaMidia } from '../../../../lib/midia';
 import { invalidarCardapio } from '../../../../lib/cache';
 import { lerGaleriaJson } from '../../../../lib/galeria';
-import { normalizarModalidade } from '../../../../lib/pedido';
+import { normalizarModalidade, urlCompraValida } from '../../../../lib/pedido';
 import { mesmaOrigem } from '../../../../lib/http';
 
 const SLUG = /^[a-z0-9-]+$/;
@@ -63,8 +63,11 @@ export const POST: APIRoute = async (ctx) => {
   }
   if (!Number.isInteger(ordem) || ordem < 0) return voltar(voltarEdicao + '?msg=erro-ordem');
   if (!categoria) return voltar(voltarEdicao + '?msg=erro-categoria');
-  if (!/^https?:\/\//i.test(comprarUrl)) return voltar(voltarEdicao + '?msg=erro-link');
   if (!modalidade) return voltar(voltarEdicao + '?msg=erro-modalidade');
+  // Local puro pode não ter link; qualquer link informado precisa ser real.
+  if ((modalidade !== 'local' || comprarUrl) && !urlCompraValida(comprarUrl)) {
+    return voltar(voltarEdicao + '?msg=erro-link');
+  }
 
   // Lê a galeria ANTES de gravar: valor ausente/inválido tem de recusar o save,
   // nunca virar lista vazia (isso apagaria as mídias do D1 e do KV).
@@ -72,24 +75,26 @@ export const POST: APIRoute = async (ctx) => {
   if (!galeria) return voltar(voltarEdicao + '?msg=erro-galeria');
 
   const d1 = db();
+  const loja = ctx.locals.loja!;
+  const precoCentavos = Math.round(preco * 100);
 
   // Valida categoria
   const cat = await d1
-    .prepare('SELECT id FROM categorias WHERE id = ?')
-    .bind(categoria)
+    .prepare('SELECT id FROM categorias WHERE loja_id = ? AND id = ?')
+    .bind(loja.id, categoria)
     .first();
   if (!cat) return voltar(voltarEdicao + '?msg=erro-categoria');
 
   // Slug duplicado em produto diferente?
-  const existente = await obterProduto(d1, idNovo);
+  const existente = await obterProduto(d1, loja.id, idNovo);
   if (existente && existente.id !== idOriginal) {
     return voltar(voltarEdicao + '?msg=erro-slug-duplicado');
   }
 
-  await salvarProduto(d1, {
+  await salvarProduto(d1, loja.id, {
     id: idNovo,
     nome,
-    preco,
+    preco_centavos: precoCentavos,
     categoria_id: categoria,
     descricao: descricao || null,
     destaque,
@@ -100,7 +105,7 @@ export const POST: APIRoute = async (ctx) => {
   });
 
   // ---- Sincroniza a galeria -------------------------------------------
-  const atuais = await listarMidiasPorProdutos(d1, [idNovo]);
+  const atuais = await listarMidiasPorProdutos(d1, loja.id, [idNovo]);
   const idsAtuais = new Set(atuais.map((m) => m.id));
 
   // 1) Itens que permanecem (id numérico): atualiza ordem/conteúdo
@@ -112,7 +117,7 @@ export const POST: APIRoute = async (ctx) => {
     if (jaExiste) {
       mantidos.add(numId);
       const registro = atuais.find((m) => m.id === numId)!;
-      await atualizarMidia(d1, numId, {
+      await atualizarMidia(d1, loja.id, numId, {
         url: item.url || registro.url,
         full: (item.full ?? registro.full) || null,
         poster: (item.poster ?? registro.poster) || null,
@@ -121,7 +126,7 @@ export const POST: APIRoute = async (ctx) => {
       });
     } else if (item.url) {
       // 2) Item novo (já enviado nesta sessão): cria o registro
-      await adicionarMidia(d1, {
+      await adicionarMidia(d1, loja.id, {
         produto_id: idNovo,
         tipo: item.tipo === 'video' ? 'video' : 'imagem',
         url: item.url,
@@ -137,7 +142,7 @@ export const POST: APIRoute = async (ctx) => {
   const removidos: typeof atuais = [];
   for (const m of atuais) {
     if (!mantidos.has(m.id)) {
-      await excluirMidia(d1, m.id);
+      await excluirMidia(d1, loja.id, m.id);
       removidos.push(m);
     }
   }
@@ -148,7 +153,7 @@ export const POST: APIRoute = async (ctx) => {
   }
 
   // O cardápio público ("/") é cacheado na edge: purga para a edição aparecer na hora.
-  await invalidarCardapio(ctx.request);
+  await invalidarCardapio(ctx.request, loja.slug);
 
   return voltar('/admin/produtos?msg=ok');
 };

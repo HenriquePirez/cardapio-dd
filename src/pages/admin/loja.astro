@@ -1,0 +1,214 @@
+---
+/**
+ * Branding da loja ativa: logo, nome, textos, duas cores livres e padrões
+ * de tema/idioma. Também cria novas lojas para a mesma conta.
+ */
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { urlMidia } from '../../lib/env';
+import { normalizarHex, MARCA_PADRAO, ACENTO_PADRAO } from '../../lib/cores';
+
+const loja = Astro.locals.loja!;
+const logo = urlMidia(loja.logo_chave);
+
+const ok = Astro.url.searchParams.get('ok');
+const erro = Astro.url.searchParams.get('erro');
+
+const okMsg: Record<string, string> = {
+  salvo: 'Dados da loja salvos.',
+  logo: 'Logo atualizada.',
+  criada: 'Loja criada e selecionada.',
+};
+const erroMsg: Record<string, string> = {
+  nome: 'Informe o nome da loja.',
+  slug: 'Slug inválido ou já usado. Use letras minúsculas, números e hífen.',
+  arquivo: 'Escolha um arquivo de imagem.',
+  tamanho: 'A logo deve ter no máximo 2 MB.',
+  formato: 'Formato não aceito. Use WebP, PNG, JPEG, AVIF ou GIF.',
+  permissao: 'Não foi possível salvar esta loja.',
+};
+
+const corMarca = normalizarHex(loja.cor_marca, MARCA_PADRAO);
+const corAcento = normalizarHex(loja.cor_acento, ACENTO_PADRAO);
+---
+
+<AdminLayout titulo="Loja" descricao="Identidade e configurações da loja">
+  <h1 class="admin-h1" data-i18n="configLoja">Configurações da loja</h1>
+  <p class="admin-sub">
+    <span data-i18n="configLojaSub">Logo, textos e cores desta loja. O cardápio público atualiza na hora.</span>
+    <a href={`/loja/${loja.slug}`} target="_blank" rel="noopener noreferrer" data-i18n="verLoja">Ver loja ↗</a>
+  </p>
+
+  {ok && okMsg[ok] && <div class="aviso aviso-ok">{okMsg[ok]}</div>}
+  {erro && erroMsg[erro] && <div class="aviso aviso-erro" role="alert">{erroMsg[erro]}</div>}
+
+  <section class="cartao">
+    <h2 data-i18n="logo">Logo</h2>
+    <div class="logo-linha">
+      {logo ? (
+        <img class="logo-preview" src={logo} alt={`Logo ${loja.nome}`} width="96" height="96" />
+      ) : (
+        <div class="logo-preview logo-vazia" aria-hidden="true">
+          <i class="fi-br-picture"></i>
+        </div>
+      )}
+      <div class="acoes">
+        <form method="post" action="/admin/api/loja/logo" enctype="multipart/form-data" class="logo-form">
+          <label class="campo">
+            <span data-i18n="arquivoLogo">Arquivo da logo (até 2 MB)</span>
+            <input type="file" name="logo" accept="image/webp,image/png,image/jpeg,image/avif,image/gif" required />
+          </label>
+          <button class="btn btn-primario btn-sm" type="submit" data-i18n="enviarLogo">Enviar logo</button>
+        </form>
+        {logo && (
+          <form method="post" action="/admin/api/loja/logo">
+            <input type="hidden" name="remover" value="1" />
+            <button class="btn btn-perigo btn-sm" type="submit" data-i18n="removerLogo">Remover logo</button>
+          </form>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <section class="cartao">
+    <h2 data-i18n="dadosLoja">Dados e identidade</h2>
+    <form method="post" action="/admin/api/loja/salvar">
+      <div class="campo">
+        <label for="nome" data-i18n="nomeLoja">Nome da loja</label>
+        <input id="nome" name="nome" required maxlength="80" value={loja.nome} />
+      </div>
+      <div class="campo">
+        <label for="slogan" data-i18n="slogan">Slogan (opcional)</label>
+        <input id="slogan" name="slogan" maxlength="120" value={loja.slogan ?? ''} />
+      </div>
+      <div class="campo">
+        <label for="descricao" data-i18n="descricaoLoja">Descrição (opcional)</label>
+        <textarea id="descricao" name="descricao" maxlength="300">{loja.descricao ?? ''}</textarea>
+        <small data-i18n="descricaoLojaAjuda">Usada no compartilhamento e nos buscadores.</small>
+      </div>
+
+      <div class="grade-campos">
+        <div class="campo">
+          <label for="cor_marca" data-i18n="corMarca">Cor da marca</label>
+          <input id="cor_marca" name="cor_marca" type="color" value={corMarca} />
+          <small data-i18n="corMarcaAjuda">Cabeçalho, rodapé e títulos.</small>
+        </div>
+        <div class="campo">
+          <label for="cor_acento" data-i18n="corAcento">Cor de destaque</label>
+          <input id="cor_acento" name="cor_acento" type="color" value={corAcento} />
+          <small data-i18n="corAcentoAjuda">Preços, botões e detalhes.</small>
+        </div>
+      </div>
+
+      <div class="grade-campos">
+        <div class="campo">
+          <label for="tema_padrao" data-i18n="temaPadrao">Tema padrão</label>
+          <select id="tema_padrao" name="tema_padrao">
+            <option value="claro" selected={loja.tema_padrao === 'claro'} data-i18n="temaClaroOpcao">Claro</option>
+            <option value="escuro" selected={loja.tema_padrao === 'escuro'} data-i18n="temaEscuroOpcao">Escuro</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label for="idioma_padrao" data-i18n="idiomaPadrao">Idioma padrão</label>
+          <select id="idioma_padrao" name="idioma_padrao">
+            <option value="pt" selected={loja.idioma_padrao === 'pt'}>Português</option>
+            <option value="en" selected={loja.idioma_padrao === 'en'}>English</option>
+          </select>
+        </div>
+      </div>
+
+      <p class="loja-slug">
+        <span data-i18n="enderecoLoja">Endereço do cardápio:</span>
+        <code>/loja/{loja.slug}</code>
+      </p>
+
+      <button class="btn btn-primario" type="submit" data-i18n="salvar">Salvar</button>
+    </form>
+  </section>
+
+  <section class="cartao" id="nova">
+    <h2 data-i18n="novaLoja">Nova loja</h2>
+    <p class="admin-sub" data-i18n="novaLojaSub">
+      Cada loja tem cardápio, logo e cores próprios. A mesma conta administra todas.
+    </p>
+    <form method="post" action="/admin/api/loja/criar">
+      <div class="grade-campos">
+        <div class="campo">
+          <label for="nova-nome" data-i18n="nomeLoja">Nome da loja</label>
+          <input id="nova-nome" name="nome" required maxlength="80" placeholder="Dona Dôra Timóteo" />
+        </div>
+        <div class="campo">
+          <label for="nova-slug" data-i18n="slugLoja">Slug (URL)</label>
+          <input id="nova-slug" name="slug" required pattern="[a-z0-9][a-z0-9-]{1,39}" placeholder="dona-dora-timoteo" />
+          <small data-i18n="slugLojaAjuda">Minúsculas, números e hífen. Não muda depois.</small>
+        </div>
+      </div>
+      <button class="btn btn-primario" type="submit" data-i18n="criarLoja">Criar loja</button>
+    </form>
+  </section>
+</AdminLayout>
+
+<style>
+  .logo-linha {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .logo-preview {
+    width: 96px;
+    height: 96px;
+    object-fit: contain;
+    border-radius: 12px;
+    border: 1px solid var(--adm-border);
+    background: var(--adm-elev);
+    flex-shrink: 0;
+  }
+
+  .logo-vazia {
+    display: grid;
+    place-items: center;
+    font-size: 1.8rem;
+    color: var(--adm-dim);
+  }
+
+  .logo-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 220px;
+  }
+
+  .logo-form .campo {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.86rem;
+  }
+
+  .logo-form input[type="file"] {
+    flex: 1;
+    font-size: 0.82rem;
+  }
+
+  .logo-linha .acoes {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+  }
+
+  .loja-slug {
+    margin: 0 0 16px;
+    font-size: 0.86rem;
+    color: var(--adm-dim);
+  }
+
+  .loja-slug code {
+    background: var(--adm-elev);
+    border: 1px solid var(--adm-border);
+    border-radius: 6px;
+    padding: 2px 6px;
+  }
+</style>

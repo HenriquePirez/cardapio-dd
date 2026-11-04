@@ -28,9 +28,10 @@ export const POST: APIRoute = async (ctx) => {
   if (!id) return voltar('/admin/categorias');
 
   const d1 = db();
+  const loja = ctx.locals.loja!;
 
   // Produtos ficariam órfãos: recusa se houver vínculo sem cascade garantido
-  const produtos = await listarProdutos(d1);
+  const produtos = await listarProdutos(d1, loja.id);
   const vinculados = produtos.filter((p) => p.categoria_id === id);
   if (vinculados.length > 0) {
     const msg = encodeURIComponent(
@@ -39,8 +40,9 @@ export const POST: APIRoute = async (ctx) => {
     return voltar(`/admin/categorias?msg=erro&erro=${msg}`);
   }
 
-  await excluirCategoria(d1, id);
+  const removida = await excluirCategoria(d1, loja.id, id);
+  if (!removida) return voltar('/admin/categorias?msg=erro');
   // O cardápio público ("/") é cacheado na edge: purga para a mudança aparecer na hora.
-  await invalidarCardapio(ctx.request);
+  await invalidarCardapio(ctx.request, loja.slug);
   return voltar('/admin/categorias?msg=excluida');
 };

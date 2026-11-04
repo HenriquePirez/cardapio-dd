@@ -9,4 +9,13 @@ declare namespace App {
   interface SessionData {
     usuario?: import('./lib/session').UsuarioSessao;
   }
+
+  interface Locals {
+    /** Loja ativa do painel (resolvida pelo middleware). */
+    loja?: import('./lib/db').Loja | null;
+    /** Lojas do usuário logado, para o seletor do cabeçalho. */
+    lojas?: import('./lib/db').Loja[];
+    /** true apenas para o admin master (gerencia outros usuários). */
+    usuarioMaster?: boolean;
+  }
 }

@@ -1,0 +1,59 @@
+---
+import LegalLayout from '../layouts/LegalLayout.astro';
+import { EMPRESA } from '../config';
+import { db } from '../lib/env';
+import { obterLojaPadrao } from '../lib/db';
+
+const loja = await obterLojaPadrao(db());
+const assunto = encodeURIComponent('Solicitação de exclusão de dados - cardápio digital');
+const corpo = encodeURIComponent(
+  'Olá, quero solicitar a exclusão dos meus dados.\n\nNome:\nE-mail usado na conta:\nLoja(s) relacionada(s):\n\nConfirmo que sou o titular ou representante autorizado.',
+);
+---
+
+<LegalLayout titulo="Exclusão de Conta e Dados" loja={loja}>
+  <p>
+    Você pode solicitar a exclusão dos seus dados pessoais a qualquer momento, conforme a LGPD.
+    A exclusão da conta do painel remove o acesso administrativo e pode apagar as lojas, o
+    catálogo e as mídias vinculadas. Por ser uma ação definitiva, ela é feita por solicitação
+    identificada.
+  </p>
+
+  <h2>1. Como solicitar</h2>
+  <p>
+    Envie um e-mail para <a href={`mailto:${EMPRESA.email}`}>{EMPRESA.email}</a> com o assunto
+    “Solicitação de exclusão de dados”, informando:
+  </p>
+  <ul>
+    <li>seu nome;</li>
+    <li>o e-mail usado na conta (se houver);</li>
+    <li>quais lojas ou dados deseja excluir;</li>
+    <li>se a exclusão é da conta inteira ou apenas de dados específicos.</li>
+  </ul>
+  <p>
+    <a class="destaque-legal" href={`mailto:${EMPRESA.email}?subject=${assunto}&body=${corpo}`}>
+      Abrir e-mail de solicitação de exclusão
+    </a>
+  </p>
+
+  <h2>2. O que acontece depois</h2>
+  <p>
+    Confirmaremos a identidade do solicitante e responderemos em até 15 dias. Dados que a lei
+    obrigar a manter (por exemplo, registros fiscais ou de segurança) podem ser conservados pelo
+    prazo legal, com acesso restrito.
+  </p>
+
+  <h2>3. Exclusão parcial</h2>
+  <p>
+    Se quiser apagar apenas uma loja ou mídias específicas, diga isso no pedido. O responsável
+    pode excluir a loja pelo painel administrativo, incluindo categorias, produtos e arquivos
+    de mídia vinculados.
+  </p>
+
+  <h2>4. Contato</h2>
+  <p>
+    {EMPRESA.nome} · <a href={`mailto:${EMPRESA.email}`}>{EMPRESA.email}</a> ·
+    <a href={`tel:${EMPRESA.telefoneLink}`}>{EMPRESA.telefoneExibicao}</a>. Consulte também a
+    <a href="/privacidade">Política de Privacidade</a>.
+  </p>
+</LegalLayout>

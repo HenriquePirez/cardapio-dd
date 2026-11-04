@@ -7,7 +7,7 @@
 | `npm run lint` | ESLint 10 fast tier (regras core + typescript-eslint strict + astro + 3 regras custom do toolkit). Sem tipos. |
 | `npm run lint:typed` | Perfil tipado (`projectService`): `no-floating-promises`, `no-misused-promises`, `only-throw-error`, `return-await`, `await-thenable` + avisos de segurança de tipos. ~5 s. |
 | `npm run check` | `astro check` — tipos e diagnostics do framework (gate pré-existente). |
-| `npm run test` | Vitest (ambiente node): lógica pura de `src/lib` (auth/PBKDF2, rate-limit, validadores, formatador). |
+| `npm run test` | Vitest (node): lógica de `src/lib` e integração do SQL real com `node:sqlite` (multi-loja). |
 | `npm run rules:selfcheck` | Self-check das regras custom `eslint-rules/` via `RuleTester` (sem framework extra). |
 | `npm run build` | Build SSR do Astro para Workers. |
 | **`npm run verify`** | **Combinado canônico:** lint → lint:typed → check → test → build. Rodar antes de commitar. |
@@ -29,11 +29,11 @@ e em push para `main` (sem branch protection — é só feedback).
 
 ## Contagem e plano (medição de 2026-10-26)
 
-Estado: **lint 0 erros / 32 avisos** (fast) · **0 erros / 35 avisos** (typed).
+Estado: **lint 0 erros / 54 avisos** (fast) · **0 erros / 53 avisos** (typed).
 
 | Regra | Sev. | Qtd. | Plano de redução |
 |---|---|---|---|
-| `quality/max-lines` | warn | 4 arquivos (`ProductForm.astro` 740, `AdminLayout.astro` 447, `index.astro` 385, `Gallery.astro` 363 — linhas `wc`; o parser do Astro avalia `ProductForm.astro` duas vezes, gerando 1 aviso duplicado) | Refatorar por responsabilidade real (prompt 09 do toolkit) como tarefa dedicada — UI sem testes E2E; promover a error ao zerar. |
+| `quality/max-lines` | warn | 4 arquivos (`ProductForm.astro` 777, `AdminLayout.astro` 541, `Gallery.astro` 465, `Cardapio.astro` 438 — linhas `wc`; o parser do Astro avalia `ProductForm.astro` duas vezes, gerando 1 aviso duplicado) | Refatorar por responsabilidade real como tarefa dedicada; promover a error ao zerar. |
 | `complexity` | warn | 10 | Mesma frente de refatoração; concentradas em rotas `/admin/api`. |
 | `max-statements` | warn | 8 | Idem. |
 | `no-useless-assignment` | warn | 3 | Inicializações mortas antes de try/catch reatribuir; corrigir junto do refator (mudança de fluxo exige cuidado sem testes de rota). |
@@ -59,15 +59,20 @@ não por default.
 
 ## Estratégia de testes
 
-- **Cobertura atual:** lógica pura e crítica de `src/lib` — 30 testes:
+- **Cobertura atual:** lógica crítica de `src/lib` e SQL — 63 testes:
   - `auth.test.ts`: PBKDF2 (hash/verificação/pepper/hash legado/erros de formato).
   - `login-guard.test.ts`: rate-limit com D1 fake em memória, incluindo regressão do
     bug corrigido em 2026-10-26 (bloqueio anulado por `Date.parse('...ZZ')` → NaN).
   - `env.test.ts`: chaves de mídia, tipos MIME, `urlMidia`.
   - `config.test.ts`: `formatarPreco` (BRL).
+  - `cores.test.ts`: hex livre, contraste AA do CTA e legibilidade no tema escuro.
+  - `consentimento.test.ts`: leitura/serialização da escolha de cookies (versão/JSON inválido).
+  - `db.test.ts`: aplica as migrações 0001–0005 num SQLite real (`node:sqlite`, Node 24),
+    valida a cópia dos dados para `dona-dora`, isolamento por `loja_id`, PK composta e
+    bloqueio de exclusão de categoria com produtos.
 - `cloudflare:workers` é substituído por stub (`tests/cloudflare-workers-stub.ts`)
   no Vitest; o restante do Workers (KV/D1 reais) só se comporta em `wrangler dev`.
-- **Não há:** E2E/browser (agent-browser/Chrome indisponíveis — ver `docs/setup.md`),
+- **Não há:** E2E/browser automatizado (validado manualmente com `wrangler dev`),
   testes de UI, testes de segurança automatizados. Não afirmar cobertura porcentual.
 - Testes novos seguem TDD; os existentes são de caracterização (comportamento atual
   documentado — mudança de comportamento exige atualizar o teste de propósito).

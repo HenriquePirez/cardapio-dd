@@ -9,10 +9,11 @@ import type { Categoria, Midia, Produto } from '../lib/db';
 
 interface Props {
   produto?: Produto & { midia: Midia[] };
+  urlCardapio?: string;
   categorias: Categoria[];
 }
 
-const { produto, categorias } = Astro.props;
+const { produto, categorias, urlCardapio = '/' } = Astro.props;
 
 const modoEdicao = !!produto;
 const modalidade = produto?.modalidade ?? 'ambos';
@@ -70,7 +71,10 @@ const galeria = (produto?.midia ?? []).map((m) => ({
         <div class="campo">
           <label for="preco" data-i18n="preco">Preço (R$)</label>
           <input id="preco" name="preco" type="number" step="0.01" min="0" required
-            inputmode="decimal" value={produto?.preco ?? ''} placeholder="28.90" data-i18n-ph="precoPlaceholder" />
+            inputmode="decimal"
+            value={produto ? (produto.preco_centavos / 100).toFixed(2) : ''}
+            placeholder="28.90"
+            data-i18n-ph="precoPlaceholder" />
         </div>
         <div class="campo">
           <label for="categoria" data-i18n="categoria">Categoria</label>
@@ -96,9 +100,9 @@ const galeria = (produto?.midia ?? []).map((m) => ({
 
       <div class="campo">
         <label for="comprar_url" data-i18n="linkCompra">Link de compra (app)</label>
-        <input id="comprar_url" name="comprar_url" type="url" required
-          value={produto?.comprar_url ?? ''} placeholder="https://app.exemplo.com/comprar?produto=…" data-i18n-ph="linkPlaceholder" />
-        <small data-i18n="linkAjuda">Ao tocar em “Comprar”, o cliente é levado para este link.</small>
+        <input id="comprar_url" name="comprar_url" type="url" required={modalidade !== 'local'}
+          value={produto?.comprar_url ?? ''} placeholder="https://pedidos.sualoja.com/produto/…" data-i18n-ph="linkPlaceholder" />
+        <small data-i18n="linkAjuda">Use a URL real do app de pedidos. Ao tocar em “Comprar”, o cliente é levado para este link.</small>
       </div>
 
       <div class="campo">
@@ -169,17 +173,31 @@ const galeria = (produto?.midia ?? []).map((m) => ({
     </section>
   </div>
 
+  <p class="aviso-privacidade">
+    Os dados e mídias deste formulário são usados apenas para publicar o catálogo da loja.
+    <a href="/privacidade" target="_blank" rel="noopener">Política de Privacidade</a>.
+  </p>
+
   <div class="barra-salvar">
     <button class="btn btn-primario" type="submit" data-i18n="salvarProduto">Salvar produto</button>
     <a href="/admin/produtos" class="btn btn-secundario" data-i18n="cancelar">Cancelar</a>
     {modoEdicao && (
-      <a href="/" target="_blank" rel="noopener" class="btn btn-secundario" data-i18n="verCardapio">Ver cardápio ↗</a>
+      <a href={urlCardapio} target="_blank" rel="noopener" class="btn btn-secundario" data-i18n="verCardapio">Ver cardápio ↗</a>
     )}
   </div>
 </form>
 
 <script>
   import { LIMITE_VIDEO_BYTES } from '../lib/limites';
+
+  // Só a modalidade "local" dispensa link; o servidor repete essa regra.
+  const modalidadeEl = document.getElementById('modalidade') as HTMLSelectElement | null;
+  const linkCompraEl = document.getElementById('comprar_url') as HTMLInputElement | null;
+  function sincronizarLink(): void {
+    if (linkCompraEl) linkCompraEl.required = modalidadeEl?.value !== 'local';
+  }
+  modalidadeEl?.addEventListener('change', sincronizarLink);
+  sincronizarLink();
 
   // ===================================================================
   // Galeria: estado + UI (adicionar, reordenar, excluir, upload)
@@ -263,7 +281,7 @@ const galeria = (produto?.midia ?? []).map((m) => ({
       li.innerHTML = `
         ${
           src
-            ? `<img class="g-thumb" src="${esc(src)}" alt="" loading="lazy" decoding="async" />`
+            ? `<img class="g-thumb" src="${esc(src)}" alt="${esc(item.alt || 'Prévia da mídia do produto')}" loading="lazy" decoding="async" />`
             : `<i class="g-thumb g-vazio ${iconeClasse(item.tipo)}" aria-hidden="true"></i>`
         }
         <div class="g-info">
@@ -763,6 +781,17 @@ const galeria = (produto?.midia ?? []).map((m) => ({
     font-size: 0.78rem;
     color: #6b7280;
     line-height: 1.45;
+  }
+
+  .aviso-privacidade {
+    margin: 18px 0 0;
+    font-size: 0.78rem;
+    color: var(--adm-dim);
+  }
+
+  .aviso-privacidade a {
+    color: var(--cor-preco);
+    text-decoration: underline;
   }
 
   .barra-salvar {

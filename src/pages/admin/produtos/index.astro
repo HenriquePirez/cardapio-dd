@@ -6,8 +6,9 @@ import { urlMidia } from '../../../lib/env';
 import { AVISOS_PRODUTO, ehSucesso } from '../../../lib/mensagens';
 
 const d1 = db();
-const categorias = await listarCategorias(d1);
-const produtos = await listarProdutos(d1);
+const loja = Astro.locals.loja!;
+const categorias = await listarCategorias(d1, loja.id);
+const produtos = await listarProdutos(d1, loja.id);
 
 const filtro = Astro.url.searchParams.get('filtro') ?? '';
 const busca = (Astro.url.searchParams.get('q') ?? '').trim().toLowerCase();
@@ -93,7 +94,7 @@ const nomeCat = (id: string) => categorias.find((c) => c.id === id)?.nome ?? id;
           return (
             <div class="linha-lista">
               {src ? (
-                <img class="miniatura" src={src} alt="" loading="lazy" decoding="async" />
+                <img class="miniatura" src={src} alt={`Miniatura de ${p.nome}`} loading="lazy" decoding="async" />
               ) : (
                 <span class="miniatura sem"><i class="fi-br-images" aria-hidden="true"></i></span>
               )}
@@ -105,7 +106,7 @@ const nomeCat = (id: string) => categorias.find((c) => c.id === id)?.nome ?? id;
                   {p.disponivel === 0 && <span class="tag tag-oculto" data-i18n="oculto">oculto</span>}
                 </div>
                 <div class="sub">
-                  {nomeCat(p.categoria_id)} · R$ {p.preco.toFixed(2).replace('.', ',')} ·
+                  {nomeCat(p.categoria_id)} · R$ {(p.preco_centavos / 100).toFixed(2).replace('.', ',')} ·
                   {' '}{p.midia.length} mídia(s)
                 </div>
               </div>

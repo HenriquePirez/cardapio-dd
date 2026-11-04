@@ -10,9 +10,10 @@ interface Props {
   // Mídia de capa (primeira imagem) e total de itens da galeria
   capa?: { url: string; alt: string; tipo: 'imagem' | 'video'; poster?: string } | undefined;
   totalMidia: number;
+  compraDisponivel?: boolean;
 }
 
-const { id, nome, preco, descricao, capa, totalMidia } = Astro.props;
+const { id, nome, preco, descricao, capa, totalMidia, compraDisponivel = true } = Astro.props;
 
 // Para vídeo, mostra o poster como capa (não baixa o arquivo de vídeo)
 const capaSrc = capa
@@ -69,12 +70,15 @@ const temVideo = capa?.tipo === 'video';
     <button
       class="btn-comprar"
       type="button"
-      data-comprar={id}
-      aria-label={`Comprar ${nome}`}
-      data-i18n-aria="comprar"
+      data-comprar={compraDisponivel ? id : undefined}
+      aria-label={compraDisponivel ? `Comprar ${nome}` : `Compra indisponível: ${nome}`}
+      data-i18n-aria={compraDisponivel ? 'comprar' : 'indisponivel'}
       data-nome={nome}
+      disabled={!compraDisponivel}
     >
-      <span data-i18n="comprar">Comprar</span>
+      <span data-i18n={compraDisponivel ? 'comprar' : 'indisponivel'}>
+        {compraDisponivel ? 'Comprar' : 'Indisponível'}
+      </span>
     </button>
   </div>
 </article>
@@ -180,14 +184,21 @@ const temVideo = capa?.tipo === 'video';
     font-size: 0.7rem;
     font-weight: 500;
     color: #fff;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.75);
     backdrop-filter: blur(6px);
     opacity: 0;
     transition: opacity 0.2s;
   }
 
-  .card-midia:focus-visible .card-zoom {
+  .card-midia:focus-visible .card-zoom,
+  .card-midia:hover .card-zoom {
     opacity: 1;
+  }
+
+  @media (hover: none) {
+    .card-zoom {
+      opacity: 1;
+    }
   }
 
   .card-corpo {
@@ -252,9 +263,48 @@ const temVideo = capa?.tipo === 'video';
     transform: scale(0.96);
   }
 
+  .btn-comprar:disabled {
+    cursor: not-allowed;
+    background: var(--bg-elev);
+    color: var(--text-dim);
+    box-shadow: none;
+    transform: none;
+  }
+
   @media (min-width: 560px) {
     .card-midia {
       aspect-ratio: 4 / 3;
+    }
+  }
+
+  @media (min-width: 900px) {
+    .card {
+      display: grid;
+      grid-template-columns: minmax(220px, 28%) 1fr;
+      align-items: stretch;
+    }
+
+    .card-midia {
+      height: 100%;
+      min-height: 240px;
+      aspect-ratio: auto;
+    }
+
+    .card-corpo {
+      align-items: center;
+      padding: 24px 28px;
+    }
+
+    .card-nome {
+      font-size: 1.15rem;
+    }
+
+    .card-desc {
+      font-size: 0.9rem;
+    }
+
+    .card-preco {
+      font-size: 1.15rem;
     }
   }
 </style>

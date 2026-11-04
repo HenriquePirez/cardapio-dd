@@ -1,0 +1,246 @@
+---
+/**
+ * Banner de consentimento de cookies.
+ * Essenciais (sessão do painel) não dependem de aceite; analytics só carregam
+ * com "Aceitar". Sem IDs configurados, nenhum script de terceiro é injetado.
+ */
+import { analyticsIds } from '../lib/env';
+
+const { gaId, metaPixelId } = analyticsIds();
+---
+
+<div
+  class="consentimento"
+  data-consentimento
+  data-ga-id={gaId}
+  data-meta-pixel-id={metaPixelId}
+  role="region"
+  aria-label="Preferências de cookies"
+>
+  <div class="consentimento-texto">
+    <strong>Cookies e privacidade</strong>
+    <p>
+      Usamos cookies essenciais para o site funcionar. Com o seu aceite, também usamos
+      cookies de medição (Google Analytics e Meta) para entender o acesso ao cardápio.
+      <a href="/cookies">Política de Cookies</a>
+    </p>
+  </div>
+  <div class="consentimento-acoes">
+    <button class="consentimento-btn secundario" type="button" data-consent-rejeitar>
+      Rejeitar opcionais
+    </button>
+    <button class="consentimento-btn primario" type="button" data-consent-aceitar>
+      Aceitar todos
+    </button>
+  </div>
+</div>
+
+<style>
+  .consentimento {
+    position: fixed;
+    left: 16px;
+    right: 16px;
+    bottom: calc(16px + env(safe-area-inset-bottom));
+    z-index: 100;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 16px;
+    background: var(--bg-card);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+  }
+
+  .consentimento[hidden] {
+    display: none;
+  }
+
+  .consentimento-texto {
+    flex: 1;
+    min-width: 240px;
+    font-size: 0.86rem;
+    line-height: 1.45;
+  }
+
+  .consentimento-texto strong {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 0.95rem;
+  }
+
+  .consentimento-texto p {
+    margin: 0;
+  }
+
+  .consentimento-texto a {
+    color: var(--cor-preco);
+    text-decoration: underline;
+  }
+
+  .consentimento-acoes {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .consentimento-btn {
+    min-height: 44px;
+    padding: 10px 16px;
+    border-radius: 9px;
+    border: 1px solid var(--border);
+    font: inherit;
+    font-size: 0.86rem;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .consentimento-btn.secundario {
+    background: var(--bg-elev);
+    color: var(--text);
+  }
+
+  .consentimento-btn.primario {
+    /* Mesmo peso visual da recusa: a escolha não deve ser induzida. */
+    background: var(--bg-elev);
+    border-color: var(--border);
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .consentimento-btn:focus-visible {
+    outline: 2px solid var(--cor-preco);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 520px) {
+    .consentimento-acoes {
+      width: 100%;
+    }
+
+    .consentimento-btn {
+      flex: 1;
+    }
+  }
+</style>
+
+<script>
+  import { CHAVE_CONSENTIMENTO, criarConsentimento, lerConsentimento } from '../lib/consentimento';
+
+  const banner = document.querySelector<HTMLElement>('[data-consentimento]');
+  if (banner) {
+    const bannerEl = banner;
+    const gaId = banner.dataset.gaId ?? '';
+    const metaPixelId = banner.dataset.metaPixelId ?? '';
+    let analyticsCarregado = false;
+    let focoAnterior: HTMLElement | null = null;
+
+    const janela = window as unknown as {
+      dataLayer?: unknown[];
+      gtag?: (...args: unknown[]) => void;
+      fbq?: (...args: unknown[]) => void;
+    };
+
+    function carregarAnalytics(): void {
+      if (analyticsCarregado || (!gaId && !metaPixelId)) return;
+      analyticsCarregado = true;
+
+      if (gaId) {
+        janela.dataLayer = janela.dataLayer || [];
+        janela.gtag = (...args: unknown[]) => {
+          janela.dataLayer?.push(args);
+        };
+        janela.gtag('js', new Date());
+        janela.gtag('config', gaId, { anonymize_ip: true });
+        const script = document.createElement('script');
+        script.async = true;
+        script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(gaId)}`;
+        document.head.appendChild(script);
+      }
+
+      if (metaPixelId) {
+        janela.fbq = (...args: unknown[]) => {
+          const fbq = janela.fbq as unknown as { callMethod?: (...a: unknown[]) => void; queue?: unknown[] };
+          if (fbq.callMethod) fbq.callMethod(...args);
+          else {
+            fbq.queue = fbq.queue || [];
+            fbq.queue.push(args);
+          }
+        };
+        janela.fbq('init', metaPixelId);
+        janela.fbq('track', 'PageView');
+        const script = document.createElement('script');
+        script.async = true;
+        script.src = 'https://connect.facebook.net/en_US/fbevents.js';
+        document.head.appendChild(script);
+      }
+    }
+
+    function limparCookiesAnalytics(): void {
+      const nomes = document.cookie
+        .split(';')
+        .map((item) => item.split('=')[0]?.trim() ?? '')
+        .filter((nome) => nome.startsWith('_ga') || nome === '_gid' || nome.startsWith('_fbp'));
+      for (const nome of nomes) {
+        for (const caminho of ['/', location.pathname]) {
+          document.cookie = `${nome}=; Max-Age=0; path=${caminho}; SameSite=Lax`;
+        }
+      }
+    }
+
+    function encerrarBanner(): void {
+      bannerEl.hidden = true;
+      if (focoAnterior?.isConnected) {
+        focoAnterior.focus();
+      } else {
+        document.querySelector<HTMLElement>('main')?.focus({ preventScroll: true });
+      }
+      focoAnterior = null;
+    }
+
+    function salvar(analytics: boolean): void {
+      try {
+        localStorage.setItem(CHAVE_CONSENTIMENTO, JSON.stringify(criarConsentimento(analytics)));
+      } catch {
+        /* modo privado: a escolha vale só nesta visita */
+      }
+      encerrarBanner();
+      if (analytics) {
+        carregarAnalytics();
+      } else {
+        limparCookiesAnalytics();
+        // Recarrega para interromper scripts de medição já carregados nesta visita.
+        if (analyticsCarregado) location.reload();
+      }
+    }
+
+    bannerEl.querySelector('[data-consent-aceitar]')?.addEventListener('click', () => salvar(true));
+    bannerEl.querySelector('[data-consent-rejeitar]')?.addEventListener('click', () => salvar(false));
+
+    document.addEventListener('click', (evento) => {
+      const alvo = (evento.target as HTMLElement).closest('[data-consent-abrir]');
+      if (!alvo) return;
+      evento.preventDefault();
+      focoAnterior = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      bannerEl.hidden = false;
+      bannerEl.querySelector<HTMLButtonElement>('[data-consent-aceitar]')?.focus();
+    });
+
+    let salvo: string | null = null;
+    try {
+      salvo = localStorage.getItem(CHAVE_CONSENTIMENTO);
+    } catch {
+      /* armazenamento bloqueado: mostra o banner */
+    }
+    const escolha = lerConsentimento(salvo);
+    if (escolha) {
+      bannerEl.hidden = true;
+      if (escolha.analytics) carregarAnalytics();
+    }
+  }
+</script>

@@ -42,6 +42,9 @@ interface EnvBindings {
   MEDIA_PUBLIC_BASE?: string;
   /** Segredo do pepper do hash de senha (`wrangler secret put AUTH_PEPPER`). */
   AUTH_PEPPER?: string;
+  /** IDs opcionais de analytics; sem eles nenhum script de terceiro é carregado. */
+  GA_ID?: string;
+  META_PIXEL_ID?: string;
   [k: string]: unknown;
 }
 
@@ -104,6 +107,20 @@ export function pepperObrigatorio(): string {
   return p;
 }
 
+/**
+ * IDs de analytics configurados por variável de ambiente.
+ * Vazio/inválido = recurso desativado, sem script externo.
+ */
+export function analyticsIds(): { gaId: string; metaPixelId: string } {
+  const b = bindings();
+  const ga = typeof b.GA_ID === 'string' ? b.GA_ID.trim() : '';
+  const meta = typeof b.META_PIXEL_ID === 'string' ? b.META_PIXEL_ID.trim() : '';
+  return {
+    gaId: /^G-[A-Z0-9]{4,20}$/i.test(ga) ? ga : '',
+    metaPixelId: /^\d{5,20}$/.test(meta) ? meta : '',
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Limites de mídia
 // ---------------------------------------------------------------------------
@@ -128,7 +145,7 @@ export const TIPOS_ACEITOS = [
 ] as const;
 
 /** Prefixos de chave permitidos (mesmos gerados pelo upload do admin). */
-export const PREFIXOS_MIDIA = ['fotos/', 'videos/'] as const;
+export const PREFIXOS_MIDIA = ['fotos/', 'videos/', 'lojas/'] as const;
 
 /**
  * Valida uma chave de mídia antes de gravar/ler.

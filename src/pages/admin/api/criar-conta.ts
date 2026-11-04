@@ -10,11 +10,12 @@
  * conseguem sobrescrever a senha um do outro.
  */
 import type { APIRoute } from 'astro';
-import { criarPrimeiroUsuario } from '../../../lib/db';
+import { criarPrimeiroUsuario, garantirLojaDoUsuario, registrarAceite } from '../../../lib/db';
 import { db, pepperObrigatorio, setupToken } from '../../../lib/env';
 import { hashSenha, validarSenha } from '../../../lib/auth';
 import { criarSessao } from '../../../lib/session';
 import { mesmaOrigem } from '../../../lib/http';
+import { LEGAL } from '../../../config';
 
 
 function voltar(para: string): Response {
@@ -54,8 +55,10 @@ export const POST: APIRoute = async (ctx) => {
   const email = String(form.get('email') ?? '').trim();
   const senha = String(form.get('senha') ?? '');
   const senha2 = String(form.get('senha2') ?? '');
+  const aceite = String(form.get('aceite') ?? '');
 
   if (!nome || !email) return voltar('/admin/criar-conta?erro=campos');
+  if (aceite !== '1') return voltar('/admin/criar-conta?erro=aceite');
 
   const erroSenha = validarSenha(senha);
   if (erroSenha) return voltar(`/admin/criar-conta?erro=${encodeURIComponent(erroSenha)}`);
@@ -77,6 +80,8 @@ export const POST: APIRoute = async (ctx) => {
   // Já existe conta (duplo clique, corrida ou painel em uso): manda ao login.
   if (!criado) return ctx.redirect('/admin/login', 303);
 
+  await garantirLojaDoUsuario(d1, id);
+  await registrarAceite(d1, id, LEGAL.versao);
   await criarSessao(ctx, { id, email, nome });
 
   return ctx.redirect('/admin', 303);

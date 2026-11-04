@@ -1,0 +1,61 @@
+---
+import LegalLayout from '../layouts/LegalLayout.astro';
+import { EMPRESA } from '../config';
+import { db } from '../lib/env';
+import { obterLojaPadrao } from '../lib/db';
+
+const loja = await obterLojaPadrao(db());
+---
+
+<LegalLayout titulo="Política de Reembolso e Cancelamento" loja={loja}>
+  <p>
+    Este cardápio é uma vitrine digital. <strong>Nenhum pagamento é processado aqui</strong> e
+    nenhuma cobrança é feita por este site. O pedido e o pagamento são concluídos no site
+    externo indicado pelo lojista ao tocar em “Comprar”.
+  </p>
+
+  <h2>1. Onde cancelar ou pedir estorno</h2>
+  <p>
+    Como a compra acontece no site externo de pedidos e pagamentos, o cancelamento, a troca e o
+    estorno devem ser solicitados pelos canais desse site ou diretamente à loja que preparou o
+    pedido. Guarde o comprovante e o número do pedido.
+  </p>
+
+  <h2>2. Direito de arrependimento</h2>
+  <p>
+    Nas compras feitas fora do estabelecimento comercial, o Código de Defesa do Consumidor
+    (art. 49) prevê o direito de desistir em até 7 dias corridos a partir do recebimento do
+    produto, quando aplicável. Produtos perecíveis, alimentos já preparados e pedidos
+    personalizados podem ter regras específicas; a loja deve informar a condição antes da
+    compra.
+  </p>
+
+  <h2>3. Problemas com o pedido</h2>
+  <p>
+    Se o pedido não chegou, veio incompleto ou com problema de qualidade, procure primeiro a
+    loja pelo canal informado no site de compra. Se precisar de apoio sobre o cardápio digital,
+    fale com o responsável:
+  </p>
+  <p>
+    <a class="destaque-legal" href={`mailto:${EMPRESA.email}?subject=${encodeURIComponent('Reembolso ou cancelamento - cardápio digital')}`}>
+      Enviar e-mail para {EMPRESA.email}
+    </a>
+  </p>
+  <p>
+    Telefone: <a href={`tel:${EMPRESA.telefoneLink}`}>{EMPRESA.telefoneExibicao}</a>. Descreva o
+    ocorrido, informe a loja, a data e, se tiver, o número do pedido.
+  </p>
+
+  <h2>4. Prazos</h2>
+  <p>
+    Prazos de análise e de devolução seguem as regras do site de pagamento, da operadora do
+    cartão ou do meio de pagamento usado. O cardápio digital não retém valores de compras e,
+    por isso, não consegue estornar diretamente uma cobrança feita em outro site.
+  </p>
+
+  <h2>5. Contato</h2>
+  <p>
+    Responsável: {EMPRESA.nome} · <a href={`mailto:${EMPRESA.email}`}>{EMPRESA.email}</a> ·
+    <a href={`tel:${EMPRESA.telefoneLink}`}>{EMPRESA.telefoneExibicao}</a>.
+  </p>
+</LegalLayout>

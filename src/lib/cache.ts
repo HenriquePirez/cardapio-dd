@@ -11,15 +11,18 @@
  * sem query (ver `chaveCardapio`).
  */
 export function chaveCardapio(url: string | URL): Request {
-  return new Request(new URL('/', url).toString(), { method: 'GET' });
+  // Cada loja tem a sua chave; query não entra (evita variantes órfãs).
+  const alvo = new URL(url);
+  return new Request(new URL(alvo.pathname, alvo).toString(), { method: 'GET' });
 }
 
-export async function invalidarCardapio(request: Request): Promise<void> {
+export async function invalidarCardapio(request: Request, slug?: string): Promise<void> {
   try {
     // O tipo DOM de `CacheStorage` não expõe `.default`, por isso o cast.
     const cache = (caches as unknown as { default?: Cache }).default;
     if (!cache) return;
     await cache.delete(chaveCardapio(request.url));
+    if (slug) await cache.delete(chaveCardapio(new URL(`/loja/${slug}`, request.url)));
   } catch {
     /* cache é otimização, não crítico — nunca derruba a escrita */
   }

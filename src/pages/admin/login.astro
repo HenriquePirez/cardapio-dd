@@ -2,6 +2,12 @@
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import { contarUsuarios } from '../../lib/db';
 import { db } from '../../lib/env';
+import { lerUsuario } from '../../lib/session';
+
+// Já autenticado não deve ver o formulário de login.
+if (await lerUsuario(Astro)) {
+  return Astro.redirect('/admin');
+}
 
 const erro = Astro.url.searchParams.get('erro');
 const prox = Astro.url.searchParams.get('prox') ?? '';
@@ -22,6 +28,7 @@ const mensagens: Record<string, string> = {
   bloqueado: `Muitas tentativas erradas. Tente novamente em ${min ?? 10} min.`,
   criado: 'Conta criada! Entre com seus dados.',
   logout: 'Você saiu do painel.',
+  aceite: 'Para entrar, leia e aceite os Termos de Uso e a Política de Privacidade.',
 };
 const msg = erro ? mensagens[erro] : null;
 ---
@@ -70,6 +77,15 @@ const msg = erro ? mensagens[erro] : null;
             placeholder="••••••••"
           />
         </div>
+
+        <label class="campo-aceite">
+          <input type="checkbox" name="aceite" value="1" required />
+          <span>
+            Li e aceito os <a href="/termos" target="_blank" rel="noopener">Termos de Uso</a> e a
+            <a href="/privacidade" target="_blank" rel="noopener">Política de Privacidade</a>, e
+            concordo com o tratamento de dados descrito.
+          </span>
+        </label>
 
         <button class="btn btn-primario login-btn" type="submit"><span data-i18n="entrar">Entrar</span></button>
       </form>
