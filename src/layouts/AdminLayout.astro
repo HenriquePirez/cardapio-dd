@@ -57,6 +57,7 @@ function sair() {
   </head>
   <body class="admin-body">
     <a class="pular-conteudo" href="#conteudo">Pular para o conteúdo</a>
+    <ConsentimentoCookies />
     {usuario && (
       <header class="admin-topo">
         <div class="admin-topo-inner">
@@ -90,6 +91,11 @@ function sair() {
             <a href="/admin/loja" class={ativo('/admin/loja')}
               ><span data-i18n="loja">Loja</span></a
             >
+            {usuario && Astro.locals.usuarioMaster && (
+              <a href="/admin/usuarios" class={ativo('/admin/usuarios')}
+                ><span data-i18n="usuarios">Usuários</span></a
+              >
+            )}
           </nav>
 
           <Preferencias rotulo="Preferências do painel" />
@@ -102,7 +108,7 @@ function sair() {
       </header>
     )}
 
-    <main class="admin-main" id="conteudo">
+    <main class="admin-main" id="conteudo" tabindex="-1">
       <slot />
     </main>
 
@@ -114,7 +120,6 @@ function sair() {
       </p>
     </footer>
 
-    <ConsentimentoCookies />
 
     <script>
       // Guarda o token de sessão (cookie SameSite) e injeta como header em

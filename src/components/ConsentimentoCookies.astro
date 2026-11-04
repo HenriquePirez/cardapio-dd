@@ -20,7 +20,7 @@ const { gaId, metaPixelId } = analyticsIds();
   <div class="consentimento-texto">
     <strong>Cookies e privacidade</strong>
     <p>
-      Usamos cookies essenciais para o painel funcionar. Com o seu aceite, também usamos
+      Usamos cookies essenciais para o site funcionar. Com o seu aceite, também usamos
       cookies de medição (Google Analytics e Meta) para entender o acesso ao cardápio.
       <a href="/cookies">Política de Cookies</a>
     </p>
@@ -106,9 +106,11 @@ const { gaId, metaPixelId } = analyticsIds();
   }
 
   .consentimento-btn.primario {
-    background: var(--laranja-aa);
-    border-color: var(--laranja-aa);
-    color: #fff;
+    /* Mesmo peso visual da recusa: a escolha não deve ser induzida. */
+    background: var(--bg-elev);
+    border-color: var(--border);
+    color: var(--text);
+    font-weight: 600;
   }
 
   .consentimento-btn:focus-visible {
@@ -136,6 +138,7 @@ const { gaId, metaPixelId } = analyticsIds();
     const gaId = banner.dataset.gaId ?? '';
     const metaPixelId = banner.dataset.metaPixelId ?? '';
     let analyticsCarregado = false;
+    let focoAnterior: HTMLElement | null = null;
 
     const janela = window as unknown as {
       dataLayer?: unknown[];
@@ -190,13 +193,23 @@ const { gaId, metaPixelId } = analyticsIds();
       }
     }
 
+    function encerrarBanner(): void {
+      bannerEl.hidden = true;
+      if (focoAnterior?.isConnected) {
+        focoAnterior.focus();
+      } else {
+        document.querySelector<HTMLElement>('main')?.focus({ preventScroll: true });
+      }
+      focoAnterior = null;
+    }
+
     function salvar(analytics: boolean): void {
       try {
         localStorage.setItem(CHAVE_CONSENTIMENTO, JSON.stringify(criarConsentimento(analytics)));
       } catch {
         /* modo privado: a escolha vale só nesta visita */
       }
-      bannerEl.hidden = true;
+      encerrarBanner();
       if (analytics) {
         carregarAnalytics();
       } else {
@@ -213,6 +226,7 @@ const { gaId, metaPixelId } = analyticsIds();
       const alvo = (evento.target as HTMLElement).closest('[data-consent-abrir]');
       if (!alvo) return;
       evento.preventDefault();
+      focoAnterior = document.activeElement instanceof HTMLElement ? document.activeElement : null;
       bannerEl.hidden = false;
       bannerEl.querySelector<HTMLButtonElement>('[data-consent-aceitar]')?.focus();
     });

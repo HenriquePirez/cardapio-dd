@@ -53,8 +53,15 @@ const ano = new Date().getFullYear();
     font: inherit;
   }
 
+  .rodape-legal-links a,
   .rodape-legal-btn {
-    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    padding: 2px 0;
+  }
+
+  .rodape-legal-btn {
     border: 0;
     background: transparent;
     cursor: pointer;
@@ -75,5 +82,10 @@ const ano = new Date().getFullYear();
   .rodape-legal-empresa,
   .rodape-legal-copy {
     margin: 0;
+  }
+
+  .rodape-legal-empresa a {
+    display: inline-block;
+    padding: 3px 0;
   }
 </style>

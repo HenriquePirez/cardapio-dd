@@ -10,6 +10,7 @@ interface Props {
     string,
     {
       nome: string;
+      compraDisponivel?: boolean;
       itens: Array<{
         tipo: 'imagem' | 'video';
         src: string;
@@ -269,6 +270,7 @@ const { galerias } = Astro.props;
   }
   interface Galeria {
     nome: string;
+    compraDisponivel?: boolean;
     itens: ItemGaleria[];
   }
 
@@ -368,7 +370,10 @@ const { galerias } = Astro.props;
     atual = 0;
     track.scrollLeft = 0;
     if (nomeEl) nomeEl.textContent = g.nome;
-    if (comprarEl) comprarEl.dataset.comprar = id;
+    if (comprarEl) {
+      comprarEl.dataset.comprar = id;
+      comprarEl.hidden = g.compraDisponivel === false;
+    }
     montarDots(total);
     atualizarDots();
     return true;

@@ -327,6 +327,40 @@ export async function contarUsuarios(db: D1Like): Promise<number> {
   return r?.n ?? 0;
 }
 
+/** Verifica se o usuário é o admin master (único que gerencia outros usuários). */
+export async function ehUsuarioMaster(db: D1Like, usuarioId: string): Promise<boolean> {
+  const r = await db
+    .prepare('SELECT master FROM usuarios WHERE id = ?')
+    .bind(usuarioId)
+    .first<{ master: number | null }>();
+  return (r?.master ?? 0) === 1;
+}
+
+export interface UsuarioResumo {
+  id: string;
+  email: string;
+  nome: string;
+  criado_em?: string | null;
+  aceite_em?: string | null;
+  aceite_versao?: string | null;
+  qtd_lojas: number;
+}
+
+/** Lista todos os usuários com a quantidade de lojas de cada um. */
+export async function listarUsuariosComLojas(db: D1Like): Promise<UsuarioResumo[]> {
+  const { results } = await db
+    .prepare(
+      `SELECT u.id, u.email, u.nome, u.criado_em, u.aceite_em, u.aceite_versao,
+              COUNT(l.id) AS qtd_lojas
+       FROM usuarios u
+       LEFT JOIN lojas l ON l.usuario_id = u.id
+       GROUP BY u.id, u.email, u.nome, u.criado_em, u.aceite_em, u.aceite_versao
+       ORDER BY u.criado_em DESC`,
+    )
+    .all<UsuarioResumo>();
+  return results ?? [];
+}
+
 /**
  * Cria o primeiro usuário do painel de forma atômica.
  * Retorna false quando já existe alguém — dois POSTs simultâneos não

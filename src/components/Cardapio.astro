@@ -9,7 +9,7 @@ import RodapeLegal from '../components/RodapeLegal.astro';
 import { urlMidia } from '../lib/env';
 import type { Categoria, Loja, Midia, Produto } from '../lib/db';
 import { formatarPreco } from '../config';
-import { normalizarModalidade, type Modalidade } from '../lib/pedido';
+import { normalizarModalidade, urlCompraValida, type Modalidade } from '../lib/pedido';
 
 interface Props {
   loja: Loja;
@@ -20,6 +20,8 @@ interface Props {
 const { loja, categorias, produtos } = Astro.props;
 
 const destaques = produtos.filter((p) => p.destaque === 1);
+// Evita repetir o catálogo inteiro quando todos os produtos já são destaque.
+const mostrarDestaques = destaques.length > 0 && destaques.length < produtos.length;
 
 // Agrupa produtos por categoria, preservando a ordem das categorias
 const porCategoria = new Map<string, typeof produtos>();
@@ -33,6 +35,7 @@ const galerias: Record<
   string,
   {
     nome: string;
+    compraDisponivel: boolean;
     itens: Array<{
       tipo: 'imagem' | 'video';
       src: string;
@@ -43,22 +46,37 @@ const galerias: Record<
   }
 > = {};
 
+// Nome do produto é melhor alt do que o nome do arquivo ("crostini-2").
+function altDe(alt: string | null, nome: string, indice: number): string {
+  const texto = (alt ?? '').trim();
+  const pareceArquivo = !texto || (!/\s/.test(texto) && /[-_.\d]/.test(texto));
+  return pareceArquivo ? `${nome} — foto ${indice + 1}` : texto;
+}
+
+const comprasValidas: Record<string, boolean> = {};
+for (const p of produtos) {
+  const modalidade = normalizarModalidade(p.modalidade) ?? 'ambos';
+  // Local e ambos ainda podem vender no totem; só retirada exige link válido.
+  comprasValidas[p.id] = modalidade !== 'retirada' || urlCompraValida(p.comprar_url);
+}
+
 for (const p of produtos) {
   galerias[p.id] = {
     nome: p.nome,
-    itens: p.midia.map((m) =>
+    compraDisponivel: comprasValidas[p.id] ?? false,
+    itens: p.midia.map((m, i) =>
       m.tipo === 'imagem'
         ? {
             tipo: 'imagem' as const,
             src: urlMidia(m.url),
             full: urlMidia(m.full || m.url),
-            alt: m.alt || '',
+            alt: altDe(m.alt, p.nome, i),
           }
         : {
             tipo: 'video' as const,
             src: urlMidia(m.url),
             poster: urlMidia(m.poster || ''),
-            alt: m.alt || '',
+            alt: altDe(m.alt, p.nome, i),
           },
     ),
   };
@@ -79,12 +97,12 @@ function capaDe(p: (typeof produtos)[number]) {
   const m = p.midia[0];
   if (!m) return undefined;
   if (m.tipo === 'imagem') {
-    return { url: urlMidia(m.url), alt: m.alt || p.nome, tipo: 'imagem' as const };
+    return { url: urlMidia(m.url), alt: altDe(m.alt, p.nome, 0), tipo: 'imagem' as const };
   }
   return {
     url: urlMidia(m.poster || m.url),
     poster: urlMidia(m.poster || ''),
-    alt: m.alt || p.nome,
+    alt: altDe(m.alt, p.nome, 0),
     tipo: 'video' as const,
   };
 }
@@ -119,7 +137,7 @@ const slogan = loja.slogan || 'O sabor que começa pelos olhos';
     </div>
   </nav>
 
-  <main class="container" id="conteudo">
+  <main class="container" id="conteudo" tabindex="-1">
     {produtos.length === 0 && (
       <div class="vazio">
         <p>
@@ -130,7 +148,7 @@ const slogan = loja.slogan || 'O sabor que começa pelos olhos';
     )}
 
     <!-- Destaques -->
-    {destaques.length > 0 && (
+    {mostrarDestaques && (
       <section class="secao" aria-labelledby="destaques-h">
         <h2 class="secao-titulo" id="destaques-h" data-i18n="destaques">Destaques</h2>
         <div class="destaque-scroll">
@@ -188,6 +206,7 @@ const slogan = loja.slogan || 'O sabor que começa pelos olhos';
                 descricao={p.descricao ?? undefined}
                 capa={capaDe(p)}
                 totalMidia={p.midia.length}
+                compraDisponivel={comprasValidas[p.id] ?? false}
               />
             ))}
           </div>
@@ -210,6 +229,59 @@ const slogan = loja.slogan || 'O sabor que começa pelos olhos';
   <PedidoDialog pedidos={pedidos} />
   <Gallery galerias={galerias} />
 </BaseLayout>
+
+<script>
+  const topo = document.querySelector<HTMLElement>('.topo');
+  const atalhos = document.querySelector<HTMLElement>('.atalhos');
+  const raiz = document.documentElement;
+  const secoes = [...document.querySelectorAll<HTMLElement>('main section[id]')];
+  const links = [...document.querySelectorAll<HTMLAnchorElement>('.atalho')];
+
+  function ativar(id: string): void {
+    for (const link of links) {
+      const ativo = link.getAttribute('href') === `#${id}`;
+      link.classList.toggle('ativo', ativo);
+      if (ativo) link.setAttribute('aria-current', 'true');
+      else link.removeAttribute('aria-current');
+    }
+  }
+
+  function atualizarAtiva(): void {
+    if (!secoes.length) return;
+    const corte = (topo?.offsetHeight ?? 0) + (atalhos?.offsetHeight ?? 0) + 12;
+    let atual = secoes[0]?.id ?? '';
+    for (const secao of secoes) {
+      if (secao.getBoundingClientRect().top <= corte) atual = secao.id;
+    }
+    if (atual) ativar(atual);
+  }
+
+  function medir(): void {
+    if (topo) raiz.style.setProperty('--topo-altura', `${topo.offsetHeight}px`);
+    if (atalhos) raiz.style.setProperty('--atalhos-altura', `${atalhos.offsetHeight}px`);
+    atualizarAtiva();
+  }
+
+  let quadro = 0;
+  addEventListener(
+    'scroll',
+    () => {
+      if (quadro) return;
+      quadro = requestAnimationFrame(() => {
+        quadro = 0;
+        atualizarAtiva();
+      });
+    },
+    { passive: true },
+  );
+  addEventListener('resize', medir);
+  for (const link of links) {
+    link.addEventListener('click', () => ativar(link.getAttribute('href')?.slice(1) ?? ''));
+  }
+  if (topo) new ResizeObserver(medir).observe(topo);
+  if (atalhos) new ResizeObserver(medir).observe(atalhos);
+  medir();
+</script>
 
 <style>
   .topo {
@@ -256,7 +328,7 @@ const slogan = loja.slogan || 'O sabor que começa pelos olhos';
 
   .atalhos {
     position: sticky;
-    top: calc(77px + env(safe-area-inset-top));
+    top: var(--topo-altura, calc(77px + env(safe-area-inset-top)));
     z-index: 40;
     background: var(--veu);
     backdrop-filter: blur(10px);
@@ -290,19 +362,23 @@ const slogan = loja.slogan || 'O sabor que começa pelos olhos';
     font-size: 0.85rem;
     font-weight: 500;
     white-space: nowrap;
-    scroll-margin-top: 137px;
     transition: background 0.2s, color 0.2s, border-color 0.2s;
   }
 
-  .atalho:active {
+  .atalho:active,
+  .atalho.ativo {
     background: var(--laranja-aa);
     border-color: var(--laranja-aa);
     color: #fff;
   }
 
+  #conteudo {
+    scroll-margin-top: calc(var(--topo-altura, 77px) + 8px);
+  }
+
   .secao {
     padding-top: 26px;
-    scroll-margin-top: 137px;
+    scroll-margin-top: calc(var(--topo-altura, 77px) + var(--atalhos-altura, 60px) + 12px);
   }
 
   .secao-cab {
@@ -425,6 +501,8 @@ const slogan = loja.slogan || 'O sabor que começa pelos olhos';
   }
 
   .rodape-creditos a {
+    display: inline-block;
+    padding: 4px 0;
     text-decoration: underline;
   }
 
@@ -435,6 +513,40 @@ const slogan = loja.slogan || 'O sabor que começa pelos olhos';
 
     .destaque {
       flex-basis: 46%;
+    }
+  }
+
+  @media (min-width: 900px) {
+    .container {
+      max-width: 1024px;
+      padding-left: 24px;
+      padding-right: 24px;
+    }
+
+    .topo-titulo {
+      font-size: 1.65rem;
+    }
+
+    .topo-sub {
+      font-size: 0.92rem;
+    }
+
+    .secao {
+      padding-top: 36px;
+    }
+
+    .secao-titulo {
+      font-size: 1.35rem;
+    }
+
+    .destaque {
+      flex-basis: 31%;
+      max-width: 360px;
+    }
+
+    /* Uma categoria com um produto ocupa a largura; o card vira linha. */
+    .grade {
+      grid-template-columns: 1fr;
     }
   }
 </style>

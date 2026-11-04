@@ -27,6 +27,11 @@ const PT = {
   totemTexto: 'Pedidos para comer no local são feitos somente no totem local.',
   voltar: 'Voltar',
   entendi: 'Entendi',
+  pedidoAppTitulo: 'Pedido pelo app',
+  pedidoAppTexto:
+    'Você será levado ao app de pedidos da loja em outra aba. O pagamento e a entrega são combinados lá.',
+  abrirApp: 'Abrir app de pedidos',
+  linkIndisponivel: 'Retirada indisponível: o link de compra não está configurado.',
   fechar: 'Fechar',
   cardapioDigital: 'Cardápio digital',
   iconesPor: 'Ícones por',
@@ -101,7 +106,7 @@ const PT = {
   crieCategoria: 'Crie uma categoria primeiro →',
   descricao: 'Descrição',
   linkCompra: 'Link de compra (app)',
-  linkAjuda: 'Ao tocar em “Comprar”, o cliente é levado para este link.',
+  linkAjuda: 'Use a URL real do app de pedidos. Ao tocar em “Comprar”, o cliente é levado para este link.',
   disponivelPara: 'Disponível para',
   localRetirada: 'Comer no local e retirada',
   somenteRetirada: 'Somente retirada (link do app)',
@@ -126,7 +131,7 @@ const PT = {
   slugPlaceholder: 'ex: x-burger-classico',
   precoPlaceholder: '28.90',
   descricaoPlaceholder: 'Ingredientes, tamanho, etc.',
-  linkPlaceholder: 'https://app.exemplo.com/comprar?produto=…',
+  linkPlaceholder: 'https://pedidos.sualoja.com/produto/…',
   slugCatPlaceholder: 'ex: lanches',
   nomeCatPlaceholder: 'ex: Lanches',
   descCatPlaceholder: 'Texto curto exibido no topo da seção',
@@ -158,6 +163,14 @@ const PT = {
   criarLoja: 'Criar loja',
   loja: 'Loja',
   trocarLoja: 'Trocar loja',
+  usuarios: 'Usuários',
+  usuariosSub: 'Quem tem acesso ao painel e quantas lojas administra.',
+  voltarPainel: '← Painel',
+  usuario: 'Usuário',
+  criadoEm: 'Criado em',
+  lojas: 'Lojas',
+  aceite: 'Aceite legal',
+  nenhumUsuario: 'Nenhum usuário cadastrado.',
 } as const;
 
 type Chave = keyof typeof PT;
@@ -184,6 +197,11 @@ const EN: Record<Chave, string> = {
   totemTexto: 'Dine-in orders are placed only at the self-service kiosk.',
   voltar: 'Back',
   entendi: 'Got it',
+  pedidoAppTitulo: 'Order in the app',
+  pedidoAppTexto:
+    'You will be taken to the store ordering app in another tab. Payment and delivery are handled there.',
+  abrirApp: 'Open ordering app',
+  linkIndisponivel: 'Pickup unavailable: the ordering link is not configured.',
   fechar: 'Close',
   cardapioDigital: 'Digital menu',
   iconesPor: 'Icons by',
@@ -283,7 +301,7 @@ const EN: Record<Chave, string> = {
   slugPlaceholder: 'e.g. classic-cheeseburger',
   precoPlaceholder: '28.90',
   descricaoPlaceholder: 'Ingredients, size, etc.',
-  linkPlaceholder: 'https://app.example.com/order?product=…',
+  linkPlaceholder: 'https://orders.yourshop.com/product/…',
   slugCatPlaceholder: 'e.g. burgers',
   nomeCatPlaceholder: 'e.g. Burgers',
   descCatPlaceholder: 'Short text shown at the top of the section',
@@ -315,6 +333,14 @@ const EN: Record<Chave, string> = {
   criarLoja: 'Create store',
   loja: 'Store',
   trocarLoja: 'Switch store',
+  usuarios: 'Users',
+  usuariosSub: 'Who has access to the panel and how many stores they manage.',
+  voltarPainel: '← Panel',
+  usuario: 'User',
+  criadoEm: 'Created at',
+  lojas: 'Stores',
+  aceite: 'Legal acceptance',
+  nenhumUsuario: 'No users registered yet.',
 };
 
 const TEXTOS: Record<Idioma, Record<Chave, string>> = { pt: PT, en: EN };
@@ -379,5 +405,4 @@ export const CATEGORIAS_DESC_EN: Record<string, string> = {
   criarLoja: 'Create store',
   loja: 'Store',
   trocarLoja: 'Switch store',
-
 };

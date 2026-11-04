@@ -1,0 +1,157 @@
+---
+/**
+ * Página master de usuários (CEO/admin master).
+ * Lista todos os usuários do painel e quantas lojas cada um administra.
+ * Somente leitura: não há cadastro/edição/exclusão aqui por enquanto.
+ * Acesso restrito ao admin master.
+ */
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { listarUsuariosComLojas, ehUsuarioMaster } from '../../lib/db';
+import { db } from '../../lib/env';
+import { lerUsuario } from '../../lib/session';
+
+const d1 = db();
+const usuario = await lerUsuario(Astro);
+const master = usuario ? await ehUsuarioMaster(d1, usuario.id) : false;
+
+if (!master) {
+  return new Response(null, { status: 403, headers: { 'Content-Type': 'text/plain' } });
+}
+
+const usuarios = await listarUsuariosComLojas(d1);
+
+function formatarData(iso: string | null | undefined): string {
+  if (!iso) return '—';
+  try {
+    const d = new Date(iso);
+    return d.toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  } catch {
+    return '—';
+  }
+}
+---
+
+<AdminLayout titulo="Usuários" descricao="Controle de acessos ao painel">
+  <div class="barra-acoes">
+    <div>
+      <h1 class="admin-h1" data-i18n="usuarios">Usuários</h1>
+      <p class="admin-sub" data-i18n="usuariosSub">Quem tem acesso ao painel e quantas lojas administra.</p>
+    </div>
+    <div class="acoes">
+      <a href="/admin" class="btn btn-secundario" data-i18n="voltarPainel">← Painel</a>
+    </div>
+  </div>
+
+  <div class="cartao">
+    <table class="tabela-usuarios">
+      <thead>
+        <tr>
+          <th scope="col" data-i18n="usuario">Usuário</th>
+          <th scope="col" data-i18n="email">E‑mail</th>
+          <th scope="col" data-i18n="criadoEm">Criado em</th>
+          <th scope="col" data-i18n="lojas">Lojas</th>
+          <th scope="col" data-i18n="aceite">Aceite legal</th>
+        </tr>
+      </thead>
+      <tbody>
+        {usuarios.length === 0 ? (
+          <tr>
+            <td colspan="5" class="vazio">
+              <span data-i18n="nenhumUsuario">Nenhum usuário cadastrado.</span>
+            </td>
+          </tr>
+        ) : (
+          usuarios.map((u) => (
+            <tr class="linha-usuario">
+              <td class="cresce">
+                <span class="titulo-usuario">{u.nome}</span>
+              </td>
+              <td><a href={`mailto:${u.email}`}>{u.email}</a></td>
+              <td class="celula-data">{formatarData(u.criado_em)}</td>
+              <td>
+                <span class="badge-lojas">{u.qtd_lojas}</span>
+              </td>
+              <td class="celula-data">
+                {u.aceite_em ? `${formatarData(u.aceite_em)}` : '—'}
+              </td>
+            </tr>
+          ))
+        )}
+      </tbody>
+    </table>
+    {usuarios.length > 0 && (
+      <p class="admin-sub" style="margin:10px 0 0">
+        Total: {usuarios.length} usuário(s).
+      </p>
+    )}
+  </div>
+</AdminLayout>
+
+<style>
+  .tabela-usuarios {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+  }
+
+  .tabela-usuarios th {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 2px solid var(--adm-border);
+    color: var(--adm-dim);
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .tabela-usuarios td {
+    padding: 12px;
+    border-bottom: 1px solid var(--adm-border);
+    vertical-align: middle;
+    color: var(--adm-text);
+  }
+
+  .tabela-usuarios tr:last-child td {
+    border-bottom: 0;
+  }
+
+  .celula-data {
+    white-space: normal;
+  }
+
+  .titulo-usuario {
+    display: block;
+    font-weight: 500;
+    color: var(--adm-text);
+  }
+
+  .badge-lojas {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: var(--adm-elev);
+    color: var(--adm-text);
+    font-size: 0.82rem;
+    font-weight: 500;
+    min-width: 28px;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .tabela-usuarios a {
+    color: var(--cor-preco);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .linha-usuario td a:hover {
+    text-decoration: none;
+  }
+</style>

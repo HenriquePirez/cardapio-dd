@@ -2,6 +2,12 @@
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import { contarUsuarios } from '../../lib/db';
 import { db } from '../../lib/env';
+import { lerUsuario } from '../../lib/session';
+
+// Já autenticado não deve ver o formulário de login.
+if (await lerUsuario(Astro)) {
+  return Astro.redirect('/admin');
+}
 
 const erro = Astro.url.searchParams.get('erro');
 const prox = Astro.url.searchParams.get('prox') ?? '';

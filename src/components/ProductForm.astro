@@ -100,9 +100,9 @@ const galeria = (produto?.midia ?? []).map((m) => ({
 
       <div class="campo">
         <label for="comprar_url" data-i18n="linkCompra">Link de compra (app)</label>
-        <input id="comprar_url" name="comprar_url" type="url" required
-          value={produto?.comprar_url ?? ''} placeholder="https://app.exemplo.com/comprar?produto=…" data-i18n-ph="linkPlaceholder" />
-        <small data-i18n="linkAjuda">Ao tocar em “Comprar”, o cliente é levado para este link.</small>
+        <input id="comprar_url" name="comprar_url" type="url" required={modalidade !== 'local'}
+          value={produto?.comprar_url ?? ''} placeholder="https://pedidos.sualoja.com/produto/…" data-i18n-ph="linkPlaceholder" />
+        <small data-i18n="linkAjuda">Use a URL real do app de pedidos. Ao tocar em “Comprar”, o cliente é levado para este link.</small>
       </div>
 
       <div class="campo">
@@ -189,6 +189,15 @@ const galeria = (produto?.midia ?? []).map((m) => ({
 
 <script>
   import { LIMITE_VIDEO_BYTES } from '../lib/limites';
+
+  // Só a modalidade "local" dispensa link; o servidor repete essa regra.
+  const modalidadeEl = document.getElementById('modalidade') as HTMLSelectElement | null;
+  const linkCompraEl = document.getElementById('comprar_url') as HTMLInputElement | null;
+  function sincronizarLink(): void {
+    if (linkCompraEl) linkCompraEl.required = modalidadeEl?.value !== 'local';
+  }
+  modalidadeEl?.addEventListener('change', sincronizarLink);
+  sincronizarLink();
 
   // ===================================================================
   // Galeria: estado + UI (adicionar, reordenar, excluir, upload)

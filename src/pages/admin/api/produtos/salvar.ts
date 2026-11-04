@@ -19,7 +19,7 @@ import {
 import { apagarObjetos, caminhosDaMidia } from '../../../../lib/midia';
 import { invalidarCardapio } from '../../../../lib/cache';
 import { lerGaleriaJson } from '../../../../lib/galeria';
-import { normalizarModalidade } from '../../../../lib/pedido';
+import { normalizarModalidade, urlCompraValida } from '../../../../lib/pedido';
 import { mesmaOrigem } from '../../../../lib/http';
 
 const SLUG = /^[a-z0-9-]+$/;
@@ -63,8 +63,11 @@ export const POST: APIRoute = async (ctx) => {
   }
   if (!Number.isInteger(ordem) || ordem < 0) return voltar(voltarEdicao + '?msg=erro-ordem');
   if (!categoria) return voltar(voltarEdicao + '?msg=erro-categoria');
-  if (!/^https?:\/\//i.test(comprarUrl)) return voltar(voltarEdicao + '?msg=erro-link');
   if (!modalidade) return voltar(voltarEdicao + '?msg=erro-modalidade');
+  // Local puro pode não ter link; qualquer link informado precisa ser real.
+  if ((modalidade !== 'local' || comprarUrl) && !urlCompraValida(comprarUrl)) {
+    return voltar(voltarEdicao + '?msg=erro-link');
+  }
 
   // Lê a galeria ANTES de gravar: valor ausente/inválido tem de recusar o save,
   // nunca virar lista vazia (isso apagaria as mídias do D1 e do KV).

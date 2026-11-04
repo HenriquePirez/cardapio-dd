@@ -20,7 +20,7 @@ const { titulo, loja } = Astro.props;
     </div>
   </header>
 
-  <main class="container legal" id="conteudo">
+  <main class="container legal" id="conteudo" tabindex="-1">
     <h1>{titulo}</h1>
     <p class="legal-data">Atualizado em {LEGAL.atualizadoEm} · Versão {LEGAL.versao}</p>
     <slot />

@@ -15,7 +15,7 @@ import { defineMiddleware } from 'astro:middleware';
 import { lerUsuario } from './lib/session';
 import { chaveCardapio } from './lib/cache';
 import { db } from './lib/env';
-import { garantirLojaDoUsuario, listarLojasDoUsuario } from './lib/db';
+import { garantirLojaDoUsuario, ehUsuarioMaster, listarLojasDoUsuario } from './lib/db';
 
 // Rotas do painel que funcionam sem login
 const PUBLICAS_ADMIN = new Set([
@@ -158,8 +158,11 @@ async function tratar(ctx: APIContext, next: MiddlewareNext): Promise<Response> 
     }
     ctx.locals.loja = loja;
     ctx.locals.lojas = lojas.length ? lojas : [loja];
+    ctx.locals.usuarioMaster = await ehUsuarioMaster(db(), usuario.id);
     return semCache(await next());
   }
+
+  ctx.locals.usuarioMaster = false;
 
   if (PUBLICAS_ADMIN.has(caminho)) return semCache(await next());
 

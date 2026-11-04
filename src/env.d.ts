@@ -15,5 +15,7 @@ declare namespace App {
     loja?: import('./lib/db').Loja | null;
     /** Lojas do usuário logado, para o seletor do cabeçalho. */
     lojas?: import('./lib/db').Loja[];
+    /** true apenas para o admin master (gerencia outros usuários). */
+    usuarioMaster?: boolean;
   }
 }
