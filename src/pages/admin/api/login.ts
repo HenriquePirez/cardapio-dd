@@ -40,13 +40,9 @@ export const POST: APIRoute = async (ctx) => {
 
   const email = String(form.get('email') ?? '').trim();
   const senha = String(form.get('senha') ?? '');
-  const aceite = String(form.get('aceite') ?? '');
 
   if (!email || !senha) {
     return redirecionar('/admin/login?erro=campos');
-  }
-  if (aceite !== '1') {
-    return redirecionar('/admin/login?erro=aceite');
   }
 
   const d1 = db();
