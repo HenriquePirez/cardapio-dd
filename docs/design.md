@@ -22,7 +22,7 @@ o padrão da loja Dona Dôra.
 | `--bg` / `--bg-card` / `--bg-elev` | `#f9f9f9` / `#ffffff` / `#f3f4f6` | superfícies |
 | `--text` / `--text-dim` | `#1f2937` / `#6b7280` | texto |
 | `--radius` / `--radius-sm` | 14px / 10px | cantos |
-| `--max` / `--pad` | 640px / 16px | leitura mobile (`container`) |
+| `--max` / `--pad` | 640px / 16px | leitura mobile (`container`); o cardápio amplia para 1024px em telas ≥900px |
 | `--shadow` / `--shadow-hover` | sombras suaves | cards |
 | `--fonte` | `'Fredoka', system-ui, sans-serif` | tipografia de todo o site (`line-height: 1.5`); pesos **300–500 apenas** (sem negrito); Fredoka auto-hospedada via `@fontsource/fredoka` (300/400/500) — é a fonte mais próxima do traço arredondado da logo |
 
@@ -44,7 +44,7 @@ cai na arte padrão da Dona Dôra. Nome/slogan aparecem no topo; descrição ali
 
 ## Preferências do visitante
 
-`Preferencias.astro` adiciona dois botões compactos (32px, só o ícone, sem círculo) no
+`Preferencias.astro` adiciona dois botões compactos (44px, só o ícone, sem círculo) no
 cabeçalho do cardápio e do painel: lua/brilho (Uicons `fi-br-moon` / `fi-br-brightness`) e
 bandeira do Brasil/Estados Unidos (SVG inline, sem dependência).
 
@@ -85,22 +85,27 @@ global, utilitário `.sr-only` (`global.css`), controles de formulário com elem
 (`button`, inputs com rótulos), botões com `cursor: pointer`, `img/video` com
 `max-width: 100%` e texto alternativo nas imagens de conteúdo. Critique de 03/11/2026 medida no cardápio público:
 contraste de preço/CTA em 5,18:1, alvos de toque principais em 44px, foco preso e devolvido
-no lightbox e no diálogo de compra, Esc fecha ambos. `prefers-reduced-motion` segue não
-tratado.
+no lightbox e no diálogo de compra, Esc fecha ambos. O banner de cookies vem logo após o
+atalho de pular conteúdo; ao aceitar/rejeitar, o foco volta ao conteúdo ou ao botão que o
+reabriu. `prefers-reduced-motion` reduz animações e transições.
 
 ## Layout e estados
 
 Páginas legais usam o mesmo layout mobile-first, com título de seção, data/versão e links
-legais no rodapé. O banner de cookies é fixo na parte inferior, com dois botões de 44px e
-reabertura pelo rodapé.
+legais no rodapé. O banner de cookies é fixo na parte inferior, com dois botões de 44px e peso visual
+equivalente (aceitar não é induzido), e reabertura pelo rodapé.
 
 Mobile-first, coluna única limitada a `--max: 640px` com `container`; o painel usa o mesmo
-token de largura. O lightbox do `Gallery` mostra toda mídia num quadrado 1:1 do menor
+token de largura. No cardápio público, a partir de 900px o container vai a 1024px e cada
+produto vira um card horizontal (imagem à esquerda, dados e CTA à direita). “Destaques” é
+omitido quando todos os produtos já são destaque. O lightbox do `Gallery` mostra toda mídia num quadrado 1:1 do menor
 lado do palco (fotos com corte `cover`, vídeo contido), bolinhas de navegação embaixo
 (escondidas com ≤1 item) e seta `←` que fecha. Estados que existem no código: cardápio
 vazio (mensagem em `index.astro`),
 carregando/progresso no `ProductForm` durante upload, erros de validação exibidos junto aos
-campos, bloqueio de login após 5 tentativas. Estados **não** implementados/verificados:
+campos, bloqueio de login após 5 tentativas. A opção de retirada fica desabilitada quando o link de compra é inválido ou de exemplo;
+produtos só de local não exigem link e produtos de ambos mantêm o totem. Antes de abrir
+o app de pedidos, o diálogo confirma que o pagamento acontece fora do cardápio. Estados **não** implementados/verificados:
 vazios elaborados, offline, imagens quebradas.
 
 ## Manutenção

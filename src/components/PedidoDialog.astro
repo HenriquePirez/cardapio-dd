@@ -11,11 +11,11 @@ import type { Modalidade } from '../lib/pedido';
 
 interface Props {
   pedidos: Record<string, { url: string; modalidade: Modalidade; nome: string }>;
-  /** Foto do totem; troque o arquivo em public/ quando a foto real chegar. */
+  /** Foto opcional do totem; sem ela, mostra um ícone neutro. */
   totemSrc?: string;
 }
 
-const { pedidos, totemSrc = '/totem-local.jpg' } = Astro.props;
+const { pedidos, totemSrc = '' } = Astro.props;
 ---
 
 <div
@@ -24,7 +24,7 @@ const { pedidos, totemSrc = '/totem-local.jpg' } = Astro.props;
   hidden
   role="dialog"
   aria-modal="true"
-  aria-labelledby="pd-titulo"
+  aria-labelledby="pd-titulo-pergunta"
 >
   <div class="pd-caixa">
     <button class="pd-fechar" type="button" aria-label="Fechar" data-i18n-aria="fechar">
@@ -33,7 +33,7 @@ const { pedidos, totemSrc = '/totem-local.jpg' } = Astro.props;
 
     <div class="pd-vista" data-vista="pergunta">
       <p class="pd-produto" id="pd-produto"></p>
-      <h2 class="pd-titulo" id="pd-titulo" data-i18n="pergunta">
+      <h2 class="pd-titulo" id="pd-titulo-pergunta" data-i18n="pergunta">
         O pedido é para comer no local ou para retirada?
       </h2>
       <div class="pd-acoes">
@@ -44,18 +44,47 @@ const { pedidos, totemSrc = '/totem-local.jpg' } = Astro.props;
           <span data-i18n="retirada">Retirada</span>
         </button>
       </div>
+      <p class="pd-aviso" data-aviso-link hidden data-i18n="linkIndisponivel">
+        Retirada indisponível: o link de compra não está configurado.
+      </p>
+    </div>
+
+    <div class="pd-vista" data-vista="retirada" hidden>
+      <h2 class="pd-titulo" id="pd-titulo-retirada" data-i18n="pedidoAppTitulo">Pedido pelo app</h2>
+      <p class="pd-texto" data-i18n="pedidoAppTexto">
+        Você será levado ao app de pedidos da loja em outra aba. O pagamento e a entrega são
+        combinados lá.
+      </p>
+      <div class="pd-acoes">
+        <button class="pd-btn pd-btn-local" type="button" data-voltar>
+          <span data-i18n="voltar">Voltar</span>
+        </button>
+        <button class="pd-btn pd-btn-retirada" type="button" data-abrir-app>
+          <span data-i18n="abrirApp">Abrir app de pedidos</span>
+        </button>
+      </div>
     </div>
 
     <div class="pd-vista" data-vista="local" hidden>
-      <h2 class="pd-titulo" data-i18n="totemTitulo">Peça pelo totem</h2>
-      <img
-        class="pd-totem"
-        src={totemSrc}
-        alt="Totem de autoatendimento do estabelecimento"
-        data-i18n-alt="totemAlt"
-        loading="lazy"
-        decoding="async"
-      />
+      <h2 class="pd-titulo" id="pd-titulo-local" data-i18n="totemTitulo">Peça pelo totem</h2>
+      {totemSrc ? (
+        <img
+          class="pd-totem"
+          src={totemSrc}
+          alt="Totem de autoatendimento do estabelecimento"
+          data-i18n-alt="totemAlt"
+          loading="lazy"
+          decoding="async"
+        />
+      ) : (
+        <div class="pd-totem-vazio" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="5" y="2.5" width="14" height="19" rx="2"></rect>
+            <rect x="8" y="6" width="8" height="7" rx="1"></rect>
+            <path d="M8 17h2m4 0h2"></path>
+          </svg>
+        </div>
+      )}
       <p class="pd-texto" data-i18n="totemTexto">
         Pedidos para comer no local são feitos somente no totem local.
       </p>
@@ -118,10 +147,10 @@ const { pedidos, totemSrc = '/totem-local.jpg' } = Astro.props;
 
   .pd-fechar {
     position: absolute;
-    top: 6px;
-    right: 6px;
-    width: 40px;
-    height: 40px;
+    top: 4px;
+    right: 4px;
+    width: 44px;
+    height: 44px;
     border: 0;
     border-radius: 50%;
     background: transparent;
@@ -172,12 +201,35 @@ const { pedidos, totemSrc = '/totem-local.jpg' } = Astro.props;
     color: #fff;
   }
 
+  .pd-btn:disabled {
+    cursor: not-allowed;
+    background: var(--bg-elev);
+    color: var(--text-dim);
+  }
+
+  .pd-aviso {
+    margin: 12px 0 0;
+    color: var(--adm-perigo);
+    font-size: 0.82rem;
+    line-height: 1.4;
+  }
+
   .pd-totem {
     width: 100%;
     max-height: 260px;
     margin-bottom: 14px;
     border-radius: 12px;
     object-fit: cover;
+  }
+
+  .pd-totem-vazio {
+    display: grid;
+    place-items: center;
+    height: 140px;
+    margin-bottom: 14px;
+    border-radius: 12px;
+    background: var(--bg-elev);
+    color: var(--verde);
   }
 
   .pd-texto {
@@ -194,7 +246,7 @@ const { pedidos, totemSrc = '/totem-local.jpg' } = Astro.props;
 </style>
 
 <script>
-  import { fluxoDoPedido, normalizarModalidade } from '../lib/pedido';
+  import { fluxoDoPedido, normalizarModalidade, urlCompraValida } from '../lib/pedido';
 
   interface Pedido {
     url: string;
@@ -213,34 +265,50 @@ const { pedidos, totemSrc = '/totem-local.jpg' } = Astro.props;
 
   let focoAnterior: HTMLElement | null = null;
   let idAtual: string | null = null;
+  let fluxoAtual: 'perguntar' | 'local' | 'retirada' = 'perguntar';
 
-  function vista(nome: 'pergunta' | 'local') {
+  function vista(nome: 'pergunta' | 'local' | 'retirada') {
     pd?.querySelectorAll<HTMLElement>('[data-vista]').forEach((v) => {
       v.hidden = v.dataset.vista !== nome;
     });
+    pd?.setAttribute('aria-labelledby', `pd-titulo-${nome}`);
   }
 
   function abrir(id: string) {
     const p = pedidos[id];
-    if (!pd || !p?.url) return;
+    if (!pd || !p) return;
 
     const modalidade = normalizarModalidade(p.modalidade) ?? 'ambos';
     const fluxo = fluxoDoPedido(modalidade);
-
-    if (fluxo === 'retirada') {
-      window.open(p.url, '_blank', 'noopener');
-      return;
-    }
+    if (fluxo === 'retirada' && !urlCompraValida(p.url)) return;
 
     idAtual = id;
+    fluxoAtual = fluxo;
     focoAnterior = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    // Suspende o lightbox por baixo para não manter dois aria-modal ativos.
+    const lb = document.getElementById('lightbox');
+    if (lb && !lb.hasAttribute('hidden')) {
+      lb.setAttribute('inert', '');
+      lb.removeAttribute('aria-modal');
+      lb.dataset.modalSuspenso = '1';
+    }
     if (produtoEl) produtoEl.textContent = p.nome;
-    vista(fluxo === 'local' ? 'local' : 'pergunta');
+    vista(fluxo === 'local' ? 'local' : fluxo === 'retirada' ? 'retirada' : 'pergunta');
     pd.hidden = false;
     document.body.style.overflow = 'hidden';
 
+    const retiradaOk = urlCompraValida(p.url);
+    pd.querySelectorAll<HTMLElement>('[data-aviso-link]').forEach((el) => {
+      el.hidden = retiradaOk;
+    });
+    const btnRetirada = pd.querySelector<HTMLButtonElement>('[data-escolha="retirada"]');
+    if (btnRetirada) {
+      btnRetirada.disabled = !retiradaOk;
+      btnRetirada.title = retiradaOk ? '' : 'Link de compra não configurado';
+    }
+
     const primeiro = pd.querySelector<HTMLElement>(
-      fluxo === 'local' ? '[data-fechar]' : '[data-escolha]',
+      fluxo === 'local' ? '[data-fechar]' : fluxo === 'retirada' ? '[data-abrir-app]' : '[data-escolha]',
     );
     primeiro?.focus();
   }
@@ -248,8 +316,14 @@ const { pedidos, totemSrc = '/totem-local.jpg' } = Astro.props;
   function fechar() {
     if (!pd) return;
     pd.hidden = true;
+    const lb = document.getElementById('lightbox');
+    if (lb?.dataset.modalSuspenso === '1') {
+      lb.removeAttribute('inert');
+      lb.setAttribute('aria-modal', 'true');
+      delete lb.dataset.modalSuspenso;
+    }
     // Se o lightbox continuar aberto, ele mantém o scroll travado.
-    if (document.getElementById('lightbox')?.hasAttribute('hidden') !== false) {
+    if (lb?.hasAttribute('hidden') !== false) {
       document.body.style.overflow = '';
     }
     focoAnterior?.focus();
@@ -271,7 +345,14 @@ const { pedidos, totemSrc = '/totem-local.jpg' } = Astro.props;
 
   pd?.querySelector('[data-escolha="retirada"]')?.addEventListener('click', () => {
     const p = idAtual ? pedidos[idAtual] : undefined;
-    if (p?.url) window.open(p.url, '_blank', 'noopener');
+    if (!p || !urlCompraValida(p.url)) return;
+    vista('retirada');
+    pd?.querySelector<HTMLElement>('[data-abrir-app]')?.focus();
+  });
+
+  pd?.querySelector('[data-abrir-app]')?.addEventListener('click', () => {
+    const p = idAtual ? pedidos[idAtual] : undefined;
+    if (p?.url && urlCompraValida(p.url)) window.open(p.url, '_blank', 'noopener');
     fechar();
   });
 
@@ -280,15 +361,18 @@ const { pedidos, totemSrc = '/totem-local.jpg' } = Astro.props;
     pd?.querySelector<HTMLElement>('[data-voltar]')?.focus();
   });
 
-  pd?.querySelector('[data-voltar]')?.addEventListener('click', () => {
-    vista('pergunta');
-    pd?.querySelector<HTMLElement>('[data-escolha="local"]')?.focus();
+  pd?.querySelectorAll('[data-voltar]').forEach((botao) => {
+    botao.addEventListener('click', () => {
+      if (fluxoAtual !== 'perguntar') {
+        fechar();
+        return;
+      }
+      vista('pergunta');
+      pd?.querySelector<HTMLElement>('[data-escolha="local"]')?.focus();
+    });
   });
 
-  // Foto ausente (arquivo ainda não enviado): some com a imagem quebrada.
-  pd?.querySelector('img.pd-totem')?.addEventListener('error', (e) => {
-    (e.target as HTMLElement).remove();
-  });
+
 
   pd?.addEventListener('click', (e) => {
     if (e.target === pd) fechar();
@@ -306,7 +390,9 @@ const { pedidos, totemSrc = '/totem-local.jpg' } = Astro.props;
         'button:not([hidden]), a[href], [tabindex]:not([tabindex="-1"])',
       );
       if (!focaveis?.length) return;
-      const visiveis = [...focaveis].filter((el) => el.offsetParent !== null);
+      const visiveis = [...focaveis].filter(
+        (el) => el.offsetParent !== null && !el.hasAttribute('disabled'),
+      );
       if (!visiveis.length) return;
       const primeiro = visiveis[0]!;
       const ultimo = visiveis[visiveis.length - 1]!;

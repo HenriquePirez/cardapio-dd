@@ -46,10 +46,11 @@ assistida pelo dono já autenticado.
    capa, preço, destaque e galeria (foto/vídeo com lightbox e seek). Entrada: visita.
    Resultado: cardápio renderizado com cache na edge por URL (mudanças aparecem em ~30s).
 2. **Comprar** — toque no botão abre o fluxo de pedido conforme a `modalidade` do produto:
-   **retirada** vai direto para o `comprar_url` (http/https, nova aba); **local** mostra o
-   aviso de que pedidos no local são feitos no totem; **ambos** pergunta
-   "comer no local ou retirada?". Entrada: produto. Resultado: link externo aberto ou
-   aviso do totem exibido.
+   **retirada** confirma que o pedido continua no app externo e então abre o
+   `comprar_url` (http/https, nova aba); **local** mostra o aviso de que pedidos no local
+   são feitos no totem; **ambos** pergunta "comer no local ou retirada?". Entrada: produto.
+   Resultado: link externo aberto após confirmação ou aviso do totem exibido. Link vazio,
+   inválido ou de domínio de exemplo desabilita a compra externa; só local não exige link.
 3. **Criar conta (primeiro acesso)** — `/admin` redireciona para `/admin/criar-conta`
    enquanto não existe usuário; define nome, e-mail e senha (mínimo 10 caracteres).
 4. **Entrar no painel** — `/admin/login`; 5 falhas bloqueiam por 10 min; escritas exigem
@@ -129,7 +130,9 @@ e desativado sem `GA_ID`/`META_PIXEL_ID`; não há CRM nem envio de e-mail pelo 
   decisão pendente: domínio real (reversível; afeta URLs canônicas).
 - O link de compra padrão `https://donadora.com.br` redireciona para uma página 404
   (configuração externa, fora deste repositório) — corrigir `comprar_url` no painel quando o
-  destino estiver certo (fato verificado e documentado no `README.md`).
+  destino estiver certo (fato verificado e documentado no `README.md`). O painel já recusa
+  URLs malformadas e domínios de exemplo (`exemplo.com`, `example.com`), mas não testa se
+  um domínio real está fora do ar.
 - Migração para R2/pagamento: só com decisão explícita (custo/novo serviço).
 
 ## Critérios de aceitação (produto)
