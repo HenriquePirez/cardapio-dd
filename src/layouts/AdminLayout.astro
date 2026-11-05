@@ -249,17 +249,13 @@ function sair() {
     letter-spacing: 0.01em;
   }
 
+  /* Quebra linha em vez de rolar: nada some da navbar. */
   .admin-nav {
     display: flex;
-    gap: 4px;
-    flex: 1;
+    gap: 4px 8px;
+    flex: 1 1 auto;
+    flex-wrap: wrap;
     min-width: 0;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-
-  .admin-nav::-webkit-scrollbar {
-    display: none;
   }
 
   .admin-nav a {
@@ -285,10 +281,12 @@ function sair() {
     display: inline-flex;
     align-items: center;
     gap: 4px;
+    /* Nunca encolhe: se não couber, a linha quebra antes de cortar. */
+    flex-shrink: 0;
   }
 
   .admin-loja select {
-    max-width: 170px;
+    max-width: min(170px, 46vw);
     padding: 6px 8px;
     border: 1px solid rgba(255, 255, 255, 0.35);
     border-radius: 8px;

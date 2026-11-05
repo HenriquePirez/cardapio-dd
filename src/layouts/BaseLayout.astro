@@ -59,3 +59,17 @@ const favicon = loja?.logo_chave ? urlMidia(loja.logo_chave) : '/favicon.ico';
     <slot />
   </body>
 </html>
+
+<style is:global>
+  /* Sticky footer: main cresce para empurrar o rodapé ao fundo da viewport. */
+  body {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  body > main {
+    flex: 1 0 auto;
+  }
+</style>

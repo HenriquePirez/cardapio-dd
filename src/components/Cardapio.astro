@@ -137,7 +137,11 @@ const slogan = loja.slogan || 'O sabor que começa pelos olhos';
     </div>
   </nav>
 
-  <main class="container" id="conteudo" tabindex="-1">
+  <main
+    class:list={['container', { 'sem-produtos': produtos.length === 0 }]}
+    id="conteudo"
+    tabindex="-1"
+  >
     {produtos.length === 0 && (
       <div class="vazio">
         <p>
@@ -472,6 +476,13 @@ const slogan = loja.slogan || 'O sabor que começa pelos olhos';
     display: grid;
     grid-template-columns: 1fr;
     gap: 16px;
+  }
+
+  /* Cardápio vazio: aproveita o espaço que o sticky footer deixou e centraliza. */
+  main.sem-produtos {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
 
   .vazio {
