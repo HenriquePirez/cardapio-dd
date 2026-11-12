@@ -83,8 +83,10 @@ Não existe camada de serviço/domain: a apresentação (páginas/components) ch
 
 - Schema: `migrations/0001_init.sql` (`categorias`, `produtos`, `produto_midia`,
   `usuarios`, `login_tentativas`), `0003_modalidade.sql`, `0004_saas_lojas.sql`
-  (`lojas`; `loja_id` em categorias/produtos/mídia; PK composta; preço em centavos) e
-  `0005_aceite_legal.sql` (`usuarios.aceite_em`, `usuarios.aceite_versao`).
+  (`lojas`; `loja_id` em categorias/produtos/mídia; PK composta; preço em centavos),
+  `0005_aceite_legal.sql` (`usuarios.aceite_em`, `usuarios.aceite_versao`) e
+  `0006_redefinicao_senha.sql` (`redefinicoes_senha`: só o SHA-256 do token,
+  um link pendente por usuário, expiração em ISO com fuso).
   Seed: `migrations/0002_seed.sql`. A 0004 copia os dados existentes para a loja
   `dona-dora` (rebuild das tabelas) — aplicar só com backup (`wrangler d1 export`).
 - **Aplicação manual e explícita** (nunca em build/request):
@@ -106,6 +108,8 @@ Não existe camada de serviço/domain: a apresentação (páginas/components) ch
 | `loja_id` em toda query + PKs compostas | D1/SQLite não tem RLS; isolamento testado no código | schema por banco/loja | muitas lojas ou exigência de RLS |
 | Duas cores livres com derivação AA | branding sem depender de paleta fixa | lista de temas prontos | pedido de identidade visual avançada |
 | Logo em KV (`lojas/`) | mesmo caminho da mídia, sem R2 | bucket R2 | migrar mídia para R2 |
+| E-mail via Resend em HTTP puro (`src/lib/email.ts`) | uma chamada POST não justifica SDK | SDK `resend` | volume de e-mails crescer (anexos, templates, filas) |
+| Token de redefinição hasheado (SHA-256) no D1 | vazamento do banco não entrega link válido | guardar o token em texto puro | — (manter) |
 
 ## Manutenção
 

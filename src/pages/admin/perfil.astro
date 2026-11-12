@@ -1,0 +1,147 @@
+---
+/**
+ * Perfil do usuário logado: nome, e-mail e troca de senha.
+ * Cada cartão é um form próprio; o endpoint /admin/api/perfil escolhe o fluxo
+ * pela presença do campo senha_atual.
+ */
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { obterUsuarioPorId } from '../../lib/db';
+import { db } from '../../lib/env';
+import { lerUsuario } from '../../lib/session';
+
+const sessao = await lerUsuario(Astro);
+if (!sessao) return Astro.redirect('/admin/login');
+
+const usuario = (await obterUsuarioPorId(db(), sessao.id)) ?? sessao;
+
+const ok = Astro.url.searchParams.get('ok');
+const erro = Astro.url.searchParams.get('erro');
+
+const mensagens: Record<string, string> = {
+  campos: 'Preencha todos os campos.',
+  email: 'Informe um e-mail válido.',
+  'email-existente': 'Este e-mail já é usado por outra conta.',
+  'senha-atual': 'A senha atual está incorreta.',
+  divergentes: 'As senhas não coincidem.',
+};
+const erroMsg = erro ? (mensagens[erro] ?? erro) : null;
+---
+
+<AdminLayout titulo="Perfil" descricao="Dados da conta de acesso ao painel">
+  <div class="barra-acoes">
+    <div>
+      <h1 class="admin-h1" data-i18n="perfil">Perfil</h1>
+      <p class="admin-sub" data-i18n="perfilSub">Seus dados de acesso ao painel.</p>
+    </div>
+    <a href="/admin" class="btn btn-secundario" data-i18n="voltarPainel">← Painel</a>
+  </div>
+
+  {ok && (
+    <div class="aviso aviso-ok" role="status">
+      {ok === 'senha' ? 'Senha alterada com sucesso.' : 'Perfil atualizado.'}
+    </div>
+  )}
+  {erroMsg && <div class="aviso aviso-erro" role="alert">{erroMsg}</div>}
+
+  <div class="cartao">
+    <h2 data-i18n="dadosConta">Dados da conta</h2>
+    <form method="post" action="/admin/api/perfil">
+      <div class="grade-campos">
+        <div class="campo">
+          <label for="nome" data-i18n="nome">Nome</label>
+          <input
+            id="nome"
+            name="nome"
+            type="text"
+            required
+            autocomplete="name"
+            value={usuario.nome}
+          />
+        </div>
+
+        <div class="campo">
+          <label for="email" data-i18n="email">E-mail</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            required
+            autocomplete="username"
+            inputmode="email"
+            value={usuario.email}
+          />
+          <small data-i18n="emailAjuda">É o seu login no painel.</small>
+        </div>
+      </div>
+
+      <button class="btn btn-primario" type="submit" data-i18n="salvar">Salvar</button>
+    </form>
+  </div>
+
+  <div class="cartao">
+    <h2 data-i18n="alterarSenha">Alterar senha</h2>
+    <form method="post" action="/admin/api/perfil">
+      <div class="grade-campos">
+        <div class="campo">
+          <label for="senha_atual" data-i18n="senhaAtual">Senha atual</label>
+          <input
+            id="senha_atual"
+            name="senha_atual"
+            type="password"
+            required
+            autocomplete="current-password"
+          />
+        </div>
+
+        <div class="campo">
+          <label for="senha_nova" data-i18n="novaSenha">Nova senha</label>
+          <input
+            id="senha_nova"
+            name="senha_nova"
+            type="password"
+            required
+            minlength="10"
+            autocomplete="new-password"
+            placeholder="mínimo 10 caracteres"
+          />
+        </div>
+
+        <div class="campo">
+          <label for="senha_nova2" data-i18n="confirmarSenha">Confirmar nova senha</label>
+          <input
+            id="senha_nova2"
+            name="senha_nova2"
+            type="password"
+            required
+            minlength="10"
+            autocomplete="new-password"
+            placeholder="repita a senha"
+          />
+        </div>
+      </div>
+
+      <button class="btn btn-primario" type="submit" data-i18n="trocarSenha">Trocar senha</button>
+    </form>
+
+    <p class="perfil-esqueci">
+      <a href="/admin/recuperar-senha" data-i18n="esqueciSenha">Esqueci a senha</a>
+    </p>
+  </div>
+</AdminLayout>
+
+<style>
+  .perfil-esqueci {
+    margin: 14px 0 0;
+    font-size: 0.86rem;
+  }
+
+  .perfil-esqueci a {
+    color: var(--cor-preco);
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  .perfil-esqueci a:hover {
+    text-decoration: underline;
+  }
+</style>

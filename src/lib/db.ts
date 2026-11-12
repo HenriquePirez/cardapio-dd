@@ -394,6 +394,123 @@ export async function trocarSenha(db: D1Like, email: string, senhaHash: string):
     .run();
 }
 
+/** Busca usuário pelo id (perfil e redefinição de senha). */
+export async function obterUsuarioPorId(db: D1Like, id: string): Promise<Usuario | null> {
+  return db.prepare('SELECT * FROM usuarios WHERE id = ?').bind(id).first<Usuario>();
+}
+
+/** true se outro usuário já usa este e-mail (troca de e-mail no perfil). */
+export async function emailJaUsado(
+  db: D1Like,
+  email: string,
+  excetoId: string,
+): Promise<boolean> {
+  const r = await db
+    .prepare('SELECT 1 FROM usuarios WHERE email = ? COLLATE NOCASE AND id <> ? LIMIT 1')
+    .bind(email, excetoId)
+    .first();
+  return r !== null;
+}
+
+/** Atualiza nome e/ou e-mail do usuário (só o que vier preenchido). */
+export async function atualizarPerfil(
+  db: D1Like,
+  usuarioId: string,
+  dados: { nome?: string; email?: string },
+): Promise<void> {
+  const campos: string[] = [];
+  const valores: unknown[] = [];
+  if (dados.nome !== undefined) {
+    campos.push('nome = ?');
+    valores.push(dados.nome);
+  }
+  if (dados.email !== undefined) {
+    campos.push('email = ?');
+    valores.push(dados.email);
+  }
+  if (!campos.length) return;
+  valores.push(usuarioId);
+  await db
+    .prepare(`UPDATE usuarios SET ${campos.join(', ')} WHERE id = ?`)
+    .bind(...valores)
+    .run();
+}
+
+// ---------------------------------------------------------------
+// Redefinição de senha (fluxo "esqueci a senha")
+// ---------------------------------------------------------------
+
+export interface Redefinicao {
+  id: string;
+  usuario_id: string;
+  token_hash: string;
+  expira_em: string;
+  usado_em: string | null;
+  criado_em: string;
+}
+
+/**
+ * Grava uma redefinição nova invalidando as pendentes anteriores do mesmo
+ * usuário: só existe um link válido por vez.
+ */
+export async function criarRedefinicao(
+  db: D1Like,
+  r: { id: string; usuarioId: string; tokenHash: string; expiraEm: string },
+): Promise<void> {
+  await db
+    .prepare('DELETE FROM redefinicoes_senha WHERE usuario_id = ? AND usado_em IS NULL')
+    .bind(r.usuarioId)
+    .run();
+  await db
+    .prepare(
+      `INSERT INTO redefinicoes_senha (id, usuario_id, token_hash, expira_em)
+       VALUES (?, ?, ?, ?)`,
+    )
+    .bind(r.id, r.usuarioId, r.tokenHash, r.expiraEm)
+    .run();
+}
+
+/** Última redefinição pendente do usuário (rate-limit: uma a cada N minutos). */
+export async function ultimaRedefinicaoPendente(
+  db: D1Like,
+  usuarioId: string,
+): Promise<{ criado_em: string } | null> {
+  return db
+    .prepare(
+      `SELECT criado_em FROM redefinicoes_senha
+       WHERE usuario_id = ? AND usado_em IS NULL
+       ORDER BY criado_em DESC LIMIT 1`,
+    )
+    .bind(usuarioId)
+    .first<{ criado_em: string }>();
+}
+
+/** Busca a redefinição pelo hash do token vindo do link do e-mail. */
+export async function obterRedefinicao(
+  db: D1Like,
+  tokenHash: string,
+): Promise<Redefinicao | null> {
+  return db
+    .prepare('SELECT * FROM redefinicoes_senha WHERE token_hash = ?')
+    .bind(tokenHash)
+    .first<Redefinicao>();
+}
+
+/**
+ * Marca como usada só se ainda estiver pendente (UPDATE condicional).
+ * Dois POSTs simultâneos com o mesmo link: só um devolve true.
+ */
+export async function consumirRedefinicao(db: D1Like, id: string): Promise<boolean> {
+  const r = await db
+    .prepare(
+      `UPDATE redefinicoes_senha SET usado_em = datetime('now')
+       WHERE id = ? AND usado_em IS NULL`,
+    )
+    .bind(id)
+    .run();
+  return (r.meta?.changes ?? 0) > 0;
+}
+
 // ---------------------------------------------------------------
 // Lojas
 // ---------------------------------------------------------------

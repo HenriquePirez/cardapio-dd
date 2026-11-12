@@ -66,6 +66,12 @@ assistida pelo dono já autenticado.
    idioma padrão. A mesma tela cria outra loja para a conta.
 9. **Trocar de loja** — seletor no cabeçalho do painel; todas as categorias, produtos e
    mídias passam a ser lidos/gravados com o `loja_id` ativo.
+10. **Editar o próprio perfil** — `/admin/perfil`: nome, e-mail de login e troca de senha
+    (exige a senha atual; e-mail novo precisa ser único; sessão regenera ao trocar e-mail).
+11. **Recuperar senha** — "Esqueci a senha" no login leva a `/admin/recuperar-senha`;
+    o sistema envia por e-mail (Resend) um link de uso único com validade de 1 hora para
+    `/admin/redefinir-senha`, que troca a senha e devolve ao login. Resposta idêntica
+    exista ou não a conta; um link por vez com intervalo de 10 min por usuário.
 
 ## MVP (entregue e em produção)
 

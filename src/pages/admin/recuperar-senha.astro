@@ -1,0 +1,117 @@
+---
+/**
+ * Pede o link de redefinição de senha (pública — ver PUBLICAS_ADMIN no middleware).
+ * A resposta é a mesma exista ou não a conta; só erro de infraestrutura aparece.
+ */
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { lerUsuario } from '../../lib/session';
+
+if (await lerUsuario(Astro)) return Astro.redirect('/admin/perfil');
+
+const enviado = Astro.url.searchParams.get('enviado');
+const erro = Astro.url.searchParams.get('erro');
+
+const mensagens: Record<string, string> = {
+  'email-config':
+    'O envio de e-mail não está configurado. Defina o segredo RESEND_API_KEY com `npx wrangler secret put RESEND_API_KEY`.',
+  email: 'Não foi possível enviar o e-mail. Tente novamente em instantes.',
+};
+const erroMsg = erro ? (mensagens[erro] ?? erro) : null;
+---
+
+<AdminLayout titulo="Recuperar senha" descricao="Peça um link para criar uma nova senha">
+  <div class="caixa-login">
+    <div class="login-marca"><i class="fi-br-mailbox" aria-hidden="true"></i></div>
+    <h1 class="login-titulo" data-i18n="recuperarTitulo">Recuperar senha</h1>
+    <p class="login-sub" data-i18n="recuperarSub">
+      Informe o e-mail da sua conta. Enviaremos um link para criar uma nova senha.
+    </p>
+
+    {erroMsg && <div class="aviso aviso-erro" role="alert">{erroMsg}</div>}
+
+    {enviado ? (
+      <div class="aviso aviso-ok" role="status" data-i18n="enviadoMsg">
+        Se existir uma conta com esse e-mail, o link foi enviado. Confira sua caixa de entrada.
+      </div>
+    ) : (
+      <form method="post" action="/admin/api/recuperar-senha" class="login-form">
+        <div class="campo">
+          <label for="email" data-i18n="email">E-mail</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            required
+            autocomplete="username"
+            inputmode="email"
+            placeholder="voce@exemplo.com"
+          />
+        </div>
+
+        <button class="btn btn-primario login-btn" type="submit" data-i18n="enviarLink">
+          Enviar link
+        </button>
+      </form>
+    )}
+
+    <p class="login-rodape"><a href="/admin/login" data-i18n="voltarLogin">← Voltar ao login</a></p>
+  </div>
+</AdminLayout>
+
+<style>
+  .caixa-login {
+    max-width: 400px;
+    margin: 6vh auto 0;
+    background: var(--adm-card);
+    border: 1px solid var(--adm-border);
+    border-radius: 16px;
+    padding: 30px 26px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+    text-align: center;
+  }
+
+  .login-marca {
+    font-size: 2.2rem;
+    margin-bottom: 6px;
+  }
+
+  .login-titulo {
+    margin: 0 0 6px;
+    font-size: 1.35rem;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+  }
+
+  .login-sub {
+    margin: 0 0 22px;
+    color: var(--adm-dim);
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+
+  .login-form {
+    text-align: left;
+  }
+
+  .login-btn {
+    width: 100%;
+    margin-top: 6px;
+    padding-top: 13px;
+    padding-bottom: 13px;
+  }
+
+  .login-rodape {
+    margin: 20px 0 0;
+    font-size: 0.86rem;
+  }
+
+  .login-rodape a {
+    color: var(--cor-preco);
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  .login-rodape a:hover {
+    text-decoration: underline;
+  }
+</style>

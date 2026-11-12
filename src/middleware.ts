@@ -21,8 +21,12 @@ import { garantirLojaDoUsuario, ehUsuarioMaster, listarLojasDoUsuario } from './
 const PUBLICAS_ADMIN = new Set([
   '/admin/login',
   '/admin/criar-conta',
+  '/admin/recuperar-senha',
+  '/admin/redefinir-senha',
   '/admin/api/login',
   '/admin/api/criar-conta',
+  '/admin/api/recuperar-senha',
+  '/admin/api/redefinir-senha',
 ]);
 
 const CACHE_SEGUNDOS = 30;

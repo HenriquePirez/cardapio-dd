@@ -1,0 +1,132 @@
+---
+/**
+ * Cria a nova senha a partir do token do e-mail (pública — ver PUBLICAS_ADMIN).
+ * Sem token válido a página só explica e leva para o login.
+ */
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { lerUsuario } from '../../lib/session';
+
+if (await lerUsuario(Astro)) return Astro.redirect('/admin/perfil');
+
+const token = Astro.url.searchParams.get('token')?.trim() ?? '';
+const erro = Astro.url.searchParams.get('erro');
+const valido = token.length >= 32;
+
+const mensagens: Record<string, string> = {
+  token: 'Este link de redefinição é inválido ou já expirou. Peça um novo.',
+  campos: 'Preencha os dois campos.',
+  divergentes: 'As senhas não coincidem.',
+};
+const erroMsg = erro ? (mensagens[erro] ?? erro) : null;
+---
+
+<AdminLayout titulo="Criar nova senha" descricao="Redefina a senha do painel">
+  <div class="caixa-login">
+    <div class="login-marca"><i class="fi-br-lock" aria-hidden="true"></i></div>
+    <h1 class="login-titulo" data-i18n="redefinirTitulo">Criar nova senha</h1>
+    <p class="login-sub" data-i18n="redefinirSub">Escolha uma senha nova para a sua conta.</p>
+
+    {erroMsg && <div class="aviso aviso-erro" role="alert">{erroMsg}</div>}
+
+    {valido ? (
+      <form method="post" action="/admin/api/redefinir-senha" class="login-form">
+        <input type="hidden" name="token" value={token} />
+
+        <div class="campo">
+          <label for="senha" data-i18n="novaSenha">Nova senha</label>
+          <input
+            id="senha"
+            name="senha"
+            type="password"
+            required
+            minlength="10"
+            autocomplete="new-password"
+            placeholder="mínimo 10 caracteres"
+          />
+          <small data-i18n="senhaAjuda">Mínimo de 10 caracteres.</small>
+        </div>
+
+        <div class="campo">
+          <label for="senha2" data-i18n="confirmarSenha">Confirmar nova senha</label>
+          <input
+            id="senha2"
+            name="senha2"
+            type="password"
+            required
+            minlength="10"
+            autocomplete="new-password"
+            placeholder="repita a senha"
+          />
+        </div>
+
+        <button class="btn btn-primario login-btn" type="submit" data-i18n="salvarNovaSenha">
+          Salvar nova senha
+        </button>
+      </form>
+    ) : (
+      <div class="aviso aviso-erro" role="alert" data-i18n="tokenInvalido">
+        Este link de redefinição é inválido ou já expirou. Peça um novo.
+      </div>
+    )}
+
+    <p class="login-rodape"><a href="/admin/login" data-i18n="voltarLogin">← Voltar ao login</a></p>
+  </div>
+</AdminLayout>
+
+<style>
+  .caixa-login {
+    max-width: 400px;
+    margin: 6vh auto 0;
+    background: var(--adm-card);
+    border: 1px solid var(--adm-border);
+    border-radius: 16px;
+    padding: 30px 26px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+    text-align: center;
+  }
+
+  .login-marca {
+    font-size: 2.2rem;
+    margin-bottom: 6px;
+  }
+
+  .login-titulo {
+    margin: 0 0 6px;
+    font-size: 1.35rem;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+  }
+
+  .login-sub {
+    margin: 0 0 22px;
+    color: var(--adm-dim);
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+
+  .login-form {
+    text-align: left;
+  }
+
+  .login-btn {
+    width: 100%;
+    margin-top: 6px;
+    padding-top: 13px;
+    padding-bottom: 13px;
+  }
+
+  .login-rodape {
+    margin: 20px 0 0;
+    font-size: 0.86rem;
+  }
+
+  .login-rodape a {
+    color: var(--cor-preco);
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  .login-rodape a:hover {
+    text-decoration: underline;
+  }
+</style>

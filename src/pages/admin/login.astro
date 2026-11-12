@@ -28,6 +28,7 @@ const mensagens: Record<string, string> = {
   bloqueado: `Muitas tentativas erradas. Tente novamente em ${min ?? 10} min.`,
   criado: 'Conta criada! Entre com seus dados.',
   logout: 'Você saiu do painel.',
+  redefinida: 'Senha redefinida! Entre com a nova senha.',
 };
 const msg = erro ? mensagens[erro] : null;
 ---
@@ -79,6 +80,10 @@ const msg = erro ? mensagens[erro] : null;
 
         <button class="btn btn-primario login-btn" type="submit"><span data-i18n="entrar">Entrar</span></button>
       </form>
+
+      <p class="login-esqueci">
+        <a href="/admin/recuperar-senha" data-i18n="esqueciSenha">Esqueci a senha</a>
+      </p>
     </div>
   </AdminLayout>
 )}
@@ -123,6 +128,22 @@ const msg = erro ? mensagens[erro] : null;
     margin-top: 6px;
     padding-top: 13px;
     padding-bottom: 13px;
+  }
+
+  .login-esqueci {
+    margin: 16px 0 0;
+    font-size: 0.86rem;
+    text-align: left;
+  }
+
+  .login-esqueci a {
+    color: var(--cor-preco);
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  .login-esqueci a:hover {
+    text-decoration: underline;
   }
 
   .login-rodape {

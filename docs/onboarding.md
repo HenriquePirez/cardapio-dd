@@ -24,7 +24,14 @@ Variáveis de ambiente: **`.dev.vars`** (gitignored, já existente localmente) c
 ```bash
 printf 'AUTH_PEPPER=%s\n' '<valor aleatório forte>' >> .dev.vars
 printf 'SETUP_TOKEN=%s\n' '<código de uso único>' >> .dev.vars
+printf 'RESEND_API_KEY=%s\n' '<chave re_... do Resend>' >> .dev.vars   # opcional
 ```
+
+`RESEND_API_KEY` habilita o envio do e-mail de redefinição de senha (sem chave,
+`/admin/recuperar-senha` responde `?erro=email-config`). Em produção:
+`npx wrangler secret put RESEND_API_KEY`. Sem domínio verificado no Resend o remetente
+é `onboarding@resend.dev` e a entrega se limita ao e-mail dono da conta (regra do Resend);
+para testar com outras contas, verifique um domínio ou defina `EMAIL_DE`.
 
 Para regerar os prints e o PDF do manual do painel (requer Playwright/Chromium):
 `npm run build && npm run docs:prints` — usa o D1 local e apaga os usuários **locais** para

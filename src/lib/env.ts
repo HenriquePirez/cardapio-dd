@@ -42,6 +42,10 @@ interface EnvBindings {
   MEDIA_PUBLIC_BASE?: string;
   /** Segredo do pepper do hash de senha (`wrangler secret put AUTH_PEPPER`). */
   AUTH_PEPPER?: string;
+  /** Chave da API do Resend para e-mails (`wrangler secret put RESEND_API_KEY`). */
+  RESEND_API_KEY?: string;
+  /** Remetente dos e-mails do sistema (opcional; padrão: onboarding@resend.dev). */
+  EMAIL_DE?: string;
   /** IDs opcionais de analytics; sem eles nenhum script de terceiro é carregado. */
   GA_ID?: string;
   META_PIXEL_ID?: string;
@@ -105,6 +109,26 @@ export function pepperObrigatorio(): string {
     );
   }
   return p;
+}
+
+/**
+ * Chave da API do Resend para envio de e-mail (redefinição de senha).
+ * Segredo: `wrangler secret put RESEND_API_KEY`; local: `.dev.vars`.
+ * Retorna null quando ausente — quem chama decide como avisar o usuário.
+ */
+export function resendApiKey(): string | null {
+  const k = bindings().RESEND_API_KEY;
+  return typeof k === 'string' && k.trim() ? k.trim() : null;
+}
+
+/**
+ * Remetente dos e-mails do sistema.
+ * Padrão é o domínio de teste do Resend: sem domínio verificado, a entrega
+ * é limitada ao e-mail dono da conta (regra do próprio Resend).
+ */
+export function emailDe(): string {
+  const d = bindings().EMAIL_DE;
+  return (typeof d === 'string' && d.trim()) || 'Cardápio Digital <onboarding@resend.dev>';
 }
 
 /**
