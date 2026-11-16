@@ -3,8 +3,8 @@
  *
  * Envia FOTO ou POSTER para o KV.
  *
- *  - Foto: campos "arquivo" (thumbnail) + "full" (alta resolução) + "alt"
- *          -> grava dois objetos e devolve url/full
+ *  - Foto: campos "arquivo" (thumbnail) + "full" (alta resolução) + "fullWebp"
+ *          (opcional) + "alt" -> grava objetos e devolve url/full/fullWebp
  *  - Poster de vídeo: campos "arquivo" + "chave"
  *          -> grava no objeto indicado (mesma raiz do vídeo)
  *
@@ -88,5 +88,16 @@ export const POST: APIRoute = async (ctx) => {
     });
   }
 
-  return json({ url: thumbKey, full: fullKey, alt: String(form.get('alt') ?? '') });
+  // Versão WebP do full (opcional): navegadores que suportam WebP recebem
+  // este arquivo via <picture>; os demais ficam no full (JPEG/PNG) pelo <img>.
+  let fullWebpKey: string | undefined;
+  const fullWebp = form.get('fullWebp');
+  if (fullWebp instanceof File && fullWebp.size > 0 && fullWebp.size <= LIMITE_ARQUIVO) {
+    fullWebpKey = `fotos/${base}-full.webp`;
+    await kv.put(fullWebpKey, await fullWebp.arrayBuffer(), {
+      httpMetadata: { contentType: 'image/webp' },
+    });
+  }
+
+  return json({ url: thumbKey, full: fullKey, fullWebp: fullWebpKey, alt: String(form.get('alt') ?? '') });
 };

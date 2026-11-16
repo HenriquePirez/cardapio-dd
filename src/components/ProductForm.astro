@@ -209,6 +209,7 @@ const galeria = (produto?.midia ?? []).map((m) => ({
     tipo: 'imagem' | 'video';
     url: string;
     full: string;
+    fullWebp?: string | undefined;
     poster: string;
     alt: string;
     ordem: number;
@@ -457,13 +458,15 @@ const galeria = (produto?.midia ?? []).map((m) => ({
   });
 
   async function enviarFoto(arquivo: File) {
-    // Otimiza: thumbnail (card) + full (lightbox)
+    // Otimiza: thumbnail (card) + full (alta resolução, JPEG) + full WebP (<picture>)
     const thumb = await redimensionar(arquivo, MAX_FOTO, 'image/webp', 0.82);
     const full = await redimensionar(arquivo, MAX_FULL, 'image/jpeg', 0.85);
+    const fullWebp = await redimensionar(arquivo, MAX_FULL, 'image/webp', 0.85);
 
     const fd = new FormData();
     fd.append('arquivo', thumb, thumb.name);
     fd.append('full', full, full.name);
+    fd.append('fullWebp', fullWebp, fullWebp.name);
     fd.append('alt', arquivo.name.replace(/\.[^.]+$/, ''));
 
     const res = await fetch('/admin/api/midia/upload', {
@@ -478,12 +481,13 @@ const galeria = (produto?.midia ?? []).map((m) => ({
       throw new Error(d?.erro ?? `Falha no envio da foto (HTTP ${res.status}).`);
     }
 
-    const dados = (await res.json()) as { url: string; full: string; alt: string };
+    const dados = (await res.json()) as { url: string; full: string; fullWebp?: string; alt: string };
     galeria.push({
       id: `novo-${proxId++}`,
       tipo: 'imagem',
       url: dados.url,
       full: dados.full,
+      fullWebp: dados.fullWebp ?? undefined,
       poster: '',
       alt: dados.alt || arquivo.name,
       ordem: galeria.length,

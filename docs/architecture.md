@@ -84,9 +84,11 @@ Não existe camada de serviço/domain: a apresentação (páginas/components) ch
 - Schema: `migrations/0001_init.sql` (`categorias`, `produtos`, `produto_midia`,
   `usuarios`, `login_tentativas`), `0003_modalidade.sql`, `0004_saas_lojas.sql`
   (`lojas`; `loja_id` em categorias/produtos/mídia; PK composta; preço em centavos),
-  `0005_aceite_legal.sql` (`usuarios.aceite_em`, `usuarios.aceite_versao`) e
+  `0005_aceite_legal.sql` (`usuarios.aceite_em`, `usuarios.aceite_versao`),
   `0006_redefinicao_senha.sql` (`redefinicoes_senha`: só o SHA-256 do token,
-  um link pendente por usuário, expiração em ISO com fuso).
+  um link pendente por usuário, expiração em ISO com fuso) e
+  `0007_adiciona_full_webp.sql` (`produto_midia.full_webp`: versão WebP do full,
+  entregue via `<picture>` no cardápio).
   Seed: `migrations/0002_seed.sql`. A 0004 copia os dados existentes para a loja
   `dona-dora` (rebuild das tabelas) — aplicar só com backup (`wrangler d1 export`).
 - **Aplicação manual e explícita** (nunca em build/request):

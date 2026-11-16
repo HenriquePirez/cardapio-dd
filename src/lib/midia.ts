@@ -28,11 +28,12 @@ export async function apagarObjetos(caminhos: Array<string | null | undefined>):
   await Promise.allSettled([...unicos].map((k) => kv.delete(k)));
 }
 
-/** Coleta os caminhos de objetos de uma mídia (thumb, full e poster). */
+/** Coleta os caminhos de objetos de uma mídia (thumb, full, full WebP e poster). */
 export function caminhosDaMidia(m: {
   url?: string | null;
   full?: string | null;
+  fullWebp?: string | null;
   poster?: string | null;
 }): Array<string | null | undefined> {
-  return [m.url, m.full, m.poster];
+  return [m.url, m.full, m.fullWebp, m.poster];
 }

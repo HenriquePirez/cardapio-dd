@@ -40,6 +40,7 @@ const galerias: Record<
       tipo: 'imagem' | 'video';
       src: string;
       full?: string;
+      fullWebp?: string;
       poster?: string;
       alt?: string;
     }>;
@@ -70,6 +71,7 @@ for (const p of produtos) {
             tipo: 'imagem' as const,
             src: urlMidia(m.url),
             full: urlMidia(m.full || m.url),
+            ...(m.fullWebp ? { fullWebp: urlMidia(m.fullWebp) } : {}),
             alt: altDe(m.alt, p.nome, i),
           }
         : {

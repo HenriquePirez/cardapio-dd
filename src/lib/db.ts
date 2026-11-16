@@ -57,6 +57,7 @@ export interface Midia {
   tipo: 'imagem' | 'video';
   url: string;
   full: string | null;
+  fullWebp: string | null;
   poster: string | null;
   alt: string | null;
   ordem: number;
@@ -186,7 +187,8 @@ export async function listarMidiasPorProdutos(
   const placeholders = produtoIds.map(() => '?').join(',');
   const { results } = await db
     .prepare(
-      `SELECT * FROM produto_midia
+      `SELECT id, produto_id, tipo, url, full, full_webp AS fullWebp, poster, alt, ordem
+       FROM produto_midia
        WHERE loja_id = ? AND produto_id IN (${placeholders})
        ORDER BY ordem ASC, id ASC`,
     )
@@ -275,8 +277,8 @@ export async function adicionarMidia(
 ): Promise<number> {
   const { results } = await db
     .prepare(
-      `INSERT INTO produto_midia (loja_id, produto_id, tipo, url, full, poster, alt, ordem)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`,
+      `INSERT INTO produto_midia (loja_id, produto_id, tipo, url, full, full_webp, poster, alt, ordem)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`,
     )
     .bind(
       lojaId,
@@ -284,6 +286,7 @@ export async function adicionarMidia(
       m.tipo,
       m.url,
       m.full ?? null,
+      m.fullWebp ?? null,
       m.poster ?? null,
       m.alt ?? null,
       m.ordem,
@@ -296,14 +299,21 @@ export async function atualizarMidia(
   db: D1Like,
   lojaId: string,
   id: number,
-  m: { url: string; full: string | null; poster: string | null; alt: string | null; ordem: number },
+  m: {
+    url: string;
+    full: string | null;
+    fullWebp: string | null;
+    poster: string | null;
+    alt: string | null;
+    ordem: number;
+  },
 ): Promise<void> {
   await db
     .prepare(
-      `UPDATE produto_midia SET url = ?, full = ?, poster = ?, alt = ?, ordem = ?
+      `UPDATE produto_midia SET url = ?, full = ?, full_webp = ?, poster = ?, alt = ?, ordem = ?
        WHERE loja_id = ? AND id = ?`,
     )
-    .bind(m.url, m.full, m.poster, m.alt, m.ordem, lojaId, id)
+    .bind(m.url, m.full, m.fullWebp, m.poster, m.alt, m.ordem, lojaId, id)
     .run();
 }
 

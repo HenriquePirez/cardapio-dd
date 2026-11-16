@@ -10,6 +10,7 @@ export interface ItemGaleriaBruto {
   tipo: 'imagem' | 'video';
   url: string;
   full?: string | undefined;
+  fullWebp?: string | undefined;
   poster?: string | undefined;
   alt?: string | undefined;
   ordem?: number | undefined;
@@ -40,6 +41,7 @@ export function lerGaleriaJson(bruto: FormDataEntryValue | null | undefined): It
       tipo: o.tipo,
       url: o.url,
       full: typeof o.full === 'string' ? o.full : undefined,
+      fullWebp: typeof o.fullWebp === 'string' ? o.fullWebp : undefined,
       poster: typeof o.poster === 'string' ? o.poster : undefined,
       alt: typeof o.alt === 'string' ? o.alt : undefined,
       ordem: typeof o.ordem === 'number' ? o.ordem : undefined,

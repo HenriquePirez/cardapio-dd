@@ -15,6 +15,7 @@ interface Props {
         tipo: 'imagem' | 'video';
         src: string;
         full?: string;
+        fullWebp?: string;
         poster?: string;
         alt?: string;
       }>;
@@ -265,6 +266,7 @@ const { galerias } = Astro.props;
     tipo: 'imagem' | 'video';
     src: string;
     full?: string;
+    fullWebp?: string;
     poster?: string;
     alt?: string;
   }
@@ -348,11 +350,19 @@ const { galerias } = Astro.props;
       const slide = document.createElement('div');
       slide.className = 'lb-slide';
       if (item.tipo === 'imagem') {
+        const picture = document.createElement('picture');
+        if (item.fullWebp) {
+          const source = document.createElement('source');
+          source.type = 'image/webp';
+          source.srcset = item.fullWebp;
+          picture.appendChild(source);
+        }
         const img = document.createElement('img');
         img.src = item.full || item.src;
         img.alt = item.alt || g.nome;
         img.decoding = 'async';
-        slide.appendChild(img);
+        picture.appendChild(img);
+        slide.appendChild(picture);
       } else {
         const video = document.createElement('video');
         video.src = item.src;

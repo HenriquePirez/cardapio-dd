@@ -120,6 +120,7 @@ export const POST: APIRoute = async (ctx) => {
       await atualizarMidia(d1, loja.id, numId, {
         url: item.url || registro.url,
         full: (item.full ?? registro.full) || null,
+        fullWebp: (item.fullWebp ?? registro.fullWebp) || null,
         poster: (item.poster ?? registro.poster) || null,
         alt: item.alt ?? registro.alt,
         ordem: ordemContador++,
@@ -131,6 +132,7 @@ export const POST: APIRoute = async (ctx) => {
         tipo: item.tipo === 'video' ? 'video' : 'imagem',
         url: item.url,
         full: item.full || null,
+        fullWebp: item.fullWebp || null,
         poster: item.poster || null,
         alt: item.alt || null,
         ordem: ordemContador++,
