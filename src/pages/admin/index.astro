@@ -1,17 +1,29 @@
 ---
 import AdminLayout from '../../layouts/AdminLayout.astro';
+import AdminSistema from '../../components/AdminSistema.astro';
 import { db } from '../../lib/env';
-import { listarCategorias, listarProdutos } from '../../lib/db';
+import { listarCategorias, listarProdutos, listarUsuariosComLojas } from '../../lib/db';
 import { urlMidia } from '../../lib/env';
 import IconeCategoria from '../../components/IconeCategoria.astro';
 
 const d1 = db();
-const loja = Astro.locals.loja!;
-const urlCardapio = loja.padrao === 1 ? '/' : `/loja/${loja.slug}`;
-const [categorias, produtos] = await Promise.all([
-  listarCategorias(d1, loja.id),
-  listarProdutos(d1, loja.id),
-]);
+const master = Astro.locals.usuarioMaster ?? false;
+
+let categorias: Awaited<ReturnType<typeof listarCategorias>> = [];
+let produtos: Awaited<ReturnType<typeof listarProdutos>> = [];
+let usuariosTabela: Awaited<ReturnType<typeof listarUsuariosComLojas>> = [];
+const loja = Astro.locals.loja ?? null;
+let urlCardapio = '';
+
+if (master) {
+  usuariosTabela = await listarUsuariosComLojas(d1);
+} else if (loja) {
+  urlCardapio = loja.padrao === 1 ? '/' : `/loja/${loja.slug}`;
+  [categorias, produtos] = await Promise.all([
+    listarCategorias(d1, loja.id),
+    listarProdutos(d1, loja.id),
+  ]);
+}
 
 const destaques = produtos.filter((p) => p.destaque === 1);
 const indisponiveis = produtos.filter((p) => p.disponivel === 0);
@@ -23,8 +35,20 @@ const estatisticas = [
   { rotulo: 'Destaques', chave: 'destaquesFiltro', valor: destaques.length, href: '/admin/produtos?filtro=destaque' },
   { rotulo: 'Sem mídia', chave: 'semMidia', valor: semMidia.length, href: '/admin/produtos?filtro=sem-midia' },
 ];
+const totalUsuarios = usuariosTabela.length;
+const totalAtivos = usuariosTabela.filter((u) => u.ativo === 1).length;
+const totalInativos = usuariosTabela.filter((u) => u.ativo === 0).length;
+const totalLojas = usuariosTabela.reduce((acc, u) => acc + u.qtd_lojas, 0);
 ---
 
+{master ? (
+  <AdminSistema
+    totalUsuarios={totalUsuarios}
+    totalAtivos={totalAtivos}
+    totalInativos={totalInativos}
+    totalLojas={totalLojas}
+  />
+) : (
 <AdminLayout titulo="Painel">
   <div class="barra-acoes">
     <div>
@@ -131,6 +155,7 @@ const estatisticas = [
     )}
   </section>
 </AdminLayout>
+)}
 
 <style>
   .grade-stats {

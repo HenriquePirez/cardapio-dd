@@ -82,19 +82,23 @@ function sair() {
             <a href="/admin" class={ativo('/admin') && caminho === '/admin' ? 'ativo' : ''}
               ><span data-i18n="painel">Painel</span></a
             >
-            <a href="/admin/produtos" class={ativo('/admin/produtos')}
-              ><span data-i18n="produtos">Produtos</span></a
-            >
-            <a href="/admin/categorias" class={ativo('/admin/categorias')}
-              ><span data-i18n="categorias">Categorias</span></a
-            >
-            <a href="/admin/loja" class={ativo('/admin/loja')}
-              ><span data-i18n="loja">Loja</span></a
-            >
+            {!Astro.locals.usuarioMaster && (
+              <Fragment>
+                <a href="/admin/produtos" class={ativo('/admin/produtos')}
+                  ><span data-i18n="produtos">Produtos</span></a
+                >
+                <a href="/admin/categorias" class={ativo('/admin/categorias')}
+                  ><span data-i18n="categorias">Categorias</span></a
+                >
+                <a href="/admin/loja" class={ativo('/admin/loja')}
+                  ><span data-i18n="loja">Loja</span></a
+                >
+              </Fragment>
+            )}
             <a href="/admin/perfil" class={ativo('/admin/perfil')}
               ><span data-i18n="perfil">Perfil</span></a
             >
-            {usuario && Astro.locals.usuarioMaster && (
+            {Astro.locals.usuarioMaster && (
               <a href="/admin/usuarios" class={ativo('/admin/usuarios')}
                 ><span data-i18n="usuarios">Usuários</span></a
               >

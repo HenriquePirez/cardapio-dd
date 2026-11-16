@@ -1,0 +1,103 @@
+---
+/**
+ * Dashboard enxuto do admin master: só o sistema e os acessos.
+ * Sem produtos, categorias, loja ou cardápio — quem administra lojas é outro papel.
+ */
+import AdminLayout from '../layouts/AdminLayout.astro';
+
+interface Props {
+  totalUsuarios: number;
+  totalAtivos: number;
+  totalInativos: number;
+  totalLojas: number;
+}
+
+const { totalUsuarios, totalAtivos, totalInativos, totalLojas } = Astro.props;
+---
+
+<AdminLayout titulo="Sistema" descricao="Administração do sistema e dos acessos ao painel">
+  <div class="barra-acoes">
+    <div>
+      <h1 class="admin-h1" data-i18n="sistemaTitulo">Sistema</h1>
+      <p class="admin-sub" data-i18n="sistemaSub">Administração do sistema e dos acessos ao painel.</p>
+    </div>
+    <a href="/admin/usuarios" class="btn btn-primario" data-i18n="gestaoUsuarios">Gerenciar usuários</a>
+  </div>
+
+  <div class="grade-stats">
+    <a class="stat" href="/admin/usuarios">
+      <span class="stat-valor">{totalUsuarios}</span>
+      <span class="stat-rotulo" data-i18n="totalUsuarios">Usuários</span>
+    </a>
+    <a class="stat" href="/admin/usuarios">
+      <span class="stat-valor">{totalAtivos}</span>
+      <span class="stat-rotulo" data-i18n="ativos">Ativos</span>
+    </a>
+    <a class="stat" href="/admin/usuarios">
+      <span class="stat-valor">{totalInativos}</span>
+      <span class="stat-rotulo" data-i18n="inativos">Inativos</span>
+    </a>
+    <a class="stat" href="/admin/usuarios">
+      <span class="stat-valor">{totalLojas}</span>
+      <span class="stat-rotulo" data-i18n="totalLojas">Lojas</span>
+    </a>
+  </div>
+
+  <div class="cartao">
+    <h2 data-i18n="sistemaLema">Você administra o sistema, não uma loja.</h2>
+    <p class="vazio" style="margin: 0; text-align: left">
+      <span data-i18n="sistemaLemaTexto">
+        O admin master gerencia quem tem acesso ao painel: criar acessos, ativar ou
+        desativar usuários e acompanhar as lojas cadastradas. O conteúdo (produtos,
+        fotos, pedidos) é de quem administra cada loja.
+      </span>
+    </p>
+  </div>
+</AdminLayout>
+
+<style>
+  .grade-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  @media (min-width: 640px) {
+    .grade-stats {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  .stat {
+    background: var(--adm-card);
+    border: 1px solid var(--adm-border);
+    border-radius: 14px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.12s, box-shadow 0.12s;
+  }
+
+  .stat:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.07);
+  }
+
+  .stat-valor {
+    font-size: 1.9rem;
+    font-weight: 500;
+    line-height: 1;
+    color: #ff5e1a;
+    letter-spacing: -0.03em;
+  }
+
+  .stat-rotulo {
+    font-size: 0.82rem;
+    color: #6b7280;
+    font-weight: 500;
+  }
+</style>

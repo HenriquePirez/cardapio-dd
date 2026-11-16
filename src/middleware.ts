@@ -31,6 +31,21 @@ const PUBLICAS_ADMIN = new Set([
 
 const CACHE_SEGUNDOS = 30;
 
+// Rotas do painel/APIs de loja: o master não entra — ele administra o sistema.
+const ROTAS_LOJA = [
+  '/admin/produtos',
+  '/admin/categorias',
+  '/admin/loja',
+  '/admin/api/produtos',
+  '/admin/api/categorias',
+  '/admin/api/midia',
+  '/admin/api/loja',
+];
+
+function rotaDeLoja(caminho: string): boolean {
+  return ROTAS_LOJA.some((r) => caminho === r || caminho.startsWith(r + '/'));
+}
+
 /**
  * CSP com 'unsafe-inline' porque o Astro gera scripts inline de hidratação.
  * Scripts externos só são permitidos nos provedores de analytics; o banner só
@@ -153,6 +168,30 @@ async function tratar(ctx: APIContext, next: MiddlewareNext): Promise<Response> 
   const jaLogado = usuario !== null;
 
   if (jaLogado) {
+    const usuarioMaster = await ehUsuarioMaster(db(), usuario.id);
+    ctx.locals.usuarioMaster = usuarioMaster;
+
+    // O master administra o sistema, não uma loja: sem loja ativa e sem acesso
+    // ao painel de loja. GET volta para /admin; escritas respondem 403.
+    if (usuarioMaster) {
+      ctx.locals.loja = null;
+      ctx.locals.lojas = [];
+      if (rotaDeLoja(caminho)) {
+        const metodo = ctx.request.method;
+        if (metodo === 'GET' || metodo === 'HEAD') {
+          const r = new Response(null, {
+            status: 302,
+            headers: { Location: '/admin' },
+          });
+          return semCache(r);
+        }
+        return semCache(
+          new Response('Acesso restrito à loja — o admin master administra o sistema.', { status: 403 }),
+        );
+      }
+      return semCache(await next());
+    }
+
     // Loja ativa: cookie do seletor, sempre validada contra as lojas do dono.
     const lojas = await listarLojasDoUsuario(db(), usuario.id);
     let loja = lojas[0] ?? (await garantirLojaDoUsuario(db(), usuario.id));
@@ -162,7 +201,6 @@ async function tratar(ctx: APIContext, next: MiddlewareNext): Promise<Response> 
     }
     ctx.locals.loja = loja;
     ctx.locals.lojas = lojas.length ? lojas : [loja];
-    ctx.locals.usuarioMaster = await ehUsuarioMaster(db(), usuario.id);
     return semCache(await next());
   }
 
