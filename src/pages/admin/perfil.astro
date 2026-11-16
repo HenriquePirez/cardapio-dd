@@ -120,28 +120,21 @@ const erroMsg = erro ? (mensagens[erro] ?? erro) : null;
         </div>
       </div>
 
-      <button class="btn btn-primario" type="submit" data-i18n="trocarSenha">Trocar senha</button>
+      <div class="perfil-acoes">
+        <button class="btn btn-primario" type="submit" data-i18n="trocarSenha">Trocar senha</button>
+        <a class="btn btn-secundario" href="/admin/recuperar-senha" data-i18n="esqueciSenha"
+          >Esqueci a senha</a
+        >
+      </div>
     </form>
-
-    <p class="perfil-esqueci">
-      <a href="/admin/recuperar-senha" data-i18n="esqueciSenha">Esqueci a senha</a>
-    </p>
   </div>
 </AdminLayout>
 
 <style>
-  .perfil-esqueci {
-    margin: 14px 0 0;
-    font-size: 0.86rem;
-  }
-
-  .perfil-esqueci a {
-    color: var(--cor-preco);
-    font-weight: 500;
-    text-decoration: none;
-  }
-
-  .perfil-esqueci a:hover {
-    text-decoration: underline;
+  .perfil-acoes {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
   }
 </style>
