@@ -8,6 +8,7 @@
     "build": "astro build",
     "check": "astro check",
     "preview": "astro preview",
+    "deploy:dev": "node scripts/deploy-dev.mjs",
     "astro": "astro",
     "lint": "eslint .",
     "lint:typed": "eslint -c eslint.typed.config.mjs src",

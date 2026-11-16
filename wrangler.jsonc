@@ -43,33 +43,5 @@
     // por /media/<chave>, lidas do KV pelo Worker. Preencha só se um dia
     // mover as mídias para um host externo (ex: um CDN próprio).
     "MEDIA_PUBLIC_BASE": ""
-  },
-
-  // Ambiente de desenvolvimento: worker separado com D1 e KV próprios.
-  // Deploy: `npx wrangler deploy --env dev` (ou Workers Builds na branch dev).
-  "env": {
-    "dev": {
-      "name": "cardapio-dd-dev",
-      "d1_databases": [
-        {
-          "binding": "DB",
-          "database_name": "cardapio-dd-dev",
-          "database_id": "92f3390f-ac78-4fa7-abc6-9a9977f6036b"
-        }
-      ],
-      "kv_namespaces": [
-        {
-          "binding": "SESSION",
-          "id": "80f39729496649b59890b82ff4903cea"
-        },
-        {
-          "binding": "MEDIA",
-          "id": "361b7df7f7664b659948136fa5ba7dd1"
-        }
-      ],
-      "vars": {
-        "MEDIA_PUBLIC_BASE": ""
-      }
-    }
   }
 }
