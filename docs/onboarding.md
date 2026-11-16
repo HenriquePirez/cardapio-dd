@@ -51,11 +51,15 @@ do primeiro acesso; sem ele a criação de conta responde 503.
 - Banco: local em `.wrangler/state` (`npm run db:apply:local`) ou remoto
   (`npm run db:apply:remote`) — **não use a produção como ambiente de teste**.
 - **Dev remoto (branch `dev`):** worker separado `cardapio-dd-dev` com D1 e KV
-  próprios (`wrangler.jsonc`, bloco `env.dev`), deploy por `npx wrangler deploy --env dev`
-  (ou Workers Builds na branch `dev`) e domínio próprio `dev.myshelf.app.br`.
+  próprios. O manifesto gerado pelo build do Astro (`dist/server/wrangler.json`)
+  carrega o nome/bindings de produção; `scripts/deploy-dev.mjs` reescreve só o
+  nome e esses bindings para os recursos do dev antes de subir.
+  Deploy: `npm run deploy:dev` (ou Workers Builds na branch `dev`) com domínio
+  `dev.myshelf.app.br`.
   Migrations: `npx wrangler d1 execute cardapio-dd-dev --remote --file=./migrations/000N_*.sql`.
-  Secrets: `npx wrangler secret put AUTH_PEPPER --env dev` (idem `SETUP_TOKEN`,
-  `RESEND_API_KEY`, `EMAIL_DE`).
+  Secrets: dashboard do Worker (Settings → Variables and Secrets) ou
+  `echo "<valor>" | npx wrangler secret put AUTH_PEPPER --config dist/server/wrangler.json`
+  (o manifesto gerado pelo build).
 
 ## Verificar
 
