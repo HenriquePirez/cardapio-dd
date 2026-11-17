@@ -5,6 +5,7 @@
  * pela presença do campo senha_atual.
  */
 import AdminLayout from '../../layouts/AdminLayout.astro';
+import Toast from '../../components/Toast.astro';
 import { obterUsuarioPorId } from '../../lib/db';
 import { db } from '../../lib/env';
 import { lerUsuario } from '../../lib/session';
@@ -38,15 +39,18 @@ const erroMsg = erro ? (mensagens[erro] ?? erro) : null;
   </div>
 
   {ok && (
-    <div class="aviso aviso-ok" role="status">
-      {ok === 'senha'
-        ? 'Senha alterada com sucesso.'
-        : ok === 'enviado'
-          ? `Link de redefinição enviado para ${usuario.email}. Confira sua caixa de entrada.`
-          : 'Perfil atualizado.'}
-    </div>
+    <Toast
+      tipo="ok"
+      texto={
+        ok === 'senha'
+          ? 'Senha alterada com sucesso.'
+          : ok === 'enviado'
+            ? `Link de redefinição enviado para ${usuario.email}. Confira sua caixa de entrada.`
+            : 'Perfil atualizado.'
+      }
+    />
   )}
-  {erroMsg && <div class="aviso aviso-erro" role="alert">{erroMsg}</div>}
+  {erroMsg && <Toast tipo="erro" texto={erroMsg} />}
 
   <div class="cartao">
     <h2 data-i18n="dadosConta">Dados da conta</h2>

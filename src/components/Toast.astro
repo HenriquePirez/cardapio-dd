@@ -1,0 +1,104 @@
+---
+/**
+ * Toast padrão do sistema.
+ * Mensagem temporária (auto-fechada após 6s) com botão ×.
+ * Uso: <Toast tipo="ok" texto="…" /> — os três tipos: ok, erro, info.
+ */
+interface Props {
+  tipo: 'ok' | 'erro' | 'info';
+  texto: string;
+}
+
+const { tipo, texto } = Astro.props;
+const icone =
+  tipo === 'ok' ? 'fi-br-check-circle' : tipo === 'erro' ? 'fi-br-exclamation-circle' : 'fi-br-info';
+---
+
+<div class={`toast toast-${tipo}`} role={tipo === 'erro' ? 'alert' : 'status'}>
+  <i class={icone} aria-hidden="true"></i>
+  <p class="toast-texto">{texto}</p>
+  <button type="button" class="toast-fechar" aria-label="Fechar">×</button>
+</div>
+
+<script is:inline>
+  (function () {
+    const toasts = document.querySelectorAll('.toast');
+    toasts.forEach((el) => {
+      const fechar = el.querySelector('.toast-fechar');
+      const descartar = () => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(6px)';
+        window.setTimeout(() => el.remove(), 220);
+      };
+      fechar?.addEventListener('click', descartar);
+      window.setTimeout(descartar, 6000);
+    });
+  })();
+</script>
+
+<style>
+  .toast {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 380px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--adm-border, #e5e7eb);
+    border-left: 4px solid #ff5e1a;
+    background: var(--adm-card, #fff);
+    color: var(--adm-text, #111827);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.14);
+    font-size: 0.92rem;
+    line-height: 1.4;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+
+  .toast-ok {
+    border-left-color: #15803d;
+  }
+
+  .toast-erro {
+    border-left-color: #b91c1c;
+  }
+
+  .toast-info {
+    border-left-color: #1d4ed8;
+  }
+
+  .toast .toast-texto {
+    margin: 0;
+    flex: 1;
+  }
+
+  .toast i {
+    font-size: 1.15rem;
+    color: var(--adm-dim, #6b7280);
+  }
+
+  .toast-fechar {
+    background: none;
+    border: 0;
+    cursor: pointer;
+    font-size: 1.15rem;
+    line-height: 1;
+    color: var(--adm-dim, #6b7280);
+    padding: 2px 4px;
+    border-radius: 6px;
+  }
+
+  .toast-fechar:hover {
+    background: var(--adm-elev, #f3f4f6);
+    color: var(--adm-text, #111827);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .toast {
+      transition: none;
+    }
+  }
+</style>
