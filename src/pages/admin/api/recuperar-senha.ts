@@ -32,18 +32,25 @@ export const POST: APIRoute = async (ctx) => {
   }
 
   const email = String(form.get('email') ?? '').trim();
+  // prox exato (allowlist): o perfil usa este fluxo para avisar a conta logada.
+  // Qualquer outro valor cai no fluxo público padrão.
+  const prox = String(form.get('prox') ?? '') === '/admin/perfil?ok=enviado';
+  const destinoOk = prox ? '/admin/perfil?ok=enviado' : '/admin/recuperar-senha?enviado=1';
+  const destinoErro = (e: string) =>
+    prox ? `/admin/perfil?erro=${e}` : `/admin/recuperar-senha?erro=${e}`;
+
   // Formato inválido responde como sucesso: mesma saída de conta inexistente.
-  if (!EMAIL_OK.test(email)) return voltar('/admin/recuperar-senha?enviado=1');
+  if (!EMAIL_OK.test(email)) return voltar(destinoOk);
 
   if (!resendApiKey()) return voltar('/admin/recuperar-senha?erro=email-config');
 
   const d1 = db();
   const usuario = await obterUsuario(d1, email);
-  if (!usuario) return voltar('/admin/recuperar-senha?enviado=1');
+  if (!usuario) return voltar(destinoOk);
 
   const ultima = await ultimaRedefinicaoPendente(d1, usuario.id);
   if (ultima && dentroDoIntervalo(ultima.criado_em)) {
-    return voltar('/admin/recuperar-senha?enviado=1');
+    return voltar(destinoOk);
   }
 
   const token = gerarToken();
@@ -63,8 +70,8 @@ export const POST: APIRoute = async (ctx) => {
 
   // Falha de envio com conta existente devolve erro visível: custo aceitável de
   // enumeração (só enquanto o Resend está falhando), ganho é poder testar o fluxo.
-  if (!enviado) return voltar('/admin/recuperar-senha?erro=email');
-  return voltar('/admin/recuperar-senha?enviado=1');
+  if (!enviado) return voltar(destinoErro('email'));
+  return voltar(destinoOk);
 };
 
 function corpoEmail(nome: string, link: string): string {

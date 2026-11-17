@@ -19,7 +19,8 @@ const erro = Astro.url.searchParams.get('erro');
 
 const mensagens: Record<string, string> = {
   campos: 'Preencha todos os campos.',
-  email: 'Informe um e-mail válido.',
+  email: 'Não foi possível enviar o e-mail. Tente novamente em instantes.',
+  'email-config': 'O envio de e-mail não está configurado neste ambiente.',
   'email-existente': 'Este e-mail já é usado por outra conta.',
   'senha-atual': 'A senha atual está incorreta.',
   divergentes: 'As senhas não coincidem.',
@@ -38,7 +39,11 @@ const erroMsg = erro ? (mensagens[erro] ?? erro) : null;
 
   {ok && (
     <div class="aviso aviso-ok" role="status">
-      {ok === 'senha' ? 'Senha alterada com sucesso.' : 'Perfil atualizado.'}
+      {ok === 'senha'
+        ? 'Senha alterada com sucesso.'
+        : ok === 'enviado'
+          ? `Link de redefinição enviado para ${usuario.email}. Confira sua caixa de entrada.`
+          : 'Perfil atualizado.'}
     </div>
   )}
   {erroMsg && <div class="aviso aviso-erro" role="alert">{erroMsg}</div>}
@@ -80,53 +85,17 @@ const erroMsg = erro ? (mensagens[erro] ?? erro) : null;
 
   <div class="cartao">
     <h2 data-i18n="alterarSenha">Alterar senha</h2>
-    <form method="post" action="/admin/api/perfil">
-      <div class="grade-campos">
-        <div class="campo">
-          <label for="senha_atual" data-i18n="senhaAtual">Senha atual</label>
-          <input
-            id="senha_atual"
-            name="senha_atual"
-            type="password"
-            required
-            autocomplete="current-password"
-          />
-        </div>
-
-        <div class="campo">
-          <label for="senha_nova" data-i18n="novaSenha">Nova senha</label>
-          <input
-            id="senha_nova"
-            name="senha_nova"
-            type="password"
-            required
-            minlength="10"
-            autocomplete="new-password"
-            placeholder="mínimo 10 caracteres"
-          />
-        </div>
-
-        <div class="campo">
-          <label for="senha_nova2" data-i18n="confirmarSenha">Confirmar nova senha</label>
-          <input
-            id="senha_nova2"
-            name="senha_nova2"
-            type="password"
-            required
-            minlength="10"
-            autocomplete="new-password"
-            placeholder="repita a senha"
-          />
-        </div>
-      </div>
-
-      <div class="perfil-acoes">
-        <button class="btn btn-primario" type="submit" data-i18n="trocarSenha">Trocar senha</button>
-        <a class="btn btn-secundario" href="/admin/recuperar-senha" data-i18n="esqueciSenha"
-          >Esqueci a senha</a
-        >
-      </div>
-    </form>
+    <p class="perfil-aviso">
+      Um link de redefinição será enviado para <strong>{usuario.email}</strong>. Vale por
+      <strong>1 hora</strong> e só pode ser usado uma vez.
+    </p>
+    <div class="perfil-acoes">
+      <form method="post" action="/admin/api/recuperar-senha">
+        <input type="hidden" name="email" value={usuario.email} />
+        <input type="hidden" name="prox" value="/admin/perfil?ok=enviado" />
+        <button class="btn btn-primario" type="submit" data-i18n="alterarSenha">Alterar senha</button>
+      </form>
+    </div>
   </div>
 </AdminLayout>
 
@@ -136,5 +105,12 @@ const erroMsg = erro ? (mensagens[erro] ?? erro) : null;
     gap: 10px;
     align-items: center;
     flex-wrap: wrap;
+  }
+
+  .perfil-aviso {
+    margin: 0 0 18px;
+    color: var(--adm-dim);
+    font-size: 0.92rem;
+    line-height: 1.5;
   }
 </style>
