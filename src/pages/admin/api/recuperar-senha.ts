@@ -42,7 +42,7 @@ export const POST: APIRoute = async (ctx) => {
   // Formato inválido responde como sucesso: mesma saída de conta inexistente.
   if (!EMAIL_OK.test(email)) return voltar(destinoOk);
 
-  if (!resendApiKey()) return voltar('/admin/recuperar-senha?erro=email-config');
+  if (!resendApiKey()) return voltar(destinoErro('email-config'));
 
   const d1 = db();
   const usuario = await obterUsuario(d1, email);
