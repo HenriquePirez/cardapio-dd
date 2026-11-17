@@ -62,16 +62,16 @@ export const POST: APIRoute = async (ctx) => {
   const usuario = await obterUsuario(d1, email);
   // pepper() pode ser null só se a conta foi criada antes de definir o segredo;
   // conferirSenha lança nesse caso (melhor que devolver "senha incorreta").
-  const pimenta = usuario ? pepper() : null;
+  const pimenta = pepper() ?? undefined;
   const ok =
-    usuario !== null && (await conferirSenha(senha, usuario.senha_hash, pimenta ?? undefined));
+    usuario !== null && (await conferirSenha(senha, usuario.senha_hash, pimenta));
 
   // `!usuario` junto do `!ok` não muda o comportamento (ok só é true com
   // usuário), mas é o que dá ao TypeScript o narrowing pros blocos seguintes.
   if (!ok || !usuario) {
     // Mesmo custo de CPU de um hash real, senão o tempo de resposta
     // denunciaria que o e-mail não existe (enumeração).
-    if (!usuario) await conferirSenha(senha, hashDummy(pepper() ?? undefined));
+    if (!usuario) await conferirSenha(senha, hashDummy(pimenta), pimenta);
     const estado = await registrarTentativaFalha(d1, email, ip);
     if (estado.bloqueado) {
       return redirecionar('/admin/login?erro=bloqueado&min=10');
