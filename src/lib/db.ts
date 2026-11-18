@@ -355,6 +355,7 @@ export interface UsuarioResumo {
   aceite_versao?: string | null;
   qtd_lojas: number;
   ativo: number;
+  master: number;
 }
 
 /** Ativa ou desativa um usuário (soft delete). */
@@ -366,12 +367,12 @@ export async function alternarUsuarioAtivo(db: D1Like, usuarioId: string, ativo:
 export async function listarUsuariosComLojas(db: D1Like): Promise<UsuarioResumo[]> {
   const { results } = await db
     .prepare(
-      `SELECT u.id, u.email, u.nome, u.criado_em, u.aceite_em, u.aceite_versao, u.ativo,
+      `SELECT u.id, u.email, u.nome, u.criado_em, u.aceite_em, u.aceite_versao, u.ativo, u.master,
               COUNT(l.id) AS qtd_lojas
        FROM usuarios u
        LEFT JOIN lojas l ON l.usuario_id = u.id
-       GROUP BY u.id, u.email, u.nome, u.criado_em, u.aceite_em, u.aceite_versao, u.ativo
-       ORDER BY u.ativo DESC, u.criado_em DESC`,
+       GROUP BY u.id, u.email, u.nome, u.criado_em, u.aceite_em, u.aceite_versao, u.ativo, u.master
+       ORDER BY u.ativo DESC, u.master DESC, u.criado_em DESC`,
     )
     .all<UsuarioResumo>();
   return results ?? [];

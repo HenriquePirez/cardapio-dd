@@ -4,6 +4,7 @@
  * Sem produtos, categorias, loja ou cardápio — quem administra lojas é outro papel.
  */
 import AdminLayout from '../layouts/AdminLayout.astro';
+import Toast from '../components/Toast.astro';
 import type { UsuarioResumo } from '../lib/db';
 
 interface Props {
@@ -12,11 +13,25 @@ interface Props {
 }
 
 const { usuarios, usuarioId } = Astro.props;
+const ok = Astro.url.searchParams.get('ok');
+const erro = Astro.url.searchParams.get('erro');
 
 const totalUsuarios = usuarios.length;
 const totalAtivos = usuarios.filter((u) => u.ativo === 1).length;
 const totalInativos = usuarios.filter((u) => u.ativo === 0).length;
 const totalLojas = usuarios.reduce((acc, u) => acc + u.qtd_lojas, 0);
+
+const toastOk: Record<string, string> = {
+  ativado: 'Usuário ativado novamente — acesso de volta ao painel.',
+  desativado: 'Usuário desativado — acesso removido. Ele não entra mais no painel.',
+};
+const toastErro: Record<string, string> = {
+  id: 'ID do usuário ausente.',
+  'nao-encontrado': 'Usuário não encontrado.',
+  'proprio-master': 'Você não pode desativar a sua própria conta master.',
+};
+const okMsg = ok ? (toastOk[ok] ?? null) : null;
+const erroMsg = erro ? (toastErro[erro] ?? erro) : null;
 
 function formatarData(iso: string | null | undefined): string {
   if (!iso) return '—';
@@ -35,6 +50,9 @@ function formatarData(iso: string | null | undefined): string {
 ---
 
 <AdminLayout titulo="Sistema" descricao="Administração do sistema e dos acessos ao painel">
+  {okMsg && <Toast tipo="ok" texto={okMsg} />}
+  {erroMsg && <Toast tipo="erro" texto={erroMsg} />}
+
   <div class="barra-acoes">
     <div>
       <h1 class="admin-h1" data-i18n="sistemaTitulo">Sistema</h1>
@@ -62,86 +80,155 @@ function formatarData(iso: string | null | undefined): string {
   </div>
 
   <div class="cartao">
-    <table class="tabela-usuarios">
-      <thead>
-        <tr>
-          <th scope="col" data-i18n="usuario">Usuário</th>
-          <th scope="col" data-i18n="email">E‑mail</th>
-          <th scope="col" data-i18n="criadoEm">Criado em</th>
-          <th scope="col" data-i18n="lojas">Lojas</th>
-          <th scope="col" data-i18n="status">Status</th>
-          <th scope="col" data-i18n="aceite">Aceite legal</th>
-          <th scope="col" style="width: 140px" data-i18n="acao">Ação</th>
-        </tr>
-      </thead>
-      <tbody>
-        {usuarios.length === 0 ? (
+    <div class="busca-usuarios">
+      <div class="campo-busca">
+        <label for="busca" class="sr-only" data-i18n="buscarUsuarios">Buscar usuários</label>
+        <input
+          id="busca"
+          type="search"
+          placeholder="Buscar nome ou e-mail…"
+          autocomplete="off"
+          data-i18n-ph="buscarUsuariosPlaceholder"
+        />
+      </div>
+      <div class="campo-filtro">
+        <label for="filtro-status" data-i18n="filtroStatus">Status</label>
+        <select id="filtro-status">
+          <option value="todos" data-i18n="todos">Todos</option>
+          <option value="ativo" data-i18n="ativos">Ativos</option>
+          <option value="inativo" data-i18n="inativos">Inativos</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="tabela-usuarios-wrap">
+      <table class="tabela-usuarios">
+        <thead>
           <tr>
-            <td colspan="7" class="vazio">
-              <span data-i18n="nenhumUsuario">Nenhum usuário cadastrado.</span>
-            </td>
+            <th scope="col" data-i18n="usuario">Usuário</th>
+            <th scope="col" data-i18n="email">E‑mail</th>
+            <th scope="col" data-i18n="papel">Papel</th>
+            <th scope="col" data-i18n="criadoEm">Criado em</th>
+            <th scope="col" data-i18n="lojas">Lojas</th>
+            <th scope="col" data-i18n="status">Status</th>
+            <th scope="col" style="width: 130px" data-i18n="acao">Ação</th>
           </tr>
-        ) : (
-          usuarios.map((u) => {
-            const ativo = u.ativo === 1;
-            const ehEu = u.id === usuarioId;
-            return (
-              <tr class="linha-usuario">
-                <td class="cresce">
-                  <span class="titulo-usuario">{u.nome}</span>
-                </td>
-                <td><a href={`mailto:${u.email}`}>{u.email}</a></td>
-                <td class="celula-data">{formatarData(u.criado_em)}</td>
-                <td>
-                  <span class="badge-lojas">{u.qtd_lojas}</span>
-                </td>
-                <td>
-                  <span
-                    class={`badge-status ${ativo ? 'badge-ativo' : 'badge-inativo'}`}
-                    data-i18n={ativo ? 'ativo' : 'inativo'}
-                  >
-                    {ativo ? 'Ativo' : 'Inativo'}
-                  </span>
-                </td>
-                <td class="celula-data">
-                  {u.aceite_em ? `${formatarData(u.aceite_em)}` : '—'}
-                </td>
-                <td class="acoes">
-                  {!ehEu && (
-                    <form method="post" action="/admin/api/usuarios/toggle-ativo" class="form-toggle">
-                      <input type="hidden" name="id" value={u.id} />
-                      <input type="hidden" name="ativo" value={ativo ? '0' : '1'} />
-                      <button
-                        class={`btn btn-sm ${ativo ? 'btn-perigo' : 'btn-primario'}`}
-                        type="submit"
-                        data-i18n={ativo ? 'desativar' : 'ativar'}
-                      >
-                        {ativo ? 'Desativar' : 'Ativar'}
-                      </button>
-                    </form>
-                  )}
-                  {ehEu && (
-                    <span
-                      class="badge-lojas"
-                      style="background: transparent; color: var(--adm-dim); font-size: 0.78rem;"
-                    >
-                      Você
+        </thead>
+        <tbody>
+          {usuarios.length === 0 ? (
+            <tr>
+              <td colspan="7" class="vazio">
+                <span data-i18n="nenhumUsuario">Nenhum usuário cadastrado.</span>
+              </td>
+            </tr>
+          ) : (
+            usuarios.map((u) => {
+              const ativo = u.ativo === 1;
+              const ehEu = u.id === usuarioId;
+              const master = u.master === 1;
+              return (
+                <tr class="linha-usuario" data-status={ativo ? 'ativo' : 'inativo'}>
+                  <td class="cresce">
+                    <span class="titulo-usuario">{u.nome}</span>
+                  </td>
+                  <td><a href={`mailto:${u.email}`}>{u.email}</a></td>
+                  <td>
+                    <span class={`badge-papel ${master ? 'badge-master' : 'badge-loja'}`}>
+                      {master ? 'Master' : 'Loja'}
                     </span>
-                  )}
-                </td>
-              </tr>
-            );
-          })
-        )}
-      </tbody>
-    </table>
-    {usuarios.length > 0 && (
-      <p class="admin-sub" style="margin:10px 0 0">
-        Total: {usuarios.length} usuário(s) · {totalAtivos} ativo(s) · {totalInativos} inativo(s).
-      </p>
-    )}
+                  </td>
+                  <td class="celula-data">{formatarData(u.criado_em)}</td>
+                  <td>
+                    <span class="badge-lojas">{u.qtd_lojas}</span>
+                  </td>
+                  <td>
+                    <span
+                      class={`badge-status ${ativo ? 'badge-ativo' : 'badge-inativo'}`}
+                      data-i18n={ativo ? 'ativo' : 'inativo'}
+                    >
+                      {ativo ? 'Ativo' : 'Inativo'}
+                    </span>
+                  </td>
+                  <td class="acoes">
+                    {!ehEu && (
+                      <form
+                        method="post"
+                        action="/admin/api/usuarios/toggle-ativo"
+                        class="form-toggle"
+                        data-confirmar={ativo ? 'Deseja desativar este usuário? Ele perde o acesso ao painel imediatamente.' : 'Deseja ativar este usuário de novo?'}
+                      >
+                        <input type="hidden" name="id" value={u.id} />
+                        <input type="hidden" name="ativo" value={ativo ? '0' : '1'} />
+                        <button
+                          class={`btn btn-sm ${ativo ? 'btn-perigo' : 'btn-primario'}`}
+                          type="submit"
+                          data-i18n={ativo ? 'desativar' : 'ativar'}
+                        >
+                          {ativo ? 'Desativar' : 'Ativar'}
+                        </button>
+                      </form>
+                    )}
+                    {ehEu && (
+                      <span
+                        class="badge-lojas"
+                        style="background: transparent; color: var(--adm-dim); font-size: 0.78rem;"
+                      >
+                        Você
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })
+          )}
+        </tbody>
+      </table>
+      {usuarios.length > 0 && (
+        <p class="admin-sub" style="margin:10px 0 0">
+          <span id="qtd-visiveis">{usuarios.length}</span> usuário(s) visíveis · {totalAtivos} ativo(s) · {totalInativos} inativo(s).
+        </p>
+      )}
+    </div>
   </div>
 </AdminLayout>
+
+<script>
+  (function () {
+    const busca = document.getElementById('busca') as HTMLInputElement | null;
+    const filtro = document.getElementById('filtro-status') as HTMLSelectElement | null;
+    const linhas = document.querySelectorAll<HTMLElement>('.linha-usuario');
+    const visiveis = document.getElementById('qtd-visiveis') as HTMLElement | null;
+    if (!busca || !filtro) return;
+
+    function aplicar() {
+      const termo = String(busca?.value ?? '').trim().toLowerCase();
+      const status = String(filtro?.value ?? 'todos');
+      let n = 0;
+      linhas.forEach((el) => {
+        const texto = (el.textContent ?? '').toLowerCase();
+        const statusEl = el.getAttribute('data-status') ?? '';
+        const okBusca = termo === '' || texto.includes(termo);
+        const okStatus = status === 'todos' || statusEl === status;
+        const mostrar = okBusca && okStatus;
+        el.style.display = mostrar ? '' : 'none';
+        if (mostrar) n++;
+      });
+      if (visiveis) visiveis.textContent = String(n);
+    }
+
+    busca?.addEventListener('input', aplicar);
+    filtro?.addEventListener('change', aplicar);
+
+    document.querySelectorAll('.form-toggle').forEach((form) => {
+      form.addEventListener('submit', (event) => {
+        const msg = form.getAttribute('data-confirmar');
+        if (msg && !window.confirm(msg)) {
+          event.preventDefault();
+        }
+      });
+    });
+  })();
+</script>
 
 <style>
   .grade-stats {
@@ -182,8 +269,63 @@ function formatarData(iso: string | null | undefined): string {
     font-weight: 500;
   }
 
+  .busca-usuarios {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+
+  .campo-busca {
+    flex: 1 1 220px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .campo-busca input {
+    padding: 10px 12px;
+    border: 1px solid var(--adm-input-border);
+    border-radius: 9px;
+    font-size: 15px;
+    font-family: inherit;
+    background: var(--adm-card);
+    color: var(--adm-text);
+    box-sizing: border-box;
+  }
+
+  .campo-filtro {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .campo-filtro label {
+    font-size: 0.8rem;
+    color: var(--adm-dim);
+    font-weight: 500;
+  }
+
+  .campo-filtro select {
+    padding: 9px 10px;
+    border: 1px solid var(--adm-input-border);
+    border-radius: 9px;
+    font-size: 0.92rem;
+    font-family: inherit;
+    background: var(--adm-card);
+    color: var(--adm-text);
+  }
+
+  .tabela-usuarios-wrap {
+    overflow-x: auto;
+    margin: 0 -18px;
+    padding: 0 18px;
+  }
+
   .tabela-usuarios {
     width: 100%;
+    min-width: 640px;
     border-collapse: collapse;
     font-size: 0.92rem;
   }
@@ -193,7 +335,7 @@ function formatarData(iso: string | null | undefined): string {
     padding: 10px 12px;
     border-bottom: 2px solid var(--adm-border);
     color: var(--adm-dim);
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -231,6 +373,25 @@ function formatarData(iso: string | null | undefined): string {
     min-width: 28px;
     text-align: center;
     white-space: nowrap;
+  }
+
+  .badge-papel {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .badge-master {
+    background: #f9df8e;
+    color: #39282c;
+  }
+
+  .badge-loja {
+    background: #e4ebf2;
+    color: #4a6a82;
   }
 
   .badge-status {
@@ -276,5 +437,14 @@ function formatarData(iso: string | null | undefined): string {
     padding: 6px 10px;
     font-size: 0.82rem;
     margin: 0;
+  }
+
+  @media (max-width: 640px) {
+    .tabela-usuarios {
+      font-size: 0.86rem;
+    }
+    .celula-data {
+      display: none;
+    }
   }
 </style>

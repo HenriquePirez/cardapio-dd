@@ -5,7 +5,7 @@
  */
 import AdminLayout from '../../layouts/AdminLayout.astro';
 
-return Astro.redirect('/admin');
+return Astro.redirect(`/admin${Astro.url.search}`);
 ---
 
 <AdminLayout titulo="Usuários">
