@@ -22,15 +22,19 @@ try {
   // Bindings ausentes em dev sem wrangler: mostra o formulário mesmo
 }
 
-const mensagens: Record<string, string> = {
+const mensagensErro: Record<string, string> = {
   campos: 'Preencha o e-mail e a senha.',
   senha: `E-mail ou senha incorretos.${restam ? ` Tentativas restantes: ${restam}.` : ''}`,
   bloqueado: `Muitas tentativas erradas. Tente novamente em ${min ?? 10} min.`,
+};
+const mensagensOk: Record<string, string> = {
   criado: 'Conta criada! Entre com seus dados.',
   logout: 'Você saiu do painel.',
   redefinida: 'Senha redefinida! Entre com a nova senha.',
 };
-const msg = erro ? mensagens[erro] : null;
+const erroMsg = erro ? (mensagensErro[erro] ?? null) : null;
+const okParam = Astro.url.searchParams.get('ok');
+const okMsg = okParam ? (mensagensOk[okParam] ?? null) : null;
 ---
 
 {precisaCriar ? (
@@ -48,7 +52,8 @@ const msg = erro ? mensagens[erro] : null;
       <h1 class="login-titulo" data-i18n="entrarPainel">Entrar no painel</h1>
       <p class="login-sub" data-i18n="loginSub">Gerencie categorias, produtos e mídias do cardápio.</p>
 
-      {msg && <div class="aviso aviso-erro" role="alert">{msg}</div>}
+      {okMsg && <div class="aviso aviso-ok" role="status">{okMsg}</div>}
+      {erroMsg && <div class="aviso aviso-erro" role="alert">{erroMsg}</div>}
 
       <form method="post" action="/admin/api/login" class="login-form">
         {prox && <input type="hidden" name="prox" value={prox} />}

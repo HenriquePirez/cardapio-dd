@@ -54,5 +54,5 @@ export const POST: APIRoute = async (ctx) => {
   const pimenta = pepper() ?? undefined;
   await trocarSenha(d1, usuario.email, await hashSenha(senha, pimenta));
 
-  return voltar('/admin/login?erro=redefinida');
+  return voltar('/admin/login?ok=redefinida');
 };
