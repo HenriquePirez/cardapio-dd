@@ -11,8 +11,6 @@ import { lerUsuario } from '../lib/session';
 import Preferencias from '../components/Preferencias.astro';
 import TemaInicial from '../components/TemaInicial.astro';
 import AplicarIdioma from '../components/AplicarIdioma.astro';
-import { cssPaleta, paletaLoja } from '../lib/cores';
-import { urlMidia } from '../lib/env';
 import ConsentimentoCookies from '../components/ConsentimentoCookies.astro';
 import RodapeLegal from '../components/RodapeLegal.astro';
 
@@ -21,12 +19,10 @@ interface Props {
   descricao?: string;
 }
 
-const { titulo, descricao = 'Gerenciamento do cardápio' } = Astro.props;
+const { titulo, descricao = 'Gerenciamento do sistema' } = Astro.props;
 const usuario = await lerUsuario(Astro);
 const loja = Astro.locals.loja ?? null;
 const lojas = Astro.locals.lojas ?? [];
-const paleta = loja ? paletaLoja(loja.cor_marca, loja.cor_acento) : null;
-const logoAdmin = loja?.logo_chave ? urlMidia(loja.logo_chave) : '/logo-donadora.png';
 const caminho = Astro.url.pathname;
 const ativo = (p: string) => (caminho === p || caminho.startsWith(p + '/') ? 'ativo' : '');
 
@@ -44,14 +40,12 @@ function sair() {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="robots" content="noindex, nofollow" />
-    <meta name="theme-color" content={paleta?.marca ?? '#14532d'} />
+    <meta name="theme-color" content="#39282c" />
     <TemaInicial />
-    {paleta && <style is:inline set:html={cssPaleta(paleta)}></style>}
     <AplicarIdioma />
-    <link rel="icon" href="/favicon.ico" sizes="48x48" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" href="/logo-myshelf-32.png" sizes="32x32" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/logo-myshelf-16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/logo-myshelf-180.png" />
     <title>{titulo} · Admin</title>
     <meta name="description" content={descricao} />
   </head>
@@ -61,8 +55,8 @@ function sair() {
     {usuario && (
       <header class="admin-topo">
         <div class="admin-topo-inner">
-          <a class="admin-logo" href="/admin" aria-label={`${loja?.nome ?? 'Dona Dôra'} · Admin`}>
-            <img src={logoAdmin} alt={loja?.nome ?? 'Dona Dôra'} width="568" height="573" />
+          <a class="admin-logo" href="/admin" aria-label="MyShelf · Admin">
+            <img src="/logo-myshelf-180.png" alt="MyShelf" width="84" height="84" />
             <span>Admin</span>
           </a>
 
@@ -98,11 +92,6 @@ function sair() {
             <a href="/admin/perfil" class={ativo('/admin/perfil')}
               ><span data-i18n="perfil">Perfil</span></a
             >
-            {Astro.locals.usuarioMaster && (
-              <a href="/admin/usuarios" class={ativo('/admin/usuarios')}
-                ><span data-i18n="usuarios">Usuários</span></a
-              >
-            )}
           </nav>
 
           <Preferencias rotulo="Preferências do painel" />
@@ -164,11 +153,13 @@ function sair() {
 
 <style is:global>
   .admin-body {
-    background: var(--adm-bg);
+    background: #f7f5ef;
     color: var(--adm-text);
-    min-height: 100vh;
+    min-height: 100dvh;
     margin: 0;
     font-family: var(--fonte);
+    display: flex;
+    flex-direction: column;
   }
 
   .admin-creditos {
@@ -216,10 +207,10 @@ function sair() {
     position: sticky;
     top: 0;
     z-index: 50;
-    background: var(--verde);
+    background: #39282c;
     color: #fff;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    border-bottom: 3px solid var(--laranja);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.22);
+    border-bottom: 3px solid #f9df8e;
   }
 
   .admin-topo-inner {
@@ -241,7 +232,7 @@ function sair() {
   }
 
   .admin-logo img {
-    height: 34px;
+    height: 44px;
     width: auto;
     object-fit: contain;
     display: block;
@@ -252,7 +243,8 @@ function sair() {
     font-size: 0.98rem;
     padding: 3px 9px;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.16);
+    background: rgba(249, 223, 142, 0.2);
+    color: #f9df8e;
     letter-spacing: 0.01em;
   }
 
@@ -270,18 +262,18 @@ function sair() {
     border-radius: 8px;
     font-size: 0.9rem;
     font-weight: 500;
-    color: #d1d5db;
+    color: #c4d2dc;
     white-space: nowrap;
   }
 
   .admin-nav a:hover {
-    background: rgba(255, 255, 255, 0.09);
-    color: #fff;
+    background: rgba(249, 223, 142, 0.14);
+    color: #f9df8e;
   }
 
   .admin-nav a.ativo {
-    background: var(--laranja-aa);
-    color: #fff;
+    background: #f9df8e;
+    color: #39282c;
   }
 
   .admin-loja {
@@ -295,10 +287,10 @@ function sair() {
   .admin-loja select {
     max-width: min(170px, 46vw);
     padding: 6px 8px;
-    border: 1px solid rgba(255, 255, 255, 0.35);
+    border: 1px solid rgba(249, 223, 142, 0.4);
     border-radius: 8px;
-    background: rgba(255, 255, 255, 0.12);
-    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+    color: #f9df8e;
     font: inherit;
     font-size: 0.85rem;
   }
@@ -313,14 +305,14 @@ function sair() {
     width: 30px;
     height: 30px;
     padding: 0;
-    border: 1px solid rgba(255, 255, 255, 0.35);
+    border: 1px solid rgba(249, 223, 142, 0.4);
     border-radius: 8px;
     background: transparent;
-    color: #fff;
+    color: #f9df8e;
   }
 
   .admin-loja button:hover {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(249, 223, 142, 0.15);
   }
 
   .admin-usuario {
@@ -331,7 +323,7 @@ function sair() {
 
   .admin-nome {
     font-size: 0.85rem;
-    color: #9ca3af;
+    color: #9cb7d3;
     max-width: 160px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -344,22 +336,25 @@ function sair() {
 
   .sair-btn {
     padding: 7px 14px;
-    border: 1px solid rgba(255, 255, 255, 0.35);
+    border: 1px solid rgba(249, 223, 142, 0.45);
     background: transparent;
-    color: #e5e7eb;
+    color: #f9df8e;
     border-radius: 8px;
     font-size: 0.85rem;
     font-weight: 500;
   }
 
   .sair-btn:hover {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(249, 223, 142, 0.15);
   }
 
   .admin-main {
+    flex: 1 0 auto;
     max-width: 1000px;
     margin: 0 auto;
+    width: 100%;
     padding: 24px 16px 60px;
+    box-sizing: border-box;
   }
 
   .admin-h1 {
@@ -424,7 +419,7 @@ function sair() {
   .campo input:focus,
   .campo textarea:focus,
   .campo select:focus {
-    outline: 2px solid var(--laranja);
+    outline: 2px solid #9cb7d3;
     outline-offset: 1px;
     border-color: transparent;
   }
@@ -464,8 +459,12 @@ function sair() {
   }
 
   .btn-primario {
-    background: linear-gradient(135deg, #f97316, #ea580c);
-    color: #fff;
+    background: #f9df8e;
+    color: #39282c;
+  }
+
+  .btn-primario:hover {
+    background: #f5d272;
   }
 
   .btn-primario:disabled {

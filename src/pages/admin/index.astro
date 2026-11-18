@@ -5,9 +5,11 @@ import { db } from '../../lib/env';
 import { listarCategorias, listarProdutos, listarUsuariosComLojas } from '../../lib/db';
 import { urlMidia } from '../../lib/env';
 import IconeCategoria from '../../components/IconeCategoria.astro';
+import { lerUsuario } from '../../lib/session';
 
 const d1 = db();
 const master = Astro.locals.usuarioMaster ?? false;
+const sessao = await lerUsuario(Astro);
 
 let categorias: Awaited<ReturnType<typeof listarCategorias>> = [];
 let produtos: Awaited<ReturnType<typeof listarProdutos>> = [];
@@ -35,19 +37,10 @@ const estatisticas = [
   { rotulo: 'Destaques', chave: 'destaquesFiltro', valor: destaques.length, href: '/admin/produtos?filtro=destaque' },
   { rotulo: 'Sem mídia', chave: 'semMidia', valor: semMidia.length, href: '/admin/produtos?filtro=sem-midia' },
 ];
-const totalUsuarios = usuariosTabela.length;
-const totalAtivos = usuariosTabela.filter((u) => u.ativo === 1).length;
-const totalInativos = usuariosTabela.filter((u) => u.ativo === 0).length;
-const totalLojas = usuariosTabela.reduce((acc, u) => acc + u.qtd_lojas, 0);
 ---
 
 {master ? (
-  <AdminSistema
-    totalUsuarios={totalUsuarios}
-    totalAtivos={totalAtivos}
-    totalInativos={totalInativos}
-    totalLojas={totalLojas}
-  />
+  <AdminSistema usuarios={usuariosTabela} usuarioId={sessao?.id ?? ''} />
 ) : (
 <AdminLayout titulo="Painel">
   <div class="barra-acoes">
