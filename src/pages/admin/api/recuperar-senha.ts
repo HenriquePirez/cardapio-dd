@@ -54,8 +54,9 @@ export const POST: APIRoute = async (ctx) => {
   }
 
   const token = gerarToken();
+  const redefinicaoId = crypto.randomUUID();
   await criarRedefinicao(d1, {
-    id: crypto.randomUUID(),
+    id: redefinicaoId,
     usuarioId: usuario.id,
     tokenHash: await hashToken(token),
     expiraEm: expiraEm(),
@@ -70,7 +71,12 @@ export const POST: APIRoute = async (ctx) => {
 
   // Falha de envio com conta existente devolve erro visível: custo aceitável de
   // enumeração (só enquanto o Resend está falhando), ganho é poder testar o fluxo.
-  if (!enviado) return voltar(destinoErro('email'));
+  // O token criado nesses casos é descartado para não bloquear o retry
+  // (rate-limit transformaria a falha em sucesso silencioso nos 10 min seguintes).
+  if (!enviado) {
+    await d1.prepare('DELETE FROM redefinicoes_senha WHERE id = ?').bind(redefinicaoId).run();
+    return voltar(destinoErro('email'));
+  }
   return voltar(destinoOk);
 };
 
