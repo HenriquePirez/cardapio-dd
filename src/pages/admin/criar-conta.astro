@@ -21,7 +21,9 @@ if (jaExiste) {
 
 <AdminLayout titulo="Criar conta">
   <div class="caixa-login">
-    <div class="marca"><i class="fi-br-lock" aria-hidden="true"></i></div>
+    <div class="marca">
+        <img src="/logo-myshelf-180.png" alt="MyShelf" width="84" height="84" />
+      </div>
     <h1 class="titulo">Criar conta do painel</h1>
     <p class="sub">
       Primeiro uso. Esta será a única conta de acesso — você poderá compartilhar
@@ -139,7 +141,8 @@ if (jaExiste) {
   }
 
   .marca {
-    font-size: 2rem;
+    display: flex;
+    justify-content: center;
     margin-bottom: 4px;
   }
 

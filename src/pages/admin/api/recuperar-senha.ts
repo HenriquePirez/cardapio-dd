@@ -62,11 +62,13 @@ export const POST: APIRoute = async (ctx) => {
     expiraEm: expiraEm(),
   });
 
-  const link = `${new URL(ctx.request.url).origin}/admin/redefinir-senha?token=${token}`;
+  const origin = new URL(ctx.request.url).origin;
+  const logo = `${origin}/logo-myshelf-180.png`;
+  const link = `${origin}/admin/redefinir-senha?token=${token}`;
   const enviado = await enviarEmail({
     para: usuario.email,
     assunto: 'Redefinição de senha — MyShelf',
-    html: corpoEmail(usuario.nome, link),
+    html: corpoEmail(usuario.nome, link, logo),
   });
 
   // Falha de envio com conta existente devolve erro visível: custo aceitável de
@@ -80,11 +82,13 @@ export const POST: APIRoute = async (ctx) => {
   return voltar(destinoOk);
 };
 
-function corpoEmail(nome: string, link: string): string {
+function corpoEmail(nome: string, link: string, logo: string): string {
   return `
-  <div style="font-family:system-ui,-apple-system,sans-serif;line-height:1.5;color:#111827;max-width:520px">
-    <h2 style="margin:0 0 12px;font-size:20px">Redefinição de senha</h2>
-    <p style="margin:0 0 8px">Olá, ${escapeHtml(nome)},</p>
+  <div style="font-family:system-ui,-apple-system,sans-serif;line-height:1.5;color:#111827;max-width:520px;text-align:left">
+    <img src="${logo}" alt="MyShelf" width="96" height="96"
+         style="display:block;border-radius:22px;margin:6px auto 14px" />
+    <h2 style="margin:0 0 12px;font-size:20px;text-align:center">Redefinição de senha</h2>
+    <p style="margin:0 0 8px;text-align:left">Olá, ${escapeHtml(nome)},</p>
     <p style="margin:0 0 16px">
       Recebemos um pedido para criar uma nova senha no painel do MyShelf.
       O link vale por <strong>1 hora</strong> e só pode ser usado uma vez:

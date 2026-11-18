@@ -48,7 +48,9 @@ const okMsg = okParam ? (mensagensOk[okParam] ?? null) : null;
 ) : (
   <AdminLayout titulo="Entrar">
     <div class="caixa-login">
-      <div class="login-marca"><i class="fi-br-settings" aria-hidden="true"></i></div>
+      <div class="login-marca">
+        <img src="/logo-myshelf-180.png" alt="MyShelf" width="84" height="84" />
+      </div>
       <h1 class="login-titulo" data-i18n="entrarPainel">Entrar no painel</h1>
       <p class="login-sub" data-i18n="loginSub">Gerencie categorias, produtos e mídias do cardápio.</p>
 
@@ -106,7 +108,8 @@ const okMsg = okParam ? (mensagensOk[okParam] ?? null) : null;
   }
 
   .login-marca {
-    font-size: 2.2rem;
+    display: flex;
+    justify-content: center;
     margin-bottom: 6px;
   }
 

@@ -21,7 +21,9 @@ const erroMsg = erro ? (mensagens[erro] ?? erro) : null;
 
 <AdminLayout titulo="Criar nova senha" descricao="Redefina a senha do painel">
   <div class="caixa-login">
-    <div class="login-marca"><i class="fi-br-lock" aria-hidden="true"></i></div>
+    <div class="login-marca">
+        <img src="/logo-myshelf-180.png" alt="MyShelf" width="84" height="84" />
+      </div>
     <h1 class="login-titulo" data-i18n="redefinirTitulo">Criar nova senha</h1>
     <p class="login-sub" data-i18n="redefinirSub">Confirme a senha atual e escolha uma nova.</p>
 
@@ -96,7 +98,8 @@ const erroMsg = erro ? (mensagens[erro] ?? erro) : null;
   }
 
   .login-marca {
-    font-size: 2.2rem;
+    display: flex;
+    justify-content: center;
     margin-bottom: 6px;
   }
 
