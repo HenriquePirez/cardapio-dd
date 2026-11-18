@@ -1,4 +1,4 @@
-# Cardápio DD
+# MyShelf
 
 > Instruções compartilhadas para agentes de IA. Mantenha este arquivo curto: comandos,
 > restrições e um mapa para as fontes detalhadas.

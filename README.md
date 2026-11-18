@@ -1,4 +1,4 @@
-# Cardápio DD
+# MyShelf
 
 Cardápio digital **web** (sem app para baixar), feito para celular. Mostra fotos em alta
 qualidade e vídeos dos produtos; ao tocar em **Comprar**, o cliente vai para o link de compra

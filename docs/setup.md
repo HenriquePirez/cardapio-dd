@@ -4,7 +4,7 @@
 
 - **Data de verificação:** 2026-10-26 · **Toolkit:** `vibe-coding-toolkit` rev **`790a895`**
   (cópia versionada em `/tmp/opencode/vibe-coding-toolkit`; nunca copiado por inteiro).
-- **Produto:** Cardápio DD (Dona Dôra) — Astro 7 SSR em Cloudflare Workers (D1 + KV).
+- **Produto:** MyShelf (Dona Dôra) — Astro 7 SSR em Cloudflare Workers (D1 + KV).
 - **Client/modelo:** OpenCode **v2.0.24** (Linux); modelo e autenticação da sessão
   preservados em todas as execuções e subagentes. Sem política de seleção de modelo
   autorizada — subagentes herdam o modelo da sessão (limitação do host registrada).

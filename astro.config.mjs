@@ -5,8 +5,8 @@ import cloudflare from '@astrojs/cloudflare';
 // - "/"           -> cardápio público (SSR + cache na edge)
 // - "/admin/*"    -> gerenciamento (login + CRUD), protegido por middleware
 export default defineConfig({
-  // Troque pelo domínio real no deploy (ex: https://cardapio.seudominio.com)
-  site: 'https://cardapio.exemplo.com',
+  // Domínio real do sistema (usado para URLs canônicas)
+  site: 'https://myshelf.app.br',
   output: 'server',
   adapter: cloudflare({
     // Otimização de imagem acontece no build (Sharp). As imagens do cardápio

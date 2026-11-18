@@ -128,7 +128,7 @@ export function resendApiKey(): string | null {
  */
 export function emailDe(): string {
   const d = bindings().EMAIL_DE;
-  return (typeof d === 'string' && d.trim()) || 'Cardápio Digital <onboarding@resend.dev>';
+  return (typeof d === 'string' && d.trim()) || 'MyShelf <onboarding@resend.dev>';
 }
 
 /**

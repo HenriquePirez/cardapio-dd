@@ -65,7 +65,7 @@ export const POST: APIRoute = async (ctx) => {
   const link = `${new URL(ctx.request.url).origin}/admin/redefinir-senha?token=${token}`;
   const enviado = await enviarEmail({
     para: usuario.email,
-    assunto: 'Redefinição de senha — Cardápio Digital',
+    assunto: 'Redefinição de senha — MyShelf',
     html: corpoEmail(usuario.nome, link),
   });
 
@@ -86,7 +86,7 @@ function corpoEmail(nome: string, link: string): string {
     <h2 style="margin:0 0 12px;font-size:20px">Redefinição de senha</h2>
     <p style="margin:0 0 8px">Olá, ${escapeHtml(nome)},</p>
     <p style="margin:0 0 16px">
-      Recebemos um pedido para criar uma nova senha no painel do Cardápio Digital.
+      Recebemos um pedido para criar uma nova senha no painel do MyShelf.
       O link vale por <strong>1 hora</strong> e só pode ser usado uma vez:
     </p>
     <p style="margin:0 0 20px">

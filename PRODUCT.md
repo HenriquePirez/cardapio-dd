@@ -1,4 +1,4 @@
-# Cardápio DD
+# MyShelf
 
 > Documento de escopo. Atualize quando objetivo, restrições ou critérios de aceitação mudarem.
 > Decisões técnicas e evidências: `docs/architecture.md` e `docs/setup.md`.
@@ -132,8 +132,7 @@ e desativado sem `GA_ID`/`META_PIXEL_ID`; não há CRM nem envio de e-mail pelo 
 
 ## Premissas e decisões pendentes
 
-- `astro.config.mjs` ainda tem `site: 'https://cardapio.exemplo.com'` (placeholder) —
-  decisão pendente: domínio real (reversível; afeta URLs canônicas).
+- `astro.config.mjs` tem `site: 'https://myshelf.app.br'` — domínio real do sistema.
 - O link de compra padrão `https://donadora.com.br` redireciona para uma página 404
   (configuração externa, fora deste repositório) — corrigir `comprar_url` no painel quando o
   destino estiver certo (fato verificado e documentado no `README.md`). O painel já recusa
