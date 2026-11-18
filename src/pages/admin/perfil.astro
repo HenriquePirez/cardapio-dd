@@ -90,12 +90,15 @@ const erroMsg = erro ? (mensagens[erro] ?? erro) : null;
   <div class="cartao">
     <h2 data-i18n="alterarSenha">Alterar senha</h2>
     <p class="perfil-aviso">
-      Troque a senha da sua conta de acesso ao painel. Ao salvar, você entra novamente.
+      Enviaremos um link de redefinição para <strong>{usuario.email}</strong>. Vale por
+      <strong>1 hora</strong> e só pode ser usado uma vez.
     </p>
     <div class="perfil-acoes">
-      <a href="/admin/trocar-senha" class="btn btn-primario" data-i18n="alterarSenha"
-        >Alterar senha</a
-      >
+      <form method="post" action="/admin/api/recuperar-senha">
+        <input type="hidden" name="email" value={usuario.email} />
+        <input type="hidden" name="prox" value="/admin/perfil?ok=enviado" />
+        <button class="btn btn-primario" type="submit" data-i18n="alterarSenha">Alterar senha</button>
+      </form>
     </div>
   </div>
 </AdminLayout>

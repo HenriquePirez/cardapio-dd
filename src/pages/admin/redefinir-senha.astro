@@ -1,12 +1,10 @@
 ---
 /**
- * Cria a nova senha a partir do token do e-mail (pública — ver PUBLICAS_ADMIN).
- * Sem token válido a página só explica e leva para o login.
+ * Página de redefinição por e-mail.
+ * Sempre acessível (também logado): o token identifica o usuário e o dono da conta
+ * confirma com a senha atual antes de trocar.
  */
 import AdminLayout from '../../layouts/AdminLayout.astro';
-import { lerUsuario } from '../../lib/session';
-
-if (await lerUsuario(Astro)) return Astro.redirect('/admin/perfil');
 
 const token = Astro.url.searchParams.get('token')?.trim() ?? '';
 const erro = Astro.url.searchParams.get('erro');
@@ -14,7 +12,8 @@ const valido = token.length >= 32;
 
 const mensagens: Record<string, string> = {
   token: 'Este link de redefinição é inválido ou já expirou. Peça um novo.',
-  campos: 'Preencha os dois campos.',
+  campos: 'Preencha todos os campos.',
+  'senha-atual': 'A senha atual está incorreta.',
   divergentes: 'As senhas não coincidem.',
 };
 const erroMsg = erro ? (mensagens[erro] ?? erro) : null;
@@ -24,7 +23,7 @@ const erroMsg = erro ? (mensagens[erro] ?? erro) : null;
   <div class="caixa-login">
     <div class="login-marca"><i class="fi-br-lock" aria-hidden="true"></i></div>
     <h1 class="login-titulo" data-i18n="redefinirTitulo">Criar nova senha</h1>
-    <p class="login-sub" data-i18n="redefinirSub">Escolha uma senha nova para a sua conta.</p>
+    <p class="login-sub" data-i18n="redefinirSub">Confirme a senha atual e escolha uma nova.</p>
 
     {erroMsg && <div class="aviso aviso-erro" role="alert">{erroMsg}</div>}
 
@@ -33,10 +32,21 @@ const erroMsg = erro ? (mensagens[erro] ?? erro) : null;
         <input type="hidden" name="token" value={token} />
 
         <div class="campo">
-          <label for="senha" data-i18n="novaSenha">Nova senha</label>
+          <label for="senha_atual" data-i18n="senhaAtual">Senha atual</label>
           <input
-            id="senha"
-            name="senha"
+            id="senha_atual"
+            name="senha_atual"
+            type="password"
+            required
+            autocomplete="current-password"
+          />
+        </div>
+
+        <div class="campo">
+          <label for="senha_nova" data-i18n="novaSenha">Nova senha</label>
+          <input
+            id="senha_nova"
+            name="senha_nova"
             type="password"
             required
             minlength="10"
@@ -47,10 +57,10 @@ const erroMsg = erro ? (mensagens[erro] ?? erro) : null;
         </div>
 
         <div class="campo">
-          <label for="senha2" data-i18n="confirmarSenha">Confirmar nova senha</label>
+          <label for="senha_nova2" data-i18n="confirmarSenha">Confirmar nova senha</label>
           <input
-            id="senha2"
-            name="senha2"
+            id="senha_nova2"
+            name="senha_nova2"
             type="password"
             required
             minlength="10"
@@ -64,7 +74,7 @@ const erroMsg = erro ? (mensagens[erro] ?? erro) : null;
         </button>
       </form>
     ) : (
-      <div class="aviso aviso-erro" role="alert" data-i18n="tokenInvalido">
+      <div class="aviso aviso-erro" role="alert">
         Este link de redefinição é inválido ou já expirou. Peça um novo.
       </div>
     )}
