@@ -50,32 +50,32 @@
 /* Tema escuro do cardápio público. O painel /admin não recebe o atributo. */
 :root[data-tema='escuro'] {
   color-scheme: dark;
-  --bg: #11150f;
-  --bg-card: #1b2017;
-  --bg-elev: #23281f;
-  --text: #f3f4f1;
-  --text-dim: #a8b0a3;
-  --border: #2f362b;
-  --veu: rgba(17, 21, 15, 0.92);
-  --cor-preco: #fb923c;
-  --cor-titulo: #86efac;
-  --shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
-  --shadow-hover: 0 12px 28px rgba(0, 0, 0, 0.5);
-  --adm-bg: #0d110c;
-  --adm-card: #171c14;
-  --adm-elev: #1f251b;
-  --adm-text: #f1f3ef;
-  --adm-dim: #a3ab9e;
-  --adm-label: #d5dbd1;
-  --adm-border: #2b3227;
-  --adm-input-border: #3a4236;
-  --adm-perigo: #f87171;
-  --adm-perigo-borda: #7f1d1d;
-  --adm-erro-bg: #2a1515;
-  --adm-erro-texto: #fca5a5;
-  --adm-ok-bg: #14251a;
+  --bg: #141a15;
+  --bg-card: #1e2620;
+  --bg-elev: #26302a;
+  --text: #f2f4ef;
+  --text-dim: #b5bdaa;
+  --border: #2e3833;
+  --veu: rgba(18, 24, 19, 0.92);
+  --cor-preco: #f9df8e;
+  --cor-titulo: #a7f3d0;
+  --shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+  --shadow-hover: 0 12px 28px rgba(0, 0, 0, 0.55);
+  --adm-bg: #141a15;
+  --adm-card: #1e2620;
+  --adm-elev: #26302a;
+  --adm-text: #f2f4ef;
+  --adm-dim: #b5bdaa;
+  --adm-label: #dfe5dc;
+  --adm-border: #2e3833;
+  --adm-input-border: #3c4a3f;
+  --adm-perigo: #ff7070;
+  --adm-perigo-borda: #8a3030;
+  --adm-erro-bg: #2a1616;
+  --adm-erro-texto: #ffb4b4;
+  --adm-ok-bg: #152a1f;
   --adm-ok-texto: #86efac;
-  --adm-ok-borda: #166534;
+  --adm-ok-borda: #2f5a40;
 }
 
 * {
