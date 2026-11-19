@@ -13,14 +13,8 @@
     const idiomaLoja = raiz.dataset.idiomaPadrao;
     try {
       const salvo = localStorage.getItem('dd-tema');
-      const tema =
-        salvo === 'claro' || salvo === 'escuro'
-          ? salvo
-          : temaLoja === 'claro' || temaLoja === 'escuro'
-            ? temaLoja
-            : window.matchMedia('(prefers-color-scheme: dark)').matches
-              ? 'escuro'
-              : 'claro';
+      // Tema branco por padrão; só muda se o usuário escolher escuro explicitamente.
+      const tema = salvo === 'escuro' ? 'escuro' : 'claro';
       raiz.dataset.tema = tema;
 
       const idiomaSalvo = localStorage.getItem('dd-idioma');

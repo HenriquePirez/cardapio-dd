@@ -1,5 +1,11 @@
 ---
-import AdminLayout from '../../layouts/AdminLayout.astro';
+/**
+ * Login do painel — layout dividido:
+ * esquerda escura com a marca + proposta; direita clara com o formulário.
+ * Inspirado em padrões de produto com forte sistema tipográfico.
+ */
+import AplicarIdioma from '../../components/AplicarIdioma.astro';
+import TemaInicial from '../../components/TemaInicial.astro';
 import { contarUsuarios } from '../../lib/db';
 import { db } from '../../lib/env';
 import { lerUsuario } from '../../lib/session';
@@ -37,135 +43,428 @@ const okParam = Astro.url.searchParams.get('ok');
 const okMsg = okParam ? (mensagensOk[okParam] ?? null) : null;
 ---
 
-{precisaCriar ? (
-  <AdminLayout titulo="Criar conta">
-    <div class="caixa-login">
-      <h1 class="login-titulo">Criar conta de acesso</h1>
-      <p class="login-sub">Primeiro uso: defina o login do painel.</p>
-      <a class="btn btn-primario" href="/admin/criar-conta">Criar conta</a>
-    </div>
-  </AdminLayout>
-) : (
-  <AdminLayout titulo="Entrar" semRodape centralizar>
-    <div class="caixa-login">
-      <div class="login-marca">
-        <img src="/logo-myshelf-180.png" alt="MyShelf" width="96" height="96" />
-      </div>
-      <h1 class="login-titulo">MyShelf</h1>
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#39282c" />
+    <TemaInicial />
+    <AplicarIdioma />
+    <link rel="icon" type="image/png" sizes="32x32" href="/logo-myshelf-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/logo-myshelf-16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/logo-myshelf-180.png" />
+    <title>Entrar — MyShelf</title>
+  </head>
+  <body>
+    {precisaCriar ? (
+      <main class="login-shell">
+        <section class="login-art" aria-label="MyShelf">
+          <div class="art-top">
+            <div class="art-badge">MyShelf</div>
+            <h1 class="art-h1" data-i18n="vitrineTitulo">Sua vitrine, organizada.</h1>
+            <p class="art-sub" data-i18n="vitrineSub">
+              Produtos, mídias e pedidos em um único painel.
+            </p>
+          </div>
+          <p class="art-bottom" data-i18n="vitrineRodape">MyShelf · Vitrine de produtos</p>
+        </section>
+        <section class="login-side">
+          <div class="login-box">
+            <img src="/logo-myshelf-180.png" alt="MyShelf" width="72" height="72" class="login-mark" />
+            <h2 class="login-h2" data-i18n="criarContaAcesso">Criar conta de acesso</h2>
+            <p class="login-sub" data-i18n="primeiroUso">
+              Primeiro uso: defina o login do painel.
+            </p>
+            <a class="ms-btn ms-btn-primary" href="/admin/criar-conta">Criar conta</a>
+          </div>
+        </section>
+      </main>
+    ) : (
+      <main class="login-shell">
+        <section class="login-art" aria-label="MyShelf">
+          <div class="art-top">
+            <div class="art-badge">MyShelf</div>
+            <h1 class="art-h1" data-i18n="vitrineTitulo">Sua vitrine, organizada.</h1>
+            <p class="art-sub" data-i18n="vitrineSub">
+              Produtos, mídias e pedidos em um único painel.
+            </p>
+          </div>
+          <p class="art-bottom" data-i18n="vitrineRodape">MyShelf · Vitrine de produtos</p>
+        </section>
 
-      {okMsg && <div class="aviso aviso-ok" role="status">{okMsg}</div>}
-      {erroMsg && <div class="aviso aviso-erro" role="alert">{erroMsg}</div>}
+        <section class="login-side">
+          <div class="login-box">
+            <img src="/logo-myshelf-180.png" alt="MyShelf" width="56" height="56" class="login-mark" />
+            <h2 class="login-h2" data-i18n="bemVindoTitulo">Bem-vindo de volta.</h2>
+            <p class="login-sub" data-i18n="entrarSub">
+              Entre com o e-mail e a senha do seu acesso.
+            </p>
 
-      <form method="post" action="/admin/api/login" class="login-form">
-        {prox && <input type="hidden" name="prox" value={prox} />}
+            {okMsg && <div class="ms-alert ms-alert-ok" role="status">{okMsg}</div>}
+            {erroMsg && <div class="ms-alert ms-alert-erro" role="alert">{erroMsg}</div>}
 
-        <div class="campo">
-          <label for="email" data-i18n="email">E-mail</label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            autocomplete="username"
-            required
-            inputmode="email"
-            placeholder="voce@exemplo.com"
-          />
-        </div>
+            <form method="post" action="/admin/api/login" class="login-form">
+              {prox && <input type="hidden" name="prox" value={prox} />}
 
-        <div class="campo">
-          <label for="senha" data-i18n="senha">Senha</label>
-          <input
-            id="senha"
-            name="senha"
-            type="password"
-            autocomplete="current-password"
-            required
-            placeholder="••••••••"
-          />
-        </div>
+              <div class="ms-field">
+                <label for="email" data-i18n="email">E-mail</label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autocomplete="username"
+                  required
+                  inputmode="email"
+                  placeholder="voce@exemplo.com"
+                />
+              </div>
 
-        <button class="btn btn-primario login-btn" type="submit"><span data-i18n="entrar">Entrar</span></button>
-      </form>
+              <div class="ms-field">
+                <label for="senha" data-i18n="senha">Senha</label>
+                <div class="ms-password">
+                  <input
+                    id="senha"
+                    name="senha"
+                    type="password"
+                    autocomplete="current-password"
+                    required
+                    placeholder="••••••••"
+                  />
+                  <button type="button" class="ms-password-toggle" aria-label="Mostrar senha" data-i18n-aria="mostrarSenha">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/></svg>
+                  </button>
+                </div>
+              </div>
 
-      <p class="login-esqueci">
-        <a href="/admin/recuperar-senha" data-i18n="esqueciSenha">Esqueci a senha</a>
-      </p>
-    </div>
-  </AdminLayout>
-)}
+              <div class="ms-row">
+                <a href="/admin/recuperar-senha" data-i18n="esqueciSenha">Esqueci a senha</a>
+              </div>
 
-<style>
-  .caixa-login {
-    max-width: 400px;
-    width: 100%;
-    margin: 0;
-    background: var(--adm-card);
-    border: 1px solid var(--adm-border);
-    border-radius: 16px;
-    padding: 30px 26px;
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
-    text-align: center;
-  }
+              <button class="ms-btn ms-btn-primary ms-btn-full" type="submit"><span data-i18n="entrar">Entrar</span></button>
+            </form>
+          </div>
+        </section>
+      </main>
+    )}
 
-  .login-marca {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 6px;
-  }
+    <style is:global>
+      .login-shell {
+        min-height: 100dvh;
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        background: #f7f5ef;
+      }
 
-  .login-titulo {
-    margin: 0 0 6px;
-    font-size: 1.35rem;
-    font-weight: 500;
-    letter-spacing: -0.02em;
-  }
+      /* Painel esquerdo — marca (escuro MyShelf) */
+      .login-art {
+        background: #39282c;
+        color: #f7f4ee;
+        padding: clamp(36px, 6vw, 56px);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        overflow: hidden;
+      }
 
-  .login-sub {
-    margin: 0 0 22px;
-    color: var(--adm-dim);
-    font-size: 0.9rem;
-    line-height: 1.45;
-  }
+      .login-art::before {
+        content: '';
+        position: absolute;
+        width: 620px;
+        height: 620px;
+        border-radius: 50%;
+        border: 1px solid rgba(249, 223, 142, 0.14);
+        top: -240px;
+        right: -180px;
+      }
 
-  .login-form {
-    text-align: left;
-  }
+      .login-art::after {
+        content: '';
+        position: absolute;
+        width: 440px;
+        height: 440px;
+        border-radius: 50%;
+        border: 1px solid rgba(249, 223, 142, 0.1);
+        bottom: -200px;
+        left: -140px;
+      }
 
-  .login-btn {
-    width: 100%;
-    margin-top: 6px;
-    padding-top: 13px;
-    padding-bottom: 13px;
-  }
+      .art-top {
+        position: relative;
+        z-index: 1;
+      }
 
-  .login-esqueci {
-    margin: 16px 0 0;
-    font-size: 0.86rem;
-    text-align: left;
-  }
+      .art-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 14px;
+        border: 1px solid rgba(249, 223, 142, 0.35);
+        border-radius: 999px;
+        color: #f9df8e;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        margin-bottom: 34px;
+      }
 
-  .login-esqueci a {
-    color: var(--cor-preco);
-    font-weight: 500;
-    text-decoration: none;
-  }
+      .art-h1 {
+        margin: 0;
+        font-family: 'Fredoka', system-ui, sans-serif;
+        font-weight: 500;
+        font-size: clamp(42px, 5vw, 64px);
+        line-height: 1.0;
+        letter-spacing: -0.03em;
+        color: #f7f4ee;
+        max-width: 520px;
+        text-wrap: balance;
+      }
 
-  .login-esqueci a:hover {
-    text-decoration: underline;
-  }
+      .art-sub {
+        margin: 22px 0 0;
+        max-width: 440px;
+        color: rgba(247, 244, 238, 0.72);
+        font-size: 15px;
+        line-height: 1.6;
+      }
 
-  .login-rodape {
-    margin: 20px 0 0;
-    font-size: 0.86rem;
-  }
+      .art-bottom {
+        position: relative;
+        z-index: 1;
+        margin: 0;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: rgba(247, 244, 238, 0.5);
+      }
 
-  .login-rodape a {
-    color: var(--cor-preco);
-    font-weight: 500;
-    text-decoration: none;
-  }
+      /* Painel direito — formulário (claro) */
+      .login-side {
+        display: grid;
+        place-items: center;
+        padding: 42px 24px;
+        min-height: 100dvh;
+      }
 
-  .login-rodape a:hover {
-    text-decoration: underline;
-  }
-</style>
+      .login-box {
+        width: min(400px, 100%);
+        background: #ffffff;
+        border: 1px solid #e6e1d6;
+        border-radius: 18px;
+        padding: 32px 28px;
+        box-shadow: 0 18px 44px rgba(57, 40, 44, 0.1);
+      }
+
+      .login-mark {
+        width: 72px;
+        height: auto;
+        display: block;
+        margin-bottom: 18px;
+      }
+
+      .login-h2 {
+        margin: 0 0 6px;
+        font-family: 'Fredoka', system-ui, sans-serif;
+        font-weight: 500;
+        font-size: 27px;
+        letter-spacing: -0.02em;
+        color: #2d2226;
+      }
+
+      .login-sub {
+        margin: 0 0 22px;
+        color: #6b635e;
+        font-size: 13.5px;
+        line-height: 1.45;
+      }
+
+      .ms-alert {
+        border-radius: 10px;
+        padding: 11px 13px;
+        font-size: 13px;
+        line-height: 1.4;
+        margin-bottom: 14px;
+      }
+
+      .ms-alert-ok {
+        background: #eef4ec;
+        border: 1px solid #cfe3cc;
+        color: #3f6b55;
+      }
+
+      .ms-alert-erro {
+        background: #fdf0ec;
+        border: 1px solid #ecc4b8;
+        color: #a33b35;
+      }
+
+      .login-form {
+        display: grid;
+        gap: 12px;
+      }
+
+      .ms-field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .ms-field label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #2d2226;
+      }
+
+      .ms-field input,
+      .ms-password input {
+        width: 100%;
+        min-height: 44px;
+        padding: 10px 12px;
+        border: 1px solid #e6e1d6;
+        border-radius: 10px;
+        background: #fbfaf6;
+        font-size: 15px;
+        color: #2d2226;
+        font-family: inherit;
+        caret-color: #39282c;
+        box-sizing: border-box;
+        transition: border-color 0.16s ease, box-shadow 0.16s ease;
+      }
+
+      .ms-field input:hover,
+      .ms-password input:hover {
+        border-color: #d3c9bd;
+      }
+
+      .ms-field input:focus,
+      .ms-password input:focus {
+        outline: none;
+        border-color: #39282c;
+        box-shadow: 0 0 0 3px rgba(57, 40, 44, 0.14);
+        background: #ffffff;
+      }
+
+      .ms-password {
+        position: relative;
+      }
+
+      .ms-password input {
+        padding-right: 44px;
+      }
+
+      .ms-password-toggle {
+        position: absolute;
+        right: 5px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 36px;
+        min-width: 36px;
+        min-height: 34px;
+        border: 0;
+        background: transparent;
+        color: #6b635e;
+        border-radius: 8px;
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+      }
+
+      .ms-password-toggle:hover {
+        background: #efece4;
+        color: #2d2226;
+      }
+
+      .ms-password-toggle svg {
+        width: 18px;
+        height: 18px;
+        stroke: currentColor;
+        stroke-width: 1.7;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        fill: none;
+      }
+
+      .ms-row {
+        display: flex;
+        justify-content: flex-end;
+        font-size: 13px;
+      }
+
+      .ms-row a {
+        color: #39282c;
+        font-weight: 500;
+        text-decoration: none;
+      }
+
+      .ms-row a:hover {
+        text-decoration: underline;
+      }
+
+      .ms-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 48px;
+        padding: 12px 18px;
+        border: 0;
+        border-radius: 12px;
+        font-size: 15px;
+        font-weight: 600;
+        font-family: inherit;
+        cursor: pointer;
+        text-decoration: none;
+        transition: background 0.16s ease, transform 0.08s ease;
+      }
+
+      .ms-btn-primary {
+        background: #f9df8e;
+        color: #39282c;
+      }
+
+      .ms-btn-primary:hover {
+        background: #f5d367;
+      }
+
+      .ms-btn-primary:focus-visible {
+        outline: 2px solid #39282c;
+        outline-offset: 2px;
+      }
+
+      .ms-btn-full {
+        width: 100%;
+      }
+
+      @media (max-width: 900px) {
+        .login-shell {
+          grid-template-columns: 1fr;
+        }
+        .login-art {
+          display: none;
+        }
+        .login-side {
+          padding: 28px 18px;
+        }
+        .login-box {
+          padding: 26px 22px;
+        }
+      }
+    </style>
+
+    <script is:inline>
+      (() => {
+        const btn = document.querySelector('.ms-password-toggle');
+        const input = document.getElementById('senha');
+        if (!btn || !input) return;
+        const adminText = { show: 'Mostrar senha', hide: 'Ocultar senha' };
+        btn.addEventListener('click', () => {
+          const showing = input.type === 'text';
+          input.type = showing ? 'password' : 'text';
+          btn.setAttribute('aria-label', showing ? adminText.show : adminText.hide);
+        });
+      })();
+    </script>
+  </body>
+</html>

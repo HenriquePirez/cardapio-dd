@@ -212,6 +212,15 @@ const PT = {
   ativos: 'Ativos',
   inativos: 'Inativos',
   totalLojas: 'Lojas',
+  entrarSub: 'Entre com o e-mail e a senha do seu acesso.',
+  bemVindoTitulo: 'Bem-vindo de volta.',
+  vitrineTitulo: 'Sua vitrine, organizada.',
+  vitrineSub: 'Produtos, mídias e pedidos em um único painel: do cardápio à conta do dono.',
+  vitrineRodape: 'MyShelf · Vitrine de produtos',
+  mostrarSenha: 'Mostrar senha',
+  ocultarSenha: 'Ocultar senha',
+  criarContaAcesso: 'Criar conta de acesso',
+  primeiroUso: 'Primeiro uso: defina o login do painel.',
 } as const;
 
 type Chave = keyof typeof PT;
@@ -413,6 +422,15 @@ const EN: Record<Chave, string> = {
   sistemaLema: 'You administer the system, not a store.',
   sistemaLemaTexto:
     'The master admin manages who has access to the panel: creating access, enabling or disabling users and tracking registered stores. Content (products, photos and orders) belongs to each store manager.',
+  entrarSub: 'Sign in with your access email and password.',
+  bemVindoTitulo: 'Welcome back.',
+  vitrineTitulo: 'Your showcase, organized.',
+  vitrineSub: 'Products, media and orders in a single panel: the menu and the owner\'s account.',
+  vitrineRodape: 'MyShelf · Product showcase',
+  mostrarSenha: 'Show password',
+  ocultarSenha: 'Hide password',
+  criarContaAcesso: 'Create the access account',
+  primeiroUso: 'First use: set up the panel login.',
   status: 'Status',
   acao: 'Action',
   ativo: 'Active',
