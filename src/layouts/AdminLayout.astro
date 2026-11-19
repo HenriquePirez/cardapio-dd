@@ -19,9 +19,11 @@ interface Props {
   descricao?: string;
   /** Se true, o rodapé legal (Privacidade/Termos/...) não é renderizado. */
   semRodape?: boolean;
+  /** Se true, o conteúdo é centralizado vertical e horizontalmente. */
+  centralizar?: boolean;
 }
 
-const { titulo, descricao = 'Gerenciamento do sistema', semRodape = false } = Astro.props;
+const { titulo, descricao = 'Gerenciamento do sistema', semRodape = false, centralizar = false } = Astro.props;
 const usuario = await lerUsuario(Astro);
 const loja = Astro.locals.loja ?? null;
 const lojas = Astro.locals.lojas ?? [];
@@ -106,7 +108,7 @@ function sair() {
       </header>
     )}
 
-    <main class="admin-main" id="conteudo" tabindex="-1">
+    <main class={centralizar ? 'admin-main admin-main-centralizada' : 'admin-main'} id="conteudo" tabindex="-1">
       <slot />
     </main>
 
@@ -350,6 +352,13 @@ function sair() {
 
   .sair-btn:hover {
     background: rgba(249, 223, 142, 0.15);
+  }
+
+  .admin-main-centralizada {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
   }
 
   .admin-main {

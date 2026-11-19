@@ -46,7 +46,7 @@ const okMsg = okParam ? (mensagensOk[okParam] ?? null) : null;
     </div>
   </AdminLayout>
 ) : (
-  <AdminLayout titulo="Entrar" semRodape>
+  <AdminLayout titulo="Entrar" semRodape centralizar>
     <div class="caixa-login">
       <div class="login-marca">
         <img src="/logo-myshelf-180.png" alt="MyShelf" width="96" height="96" />
@@ -97,7 +97,8 @@ const okMsg = okParam ? (mensagensOk[okParam] ?? null) : null;
 <style>
   .caixa-login {
     max-width: 400px;
-    margin: 6vh auto 0;
+    width: 100%;
+    margin: 0;
     background: var(--adm-card);
     border: 1px solid var(--adm-border);
     border-radius: 16px;
