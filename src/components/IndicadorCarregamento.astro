@@ -1,0 +1,99 @@
+---
+/**
+ * Indicador de carregamento global (barra fina no topo).
+ * Mostra em navegação interna, submit de formulários e qualquer transição
+ * de página — assim o usuário sempre sabe que algo está acontecendo.
+ * Discreto: 3px, cor amarela da marca, some no carregamento completo.
+ */
+---
+
+<div class="ms-loading" aria-hidden="true"></div>
+
+<script is:inline>
+  (function () {
+    function mostrar() {
+      document.documentElement.classList.add('ms-carregando');
+    }
+    function ocultar() {
+      document.documentElement.classList.remove('ms-carregando');
+    }
+
+    // Submit em qualquer formulário (síncrono ou via fetch já intercepta no submit handler)
+    document.addEventListener(
+      'submit',
+      function (event) {
+        if (event.target instanceof HTMLFormElement) {
+          mostrar();
+          // Se o submit handler cancelar (ex.: validação falha), ocultar após um tempo
+          window.setTimeout(ocultar, 8000);
+        }
+      },
+      true,
+    );
+
+    // Clique em link interno (mesma origem, sem target, sem modificadores)
+    document.addEventListener('click', function (event) {
+      if (!(event.target instanceof Element)) return;
+      const a = event.target.closest('a[href]');
+      if (!a) return;
+      const href = a.getAttribute('href') || '';
+      if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
+      if (a.target === '_blank' || a.hasAttribute('download')) return;
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      if (href.startsWith('http') && !href.startsWith(window.location.origin)) return;
+      mostrar();
+      window.setTimeout(ocultar, 10000);
+    });
+
+    // Quando a página carregou por completo, garante o estado oculto
+    document.addEventListener('DOMContentLoaded', ocultar);
+    window.addEventListener('pageshow', ocultar);
+    window.addEventListener('load', ocultar);
+  })();
+</script>
+
+<style is:global>
+  .ms-loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: transparent;
+    z-index: 9999;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s ease;
+  }
+
+  .ms-loading::after {
+    content: '';
+    display: block;
+    width: 38%;
+    height: 100%;
+    background: #f9df8e;
+    border-radius: 0 3px 3px 0;
+    transform: translateX(-100%);
+    animation: ms-loading-move 1s linear infinite;
+  }
+
+  html.ms-carregando .ms-loading {
+    opacity: 1;
+  }
+
+  @keyframes ms-loading-move {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(320%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ms-loading::after {
+      animation-duration: 2s;
+    }
+  }
+</style>

@@ -6,6 +6,7 @@
  */
 import AplicarIdioma from '../../components/AplicarIdioma.astro';
 import TemaInicial from '../../components/TemaInicial.astro';
+import IndicadorCarregamento from '../../components/IndicadorCarregamento.astro';
 import '@fontsource/newsreader/500.css';
 import '@fontsource/newsreader/500-italic.css';
 import '@fontsource/inter/400.css';
@@ -63,6 +64,7 @@ const okMsg = okParam ? (mensagensOk[okParam] ?? null) : null;
     <title>Entrar — MyShelf</title>
   </head>
   <body>
+    <IndicadorCarregamento />
     {precisaCriar ? (
       <main class="login-shell">
         <section class="login-art" aria-label="MyShelf">
@@ -325,7 +327,10 @@ const okMsg = okParam ? (mensagensOk[okParam] ?? null) : null;
       .ms-alert {
         border-radius: 10px;
         padding: 11px 13px;
+        font-family: 'Inter', system-ui, sans-serif;
         font-size: 13px;
+        font-weight: 500;
+        letter-spacing: 0.002em;
         line-height: 1.4;
         margin-bottom: 14px;
       }
@@ -366,17 +371,25 @@ const okMsg = okParam ? (mensagensOk[okParam] ?? null) : null;
       .ms-field input,
       .ms-password input {
         width: 100%;
-        min-height: 44px;
-        padding: 10px 12px;
+        min-height: 46px;
+        padding: 11px 12px 11px 12px;
         border: 1px solid #e6e1d6;
         border-radius: 10px;
         background: #fbfaf6;
-        font-size: 15px;
-        color: #2d2226;
-        font-family: inherit;
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 15.5px;
+        font-weight: 400;
+        line-height: 1.45;
+        letter-spacing: 0.008em;
         caret-color: #39282c;
+        color: #2d2226;
         box-sizing: border-box;
-        transition: border-color 0.16s ease, box-shadow 0.16s ease;
+        transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+      }
+
+      .ms-field input::placeholder,
+      .ms-password input::placeholder {
+        color: #a0968c;
       }
 
       .ms-field input:hover,
@@ -440,12 +453,18 @@ const okMsg = okParam ? (mensagensOk[okParam] ?? null) : null;
 
       .ms-row a {
         color: #39282c;
+        font-family: 'Inter', system-ui, sans-serif;
         font-weight: 500;
+        font-size: 13.5px;
         text-decoration: none;
+        border-bottom: 1px solid #d9c7ac;
+        line-height: 1.6;
+        transition: color 0.15s ease, border-color 0.15s ease;
       }
 
       .ms-row a:hover {
-        text-decoration: underline;
+        color: #2d2226;
+        border-bottom-color: #39282c;
       }
 
       .ms-btn {

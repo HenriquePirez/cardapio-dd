@@ -13,6 +13,7 @@ import TemaInicial from '../components/TemaInicial.astro';
 import AplicarIdioma from '../components/AplicarIdioma.astro';
 import ConsentimentoCookies from '../components/ConsentimentoCookies.astro';
 import RodapeLegal from '../components/RodapeLegal.astro';
+import IndicadorCarregamento from '../components/IndicadorCarregamento.astro';
 
 interface Props {
   titulo: string;
@@ -56,6 +57,7 @@ function sair() {
   <body class="admin-body">
     <a class="pular-conteudo" href="#conteudo">Pular para o conteúdo</a>
     <ConsentimentoCookies />
+    <IndicadorCarregamento />
     {usuario && (
       <header class="admin-topo">
         <div class="admin-topo-inner">
