@@ -21,6 +21,12 @@
   --veu: rgba(249, 249, 249, 0.92);
   /* Verde dos títulos de seção; clareia no tema escuro. */
   --cor-titulo: var(--verde);
+  --btn-primario-bg: var(--laranja-aa);
+  --btn-primario-bg-hover: var(--laranja-aa-hover);
+  --btn-primario-texto: #fff;
+  --btn-local-bg: var(--verde);
+  --btn-local-bg-hover: var(--verde-escuro);
+  --btn-local-texto: #fff;
   --radius: 14px;
   --radius-sm: 10px;
   --max: 640px;
@@ -59,6 +65,14 @@
   --veu: rgba(18, 24, 19, 0.92);
   --cor-preco: #f9df8e;
   --cor-titulo: #a7f3d0;
+  --laranja-aa: #f9df8e;
+  --laranja-aa-hover: #f5d367;
+  --btn-primario-bg: #f9df8e;
+  --btn-primario-bg-hover: #f5d367;
+  --btn-primario-texto: #39282c;
+  --btn-local-bg: #9cb7d3;
+  --btn-local-bg-hover: #88a7c1;
+  --btn-local-texto: #39282c;
   --shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
   --shadow-hover: 0 12px 28px rgba(0, 0, 0, 0.55);
   --adm-bg: #141a15;

@@ -192,13 +192,33 @@ const { pedidos, totemSrc = '' } = Astro.props;
   }
 
   .pd-btn-local {
-    background: var(--verde);
-    color: #fff;
+    background: var(--btn-local-bg);
+    color: var(--btn-local-texto);
+    transition: background 0.2s, transform 0.2s;
+  }
+
+  .pd-btn-local:hover,
+  .pd-btn-local:focus-visible {
+    background: var(--btn-local-bg-hover);
+  }
+
+  .pd-btn-local:active {
+    transform: scale(0.97);
   }
 
   .pd-btn-retirada {
-    background: var(--laranja-aa);
-    color: #fff;
+    background: var(--btn-primario-bg);
+    color: var(--btn-primario-texto);
+    transition: background 0.2s, transform 0.2s;
+  }
+
+  .pd-btn-retirada:hover,
+  .pd-btn-retirada:focus-visible {
+    background: var(--btn-primario-bg-hover);
+  }
+
+  .pd-btn-retirada:active {
+    transform: scale(0.97);
   }
 
   .pd-btn:disabled {
