@@ -46,13 +46,12 @@ const okMsg = okParam ? (mensagensOk[okParam] ?? null) : null;
     </div>
   </AdminLayout>
 ) : (
-  <AdminLayout titulo="Entrar">
+  <AdminLayout titulo="Entrar" semRodape>
     <div class="caixa-login">
       <div class="login-marca">
-        <img src="/logo-myshelf-180.png" alt="MyShelf" width="84" height="84" />
+        <img src="/logo-myshelf-180.png" alt="MyShelf" width="96" height="96" />
       </div>
-      <h1 class="login-titulo" data-i18n="entrarPainel">Entrar no painel</h1>
-      <p class="login-sub" data-i18n="loginSub">Gerencie categorias, produtos e mídias do cardápio.</p>
+      <h1 class="login-titulo">MyShelf</h1>
 
       {okMsg && <div class="aviso aviso-ok" role="status">{okMsg}</div>}
       {erroMsg && <div class="aviso aviso-erro" role="alert">{erroMsg}</div>}
