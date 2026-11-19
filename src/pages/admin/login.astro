@@ -158,11 +158,18 @@ const okMsg = okParam ? (mensagensOk[okParam] ?? null) : null;
     )}
 
     <style is:global>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: #f5efe4;
+      }
+
       .login-shell {
         min-height: 100dvh;
         display: grid;
         grid-template-columns: 1.05fr 0.95fr;
-        background: #f7f5ef;
+        background: #f5efe4;
       }
 
       /* Painel esquerdo — marca (escuro MyShelf) */
@@ -347,9 +354,13 @@ const okMsg = okParam ? (mensagensOk[okParam] ?? null) : null;
       }
 
       .ms-field label {
-        font-size: 12px;
-        font-weight: 600;
-        color: #2d2226;
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 12.5px;
+        font-weight: 500;
+        line-height: 1.25;
+        color: #39282c;
+        letter-spacing: 0;
+        margin-bottom: 2px;
       }
 
       .ms-field input,
