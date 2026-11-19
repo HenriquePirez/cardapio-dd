@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-19T10:30:00.000Z",
+  "title": "Design System: MyShelf",
+  "extensions": {
+    "colorMeta": {
+      "green-primary": { "role": "primary", "displayName": "Verde Loja", "canonical": "#14532d", "tonalRamp": ["#051a0c", "#0f3d21", "#14532d", "#1d6a3a", "#2a8a4b", "#44a563", "#7dc796", "#b8e0c3"] },
+      "myshelf-yellow": { "role": "secondary", "displayName": "Amarelo MyShelf", "canonical": "#f9df8e", "tonalRamp": ["#3a330e", "#564e1b", "#726a28", "#9b8e33", "#c5b948", "#e0d268", "#f9df8e", "#fdf2c0"] },
+      "myshelf-brown": { "role": "accent", "displayName": "Marrom MyShelf", "canonical": "#39282c", "tonalRamp": ["#0b0708", "#1a1415", "#241c1d", "#2f2426", "#39282c", "#544147", "#6f5960", "#89747b"] },
+      "myshelf-blue": { "role": "accent", "displayName": "Azul MyShelf", "canonical": "#9cb7d3", "tonalRamp": ["#1e2a33", "#2f414d", "#405767", "#526e82", "#67859b", "#7f9cb0", "#9cb7d3", "#bccde0"] },
+      "neutral-bg": { "role": "neutral", "displayName": "Fundo Papel", "canonical": "#f9f9f9", "tonalRamp": ["#e6e6e6", "#ececec", "#f0f0f0", "#f5f5f5", "#f9f9f9", "#fcfcfc", "#ffffff", "#ffffff"] },
+      "dark-bg": { "role": "neutral", "displayName": "Fundo Quente", "canonical": "#141a15", "tonalRamp": ["#050807", "#0d120f", "#141a15", "#1e2620", "#26302a", "#2e3833", "#3a4540", "#4a5450"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Hero headlines (público e logo-panel)." },
+      "headline": { "displayName": "Headline", "purpose": "H1 interno e seções." },
+      "title": { "displayName": "Title", "purpose": "H2 de cards e seções do painel." },
+      "body": { "displayName": "Body", "purpose": "Corpo de texto padrão." },
+      "label": { "displayName": "Label", "purpose": "Labels de formulário, chips e botões." }
+    },
+    "shadows": [
+      { "name": "ambient-low", "value": "0 4px 14px rgba(0,0,0,0.08)", "purpose": "Repouso de elementos destacados." },
+      { "name": "hover-cta", "value": "0 12px 28px rgba(0,0,0,0.14)", "purpose": "Hover de CTAs e cards." },
+      { "name": "dialog", "value": "0 10px 28px rgba(0,0,0,0.22)", "purpose": "Sobreposição em diálogos e lightbox." }
+    ],
+    "motion": [
+      { "name": "ease-standard", "value": "cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Transição dominante de estados." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "560px" },
+      { "name": "md", "value": "900px" },
+      { "name": "lg", "value": "640px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Amarelo MyShelf sobre fundo escuro; ação principal da tela.",
+      "html": "<button class=\"ds-btn-primary\">Comprar</button>",
+      "css": ".ds-btn-primary { background: #f9df8e; color: #39282c; border: 0; border-radius: 10px; padding: 11px 18px; font-family: Fredoka, system-ui, sans-serif; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: background 0.2s, transform 0.15s; } .ds-btn-primary:hover { background: #f5d367; transform: translateY(-2px); } .ds-btn-primary:active { transform: scale(0.96); } .ds-btn-primary:focus-visible { outline: 2px solid #f9df8e; outline-offset: 2px; }"
+    },
+    {
+      "name": "Local Button",
+      "kind": "button",
+      "refersTo": "button-local",
+      "description": "CTA secundário azul MyShelf para a opção Comida no Local.",
+      "html": "<button class=\"ds-btn-local\">Comer no local</button>",
+      "css": ".ds-btn-local { background: #9cb7d3; color: #39282c; border: 0; border-radius: 10px; padding: 11px 18px; font-family: Fredoka, system-ui, sans-serif; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: background 0.2s, transform 0.15s; } .ds-btn-local:hover { background: #88a7c1; transform: translateY(-2px); } .ds-btn-local:focus-visible { outline: 2px solid #f9df8e; outline-offset: 2px; }"
+    },
+    {
+      "name": "Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Campo de formulário: fundo branco, borda sólida sutil.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"E-mail\">",
+      "css": ".ds-input { width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 9px; font-family: Fredoka, system-ui, sans-serif; font-size: 1rem; background: #ffffff; color: #111827; transition: border-color 0.16s, box-shadow 0.16s; } .ds-input:focus { outline: none; border-color: #f9df8e; box-shadow: 0 0 0 3px rgba(249,223,142,0.4); } .ds-input:disabled { background: #f3f4f6; color: #6b7280; }"
+    },
+    {
+      "name": "Nav Admin Master",
+      "kind": "nav",
+      "refersTo": "nav-admin",
+      "description": "Cabeçalho do painel master: fundo marrom, nav com 2 itens, logo MyShelf.",
+      "html": "<nav class=\"ds-nav\"><a href=\"/admin\" class=\"ds-nav-active\">Painel</a><a href=\"/admin/perfil\">Perfil</a></nav>",
+      "css": ".ds-nav { display: flex; gap: 6px 8px; flex-wrap: wrap; background: #39282c; border-bottom: 3px solid #f9df8e; padding: 10px 18px; font-family: Fredoka, system-ui, sans-serif; } .ds-nav a { padding: 7px 13px; border-radius: 8px; color: #c4d2dc; text-decoration: none; } .ds-nav a:hover { background: rgba(249,223,142,0.14); color: #f9df8e; } .ds-nav-active { background: #f9df8e; color: #39282c; font-weight: 500; }"
+    },
+    {
+      "name": "Badge Ativo",
+      "kind": "chip",
+      "refersTo": "badge-ativo",
+      "description": "Badge de status ativo/inativo em tabelas.",
+      "html": "<span class=\"ds-badge-ativo\">Ativo</span>",
+      "css": ".ds-badge-ativo { display: inline-block; padding: 3px 9px; border-radius: 999px; background: #ecf5ee; color: #15803d; font-family: Fredoka, system-ui, sans-serif; font-size: 0.82rem; font-weight: 500; }"
+    },
+    {
+      "name": "Product Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Card de produto: foto, nome, preço, CTA.",
+      "html": "<article class=\"ds-card\"><img alt=\"\" src=\"\" /><div><h3>Nome do produto</h3><strong>R$ 29,90</strong><button>Comprar</button></div></article>",
+      "css": ".ds-card { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 12px; box-shadow: 0 4px 14px rgba(0,0,0,0.08); } .ds-card img { border-radius: 10px; } .ds-card h3 { font-family: Fredoka, system-ui, sans-serif; font-size: 1rem; font-weight: 500; margin: 10px 0 4px; } .ds-card strong { font-size: 1.1rem; color: #f9df8e; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "A Vitrine Bem-Arrumada",
+    "overview": "MyShelf é uma vitrine digital para pequenos negócios. A personalidade central é a de uma vitrine física bem cuidada: cada item exposto com intenção, sem poluição visual. Não há excesso — há estrutura. A estética é direta e funcional, tipografia Fredoka com peso médio, fundos claríssimos, cores de marca contidas. A densidade é média; ar livre, grid simples, foco na compra.",
+    "keyCharacteristics": [
+      "Fundo neutro quase branco",
+      "Destaque Amarelo MyShelf raro (≤1 CTA por tela)",
+      "Verde profundo para identidade de loja",
+      "Sombras sob demanda; sistema flat por padrão",
+      "Azul MyShelf para CTAs secundários",
+      "Sem gradientes, neon, glassmorphism ou \"AI gradients\""
+    ],
+    "rules": [
+      { "name": "The One Voice Rule", "body": "O Amarelo MyShelf é usado uma única vez por tela, em um único botão de ação primária. Sua raridade é a sua função.", "section": "colors" },
+      { "name": "The No-Bold Rule", "body": "Nunca use font-weight: 700. O sistema carrega apenas 400 e 500.", "section": "typography" },
+      { "name": "The Flat-By-Default Rule", "body": "Superfícies são planas em repouso. Sombras só aparecem em hover, foco ativo ou diálogo.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do use o Amarelo MyShelf em apenas um CTA por tela.",
+      "Do mantenha o sistema flat por padrão; sombra só em hover/foco/diálogo.",
+      "Do use Fredoka 400 ou 500; nada acima.",
+      "Do mantenha os raios em 10px, 14px e 999px.",
+      "Do use tons de fundo neutro claro (#f9f9f9) no modo claro e #141a15 no escuro.",
+      "Do use --cor-preco (amarelo no escuro) nas cifras de produtos."
+    ],
+    "donts": [
+      "Don't use gradientes, neon, glassmorphism ou \"AI gradients\" em qualquer ponto do sistema.",
+      "Don't use o Amarelo MyShelf em dois elementos na mesma tela.",
+      "Don't use font-weight 600 ou maior.",
+      "Don't use border-radius 0 (cantos retos).",
+      "Don't use tons saturados ou híper-verde como fundo de card.",
+      "Don't use sombras no estado de repouso."
+    ]
+  }
+}
