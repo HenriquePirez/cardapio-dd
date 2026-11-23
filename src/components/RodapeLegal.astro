@@ -10,11 +10,11 @@ const proxAtual = Astro.url.pathname + (Astro.url.search || '');
 
 <div class="rodape-legal">
   <nav class="rodape-legal-links" aria-label="Informações legais">
-    <a href(`/privacidade?prox${proxAtual}`)>Privacidade</a>
-    <a href(`/termos?prox${proxAtual}`)>Termos de Uso</a>
-    <a href(`/cookies?prox${proxAtual}`)>Cookies</a>
-    <a href(`/reembolso?prox${proxAtual}`)>Reembolso</a>
-    <a href(`/exclusao-de-dados?prox${proxAtual}`)>Excluir meus dados</a>
+    <a href={`/privacidade?prox=${proxAtual}`}>Privacidade</a>
+    <a href={`/termos?prox=${proxAtual}`}>Termos de Uso</a>
+    <a href={`/cookies?prox=${proxAtual}`}>Cookies</a>
+    <a href={`/reembolso?prox=${proxAtual}`}>Reembolso</a>
+    <a href={`/exclusao-de-dados?prox=${proxAtual}`}>Excluir meus dados</a>
     <button type="button" class="rodape-legal-btn" data-consent-abrir>
       Preferências de cookies
     </button>
@@ -46,7 +46,7 @@ const proxAtual = Astro.url.pathname + (Astro.url.search || '');
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 2px 8px;
+    gap: 4px 10px;
   }
 
   .rodape-legal a,
