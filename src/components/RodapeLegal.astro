@@ -3,15 +3,18 @@
 import { EMPRESA } from '../config';
 
 const ano = new Date().getFullYear();
+/// URL atual da página (pathname + query), para preencher o parâmetro `prox` nos links do rodapé.
+/// Computada no SSR via Astro.url e disponível no template.
+const proxAtual = Astro.url.pathname + (Astro.url.search || '');
 ---
 
 <div class="rodape-legal">
   <nav class="rodape-legal-links" aria-label="Informações legais">
-    <a href="/privacidade">Privacidade</a>
-    <a href="/termos">Termos de Uso</a>
-    <a href="/cookies">Cookies</a>
-    <a href="/reembolso">Reembolso</a>
-    <a href="/exclusao-de-dados">Excluir meus dados</a>
+    <a href(`/privacidade?prox${proxAtual}`)>Privacidade</a>
+    <a href(`/termos?prox${proxAtual}`)>Termos de Uso</a>
+    <a href(`/cookies?prox${proxAtual}`)>Cookies</a>
+    <a href(`/reembolso?prox${proxAtual}`)>Reembolso</a>
+    <a href(`/exclusao-de-dados?prox${proxAtual}`)>Excluir meus dados</a>
     <button type="button" class="rodape-legal-btn" data-consent-abrir>
       Preferências de cookies
     </button>
@@ -43,7 +46,7 @@ const ano = new Date().getFullYear();
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 4px 14px;
+    gap: 2px 8px;
   }
 
   .rodape-legal a,
