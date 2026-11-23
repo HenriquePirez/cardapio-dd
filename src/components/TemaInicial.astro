@@ -1,15 +1,14 @@
 ---
 /**
  * Aplica tema e idioma antes da primeira pintura (sem flash).
- * Ordem: escolha salva > padrão da loja > sistema (quando não há loja, ex.:
- * login do painel). O padrão da loja vem nos data-attributes de <html>.
+ * Tema: escolha salva; branco por padrão em qualquer loja.
+ * Idioma: escolha salva > padrão da loja > pt.
  */
 ---
 
 <script is:inline>
   (() => {
     const raiz = document.documentElement;
-    const temaLoja = raiz.dataset.temaPadrao;
     const idiomaLoja = raiz.dataset.idiomaPadrao;
     try {
       const salvo = localStorage.getItem('dd-tema');
