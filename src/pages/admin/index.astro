@@ -74,7 +74,7 @@ const estatisticas = [
     <h2 data-i18n="ultimosProdutos">Últimos produtos</h2>
     {produtos.length === 0 ? (
       <p class="vazio">
-        <span data-i18n="nenhumProduto">Nenhum produto ainda.</span>
+        <span data-i18n="nenhumProduto">Nenhum produto ainda.</span>{' '}
         <a href="/admin/produtos/novo" data-i18n="cadastrePrimeiro">Cadastre o primeiro →</a>
       </p>
     ) : (
@@ -125,7 +125,7 @@ const estatisticas = [
     <h2 data-i18n="categorias">Categorias</h2>
     {categorias.length === 0 ? (
       <p class="vazio">
-        <span data-i18n="nenhumaCategoria">Nenhuma categoria.</span>
+        <span data-i18n="nenhumaCategoria">Nenhuma categoria.</span>{' '}
         <a href="/admin/categorias" data-i18n="criar">Criar →</a>
       </p>
     ) : (
@@ -186,7 +186,7 @@ const estatisticas = [
     font-size: 1.9rem;
     font-weight: 500;
     line-height: 1;
-    color: var(--cor-preco);
+    color: var(--adm-text);
     letter-spacing: -0.03em;
   }
 

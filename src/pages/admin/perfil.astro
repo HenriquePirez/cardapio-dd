@@ -97,7 +97,7 @@ const erroMsg = erro ? (mensagens[erro] ?? erro) : null;
       <form method="post" action="/admin/api/recuperar-senha">
         <input type="hidden" name="email" value={usuario.email} />
         <input type="hidden" name="prox" value="/admin/perfil?ok=enviado" />
-        <button class="btn btn-primario" type="submit" data-i18n="alterarSenha">Alterar senha</button>
+        <button class="btn btn-secundario" type="submit" data-i18n="alterarSenha">Alterar senha</button>
       </form>
     </div>
   </div>

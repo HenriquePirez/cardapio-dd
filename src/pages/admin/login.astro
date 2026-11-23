@@ -142,7 +142,7 @@ const okMsg = okParam ? (mensagensOk[okParam] ?? null) : null;
                     required
                     placeholder="••••••••"
                   />
-                  <button type="button" class="ms-password-toggle" aria-label="Mostrar senha" data-i18n-aria="mostrarSenha">
+                  <button type="button" class="ms-password-toggle" aria-label="Mostrar senha" aria-pressed="false" data-i18n-aria="mostrarSenha">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/></svg>
                   </button>
                 </div>
@@ -272,6 +272,7 @@ const okMsg = okParam ? (mensagensOk[okParam] ?? null) : null;
         place-items: center;
         padding: 42px 24px;
         min-height: 100dvh;
+        box-sizing: border-box;
         background: #f5efe4;
       }
 
@@ -415,12 +416,12 @@ const okMsg = okParam ? (mensagensOk[okParam] ?? null) : null;
 
       .ms-password-toggle {
         position: absolute;
-        right: 5px;
+        right: 3px;
         top: 50%;
         transform: translateY(-50%);
-        width: 36px;
-        min-width: 36px;
-        min-height: 34px;
+        width: 40px;
+        min-width: 40px;
+        min-height: 40px;
         border: 0;
         background: transparent;
         color: #6b635e;
@@ -433,6 +434,11 @@ const okMsg = okParam ? (mensagensOk[okParam] ?? null) : null;
       .ms-password-toggle:hover {
         background: #efece4;
         color: #2d2226;
+      }
+
+      .ms-password-toggle:focus-visible {
+        outline: 2px solid #39282c;
+        outline-offset: 1px;
       }
 
       .ms-password-toggle svg {
@@ -467,6 +473,12 @@ const okMsg = okParam ? (mensagensOk[okParam] ?? null) : null;
         border-bottom-color: #39282c;
       }
 
+      .ms-row a:focus-visible {
+        outline: 2px solid #39282c;
+        outline-offset: 2px;
+        border-radius: 2px;
+      }
+
       .ms-btn {
         display: inline-flex;
         align-items: center;
@@ -496,6 +508,18 @@ const okMsg = okParam ? (mensagensOk[okParam] ?? null) : null;
       .ms-btn-primary:focus-visible {
         outline: 2px solid #39282c;
         outline-offset: 2px;
+      }
+
+      .ms-btn-primary:active {
+        background: #efcb6f;
+        transform: translateY(1px);
+      }
+
+      .ms-btn:disabled {
+        background: #e8e2d6;
+        color: #8f877d;
+        cursor: not-allowed;
+        transform: none;
       }
 
       .ms-btn-full {
@@ -528,6 +552,7 @@ const okMsg = okParam ? (mensagensOk[okParam] ?? null) : null;
           const showing = input.type === 'text';
           input.type = showing ? 'password' : 'text';
           btn.setAttribute('aria-label', showing ? adminText.show : adminText.hide);
+          btn.setAttribute('aria-pressed', String(!showing));
         });
       })();
     </script>

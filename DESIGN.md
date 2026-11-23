@@ -36,6 +36,12 @@ colors:
   ok-bg: "#f0fdf4"
   ok-text: "#15803d"
   ok-border: "#bbf7d0"
+  status-ativo-bg: "#ecf5ee"
+  status-ativo-text: "#15803d"
+  status-inativo-bg: "#fbeaea"
+  role-loja-bg: "#e4ebf2"
+  role-loja-text: "#4a6a82"
+  page-warm: "#f5efe4"
   erro-bg: "#fef2f2"
   erro-text: "#b91c1c"
   erro-border: "#fecaca"
@@ -46,6 +52,17 @@ typography:
     fontWeight: 500
     lineHeight: 1.0
     letterSpacing: "-0.03em"
+  auth-display:
+    fontFamily: "'Newsreader', Georgia, 'Times New Roman', serif"
+    fontSize: "clamp(46px, 5.4vw, 70px)"
+    fontWeight: 500
+    lineHeight: 1.03
+    letterSpacing: "-0.025em"
+  auth-ui:
+    fontFamily: "'Inter', system-ui, sans-serif"
+    fontSize: "15px"
+    fontWeight: 400
+    lineHeight: 1.55
   headline:
     fontFamily: "Fredoka, system-ui, sans-serif"
     fontSize: "1.5rem"
@@ -69,8 +86,10 @@ typography:
     lineHeight: 1.25
     letterSpacing: "0.02em"
 rounded:
+  xs: "9px"
   sm: "10px"
   md: "14px"
+  pill: "999px"
 spacing:
   xs: "8px"
   sm: "12px"
@@ -147,6 +166,16 @@ A paleta é pequena: **verde loja, amarelo MyShelf, neutro de papel** e um **azu
 - **Texto Painel** (#111827): Texto corpo do painel.
 - **Input Border Painel** (#d1d5db): Borda de campos de formulário.
 
+### Papéis e status (painel)
+- **Papel Loja — fundo** (#e4ebf2) / **texto** (#4a6a82): badge "Loja" na tabela de usuários.
+- **Papel Master — fundo** (#f9df8e) / **texto** (#39282c): badge "Master"; usa o Amarelo MyShelf.
+- **Status ativo** (#ecf5ee / #15803d) e **status inativo** (#fbeaea / #b91c1c): pills de situação do usuário.
+
+### Login (superfície de autenticação)
+- **Fundo quente** (#f5efe4): papel creme do painel direito do login.
+- **Marrom MyShelf** (#39282c): painel esquerdo do login, texto e foco.
+- **Amarelo MyShelf** (#f9df8e): único CTA de entrada; hover #f5d367.
+
 ### Modo escuro (público e painel)
 - **Fundo Quente** (#141a15): Fundo escuro principal do cardápio e painel.
 - **Cartão Quente** (#1e2620): Fundo de cards sobre fundo quente.
@@ -168,14 +197,19 @@ A paleta é pequena: **verde loja, amarelo MyShelf, neutro de papel** e um **azu
 **Character:** Fredoka é uma fonte humanista arredondada, com personalidade amigável, mas estruturada o suficiente para funcionar como UI densa. O 500 medium domina os títulos; o 400 regular cumpre o corpo. Nenhum peso 700+ existe no sistema — evita-se o falso negrito.
 
 ### Hierarchy
-- **Display** (500, clamp(42px, 5vw, 64px), 1.0, -0.03em): Hero de páginas públicas e painel de login. Uma máscara sem texturas, um parágrafo de resumo.
+- **Display** (500, clamp(42px, 5vw, 64px), 1.0, -0.03em): Hero de páginas públicas.
+- **Auth Display** (Newsreader 500, clamp(46px, 5.4vw, 70px), 1.03, -0.025em): headline do login e wordmark MyShelf.
+- **Auth UI** (Inter 400/500, 13–15.5px, 1.55): corpo, labels e links do login.
 - **Headline** (500, 1.5rem, 1.15, -0.02em): H1 do painel e cardápio; títulos de seções.
 - **Title** (500, 1.05rem, 1.15): H2 do painel, títulos de cards.
 - **Body** (400, 1rem, 1.55): Parágrafos, descrições de produto, textos de diálogo.
 - **Label** (500, 0.8rem, 1.25, 0.02em): Labels de campo, chips, badges, botões em minúsculas.
 
+### Superfície de autenticação
+O login é a única superfície com par tipográfico próprio: **Newsreader** (serifada, display) para a headline e o wordmark, e **Inter** (sans) para corpo, labels, alertas e botões. A exceção existe para dar ao login um tom editorial; qualquer outra tela usa Fredoka. Inter 600 é permitido apenas aqui (badge e CTA).
+
 ### Named Rules
-**The No-Bold Rule.** Nunca use `font-weight: 700`. O sistema carrega apenas 400 e 500. Qualquer tentativa de negrito maior que 500 é substituída pelo browser com faux bold — descontinuado em todo o sistema.
+**The No-Bold Rule.** Nunca use `font-weight: 700`. O sistema carrega 400 e 500 (Inter 600 só no login). Qualquer peso maior gera faux bold — descontinuado em todo o sistema.
 
 ## Layout
 
@@ -202,9 +236,10 @@ Sombras **sob demanda**. O sistema é flat por padrão (superfícies sem sombra)
 
 ## Shapes
 
-Formas arredondadas e suaves. Raios consistentes em 3 valores:
+Formas arredondadas e suaves. Raios consistentes em 4 valores:
 
-- **--radius-sm: 10px**: botões, inputs, chips pequenos, badges.
+- **--radius-xs: 9px**: inputs, botões do painel e do login, chips pequenos.
+- **--radius-sm: 10px**: botões públicos, cards de produto, badges.
 - **--radius: 14px (--radius-md)**: cards, telas, containers grandes.
 - **50% / 999px**: avatares circulares, badges de status, pills.
 
@@ -251,7 +286,7 @@ Não há cantos retos em nenhum elemento — nada é `radius: 0`. Bordas sutis (
 - **Do** use Verde Loja (#14532d) para título de vitrine, ícones de cadastro e identidade.
 - **Do** mantenha o sistema **flat por padrão**; sombra só em hover/foco/dialog.
 - **Do** use Fredoka em **peso 400 ou 500**; nada maior que 500.
-- **Do** mantenha os raios em 10px (--radius-sm), 14px (--radius), 999px (badges).
+- **Do** mantenha os raios em 9px (--radius-xs), 10px (--radius-sm), 14px (--radius) e 999px (badges).
 - **Do** use tons de fundo neutro e papel claro (`#f9f9f9` no claro; `#141a15` no escuro); nunca cores saturadas como fundo.
 - **Do** use `--cor-preco` (amarelo no escuro) nas cifras de produtos.
 - **Do** mantenha o corpo de texto em tamanho 1rem (16px) e line-height 1.55.
@@ -259,7 +294,7 @@ Não há cantos retos em nenhum elemento — nada é `radius: 0`. Bordas sutis (
 ### Don't:
 - **Don't** gradientes, neon, glassmorphism, gota de sangue, sombras dramáticas, tint transparente, ou "AI gradients" em nenhum ponto do sistema.
 - **Don't** use o Amarelo MyShelf em dois elementos na mesma tela para não perder o significado.
-- **Don't** use `font-weight: 600` ou maior — o sistema carrega apenas 400 e 500.
+- **Don't** use `font-weight: 700` ou maior; 600 só no login.
 - **Don't** use `border-radius: 0` (cantos retos). Sempre arredondamento.
 - **Don't** use tons saturados ou híper-verde como fundo de card (quebra a regra de papel sob sombra).
 - **Don't** use sombras no estado de repouso — o sistema é flat por padrão.

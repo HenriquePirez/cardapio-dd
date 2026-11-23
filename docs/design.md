@@ -8,7 +8,11 @@ Nada abaixo é direção futura: tudo o que se descreve existe no código.
 
 ## Sistema existente
 
-Fonte única de tokens: [`src/styles/global.css`](../src/styles/global.css). Os tokens de
+Sistema visual normativo (tokens, tipografia, componentes, regras): [`DESIGN.md`](../DESIGN.md).
+O login é a única exceção tipográfica: Newsreader (headline/wordmark) + Inter (corpo, labels,
+CTA), sobre papel creme `#f5efe4` e marrom `#39282c`.
+
+Fonte única de tokens comportamentais: [`src/styles/global.css`](../src/styles/global.css). Os tokens de
 marca/acento são **sobrescritos por loja** no `<head>` (`src/lib/cores.ts` + `cssPaleta`),
 com tons derivados para hover, CTA AA e título/preço no tema escuro; os valores abaixo são
 o padrão da loja Dona Dôra.

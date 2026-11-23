@@ -4,33 +4,196 @@
   "title": "Design System: MyShelf",
   "extensions": {
     "colorMeta": {
-      "green-primary": { "role": "primary", "displayName": "Verde Loja", "canonical": "#14532d", "tonalRamp": ["#051a0c", "#0f3d21", "#14532d", "#1d6a3a", "#2a8a4b", "#44a563", "#7dc796", "#b8e0c3"] },
-      "myshelf-yellow": { "role": "secondary", "displayName": "Amarelo MyShelf", "canonical": "#f9df8e", "tonalRamp": ["#3a330e", "#564e1b", "#726a28", "#9b8e33", "#c5b948", "#e0d268", "#f9df8e", "#fdf2c0"] },
-      "myshelf-brown": { "role": "accent", "displayName": "Marrom MyShelf", "canonical": "#39282c", "tonalRamp": ["#0b0708", "#1a1415", "#241c1d", "#2f2426", "#39282c", "#544147", "#6f5960", "#89747b"] },
-      "myshelf-blue": { "role": "accent", "displayName": "Azul MyShelf", "canonical": "#9cb7d3", "tonalRamp": ["#1e2a33", "#2f414d", "#405767", "#526e82", "#67859b", "#7f9cb0", "#9cb7d3", "#bccde0"] },
-      "neutral-bg": { "role": "neutral", "displayName": "Fundo Papel", "canonical": "#f9f9f9", "tonalRamp": ["#e6e6e6", "#ececec", "#f0f0f0", "#f5f5f5", "#f9f9f9", "#fcfcfc", "#ffffff", "#ffffff"] },
-      "dark-bg": { "role": "neutral", "displayName": "Fundo Quente", "canonical": "#141a15", "tonalRamp": ["#050807", "#0d120f", "#141a15", "#1e2620", "#26302a", "#2e3833", "#3a4540", "#4a5450"] }
+      "green-primary": {
+        "role": "primary",
+        "displayName": "Verde Loja",
+        "canonical": "#14532d",
+        "tonalRamp": [
+          "#051a0c",
+          "#0f3d21",
+          "#14532d",
+          "#1d6a3a",
+          "#2a8a4b",
+          "#44a563",
+          "#7dc796",
+          "#b8e0c3"
+        ]
+      },
+      "myshelf-yellow": {
+        "role": "secondary",
+        "displayName": "Amarelo MyShelf",
+        "canonical": "#f9df8e",
+        "tonalRamp": [
+          "#3a330e",
+          "#564e1b",
+          "#726a28",
+          "#9b8e33",
+          "#c5b948",
+          "#e0d268",
+          "#f9df8e",
+          "#fdf2c0"
+        ]
+      },
+      "myshelf-brown": {
+        "role": "accent",
+        "displayName": "Marrom MyShelf",
+        "canonical": "#39282c",
+        "tonalRamp": [
+          "#0b0708",
+          "#1a1415",
+          "#241c1d",
+          "#2f2426",
+          "#39282c",
+          "#544147",
+          "#6f5960",
+          "#89747b"
+        ]
+      },
+      "myshelf-blue": {
+        "role": "accent",
+        "displayName": "Azul MyShelf",
+        "canonical": "#9cb7d3",
+        "tonalRamp": [
+          "#1e2a33",
+          "#2f414d",
+          "#405767",
+          "#526e82",
+          "#67859b",
+          "#7f9cb0",
+          "#9cb7d3",
+          "#bccde0"
+        ]
+      },
+      "neutral-bg": {
+        "role": "neutral",
+        "displayName": "Fundo Papel",
+        "canonical": "#f9f9f9",
+        "tonalRamp": [
+          "#e6e6e6",
+          "#ececec",
+          "#f0f0f0",
+          "#f5f5f5",
+          "#f9f9f9",
+          "#fcfcfc",
+          "#ffffff",
+          "#ffffff"
+        ]
+      },
+      "dark-bg": {
+        "role": "neutral",
+        "displayName": "Fundo Quente",
+        "canonical": "#141a15",
+        "tonalRamp": [
+          "#050807",
+          "#0d120f",
+          "#141a15",
+          "#1e2620",
+          "#26302a",
+          "#2e3833",
+          "#3a4540",
+          "#4a5450"
+        ]
+      },
+      "page-warm": {
+        "role": "neutral",
+        "displayName": "Fundo Quente Login",
+        "canonical": "#f5efe4"
+      },
+      "status-ativo-bg": {
+        "role": "neutral",
+        "displayName": "Status Ativo",
+        "canonical": "#ecf5ee"
+      },
+      "status-inativo-bg": {
+        "role": "neutral",
+        "displayName": "Status Inativo",
+        "canonical": "#fbeaea"
+      },
+      "role-loja-bg": {
+        "role": "neutral",
+        "displayName": "Papel Loja",
+        "canonical": "#e4ebf2"
+      },
+      "role-loja-text": {
+        "role": "neutral",
+        "displayName": "Papel Loja Texto",
+        "canonical": "#4a6a82"
+      }
     },
     "typographyMeta": {
-      "display": { "displayName": "Display", "purpose": "Hero headlines (público e logo-panel)." },
-      "headline": { "displayName": "Headline", "purpose": "H1 interno e seções." },
-      "title": { "displayName": "Title", "purpose": "H2 de cards e seções do painel." },
-      "body": { "displayName": "Body", "purpose": "Corpo de texto padrão." },
-      "label": { "displayName": "Label", "purpose": "Labels de formulário, chips e botões." }
+      "display": {
+        "displayName": "Display",
+        "purpose": "Hero headlines (público e logo-panel)."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "H1 interno e seções."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "H2 de cards e seções do painel."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Corpo de texto padrão."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Labels de formulário, chips e botões."
+      },
+      "auth-display": {
+        "displayName": "Auth Display",
+        "purpose": "Headline e wordmark do login (Newsreader)."
+      },
+      "auth-ui": {
+        "displayName": "Auth UI",
+        "purpose": "Corpo, labels e CTA do login (Inter)."
+      }
     },
     "shadows": [
-      { "name": "ambient-low", "value": "0 4px 14px rgba(0,0,0,0.08)", "purpose": "Repouso de elementos destacados." },
-      { "name": "hover-cta", "value": "0 12px 28px rgba(0,0,0,0.14)", "purpose": "Hover de CTAs e cards." },
-      { "name": "dialog", "value": "0 10px 28px rgba(0,0,0,0.22)", "purpose": "Sobreposição em diálogos e lightbox." }
+      {
+        "name": "ambient-low",
+        "value": "0 4px 14px rgba(0,0,0,0.08)",
+        "purpose": "Repouso de elementos destacados."
+      },
+      {
+        "name": "hover-cta",
+        "value": "0 12px 28px rgba(0,0,0,0.14)",
+        "purpose": "Hover de CTAs e cards."
+      },
+      {
+        "name": "dialog",
+        "value": "0 10px 28px rgba(0,0,0,0.22)",
+        "purpose": "Sobreposição em diálogos e lightbox."
+      }
     ],
     "motion": [
-      { "name": "ease-standard", "value": "cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Transição dominante de estados." }
+      {
+        "name": "ease-standard",
+        "value": "cubic-bezier(0.4, 0, 0.2, 1)",
+        "purpose": "Transição dominante de estados."
+      }
     ],
     "breakpoints": [
-      { "name": "sm", "value": "560px" },
-      { "name": "md", "value": "900px" },
-      { "name": "lg", "value": "640px" }
-    ]
+      {
+        "name": "sm",
+        "value": "560px"
+      },
+      {
+        "name": "md",
+        "value": "900px"
+      },
+      {
+        "name": "lg",
+        "value": "640px"
+      }
+    ],
+    "radiusScale": {
+      "xs": "9px",
+      "sm": "10px",
+      "md": "14px",
+      "pill": "999px"
+    }
   },
   "components": [
     {
@@ -94,9 +257,21 @@
       "Sem gradientes, neon, glassmorphism ou \"AI gradients\""
     ],
     "rules": [
-      { "name": "The One Voice Rule", "body": "O Amarelo MyShelf é usado uma única vez por tela, em um único botão de ação primária. Sua raridade é a sua função.", "section": "colors" },
-      { "name": "The No-Bold Rule", "body": "Nunca use font-weight: 700. O sistema carrega apenas 400 e 500.", "section": "typography" },
-      { "name": "The Flat-By-Default Rule", "body": "Superfícies são planas em repouso. Sombras só aparecem em hover, foco ativo ou diálogo.", "section": "elevation" }
+      {
+        "name": "The One Voice Rule",
+        "body": "O Amarelo MyShelf é usado uma única vez por tela, em um único botão de ação primária. Sua raridade é a sua função.",
+        "section": "colors"
+      },
+      {
+        "name": "The No-Bold Rule",
+        "body": "Nunca use font-weight: 700. O sistema carrega apenas 400 e 500.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat-By-Default Rule",
+        "body": "Superfícies são planas em repouso. Sombras só aparecem em hover, foco ativo ou diálogo.",
+        "section": "elevation"
+      }
     ],
     "dos": [
       "Do use o Amarelo MyShelf em apenas um CTA por tela.",
