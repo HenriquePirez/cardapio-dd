@@ -59,7 +59,7 @@ não por default.
 
 ## Estratégia de testes
 
-- **Cobertura atual:** lógica crítica de `src/lib` e SQL — 63 testes:
+- **Cobertura atual:** lógica crítica de `src/lib` e SQL — 85 testes:
   - `auth.test.ts`: PBKDF2 (hash/verificação/pepper/hash legado/erros de formato).
   - `login-guard.test.ts`: rate-limit com D1 fake em memória, incluindo regressão do
     bug corrigido em 2026-10-26 (bloqueio anulado por `Date.parse('...ZZ')` → NaN).
@@ -67,9 +67,13 @@ não por default.
   - `config.test.ts`: `formatarPreco` (BRL).
   - `cores.test.ts`: hex livre, contraste AA do CTA e legibilidade no tema escuro.
   - `consentimento.test.ts`: leitura/serialização da escolha de cookies (versão/JSON inválido).
-  - `db.test.ts`: aplica as migrações 0001–0005 num SQLite real (`node:sqlite`, Node 24),
-    valida a cópia dos dados para `dona-dora`, isolamento por `loja_id`, PK composta e
-    bloqueio de exclusão de categoria com produtos.
+  - `db.test.ts`: aplica as migrações 0001–0008 num SQLite real (`node:sqlite`, Node 24),
+    valida a cópia dos dados para `dona-dora`, isolamento por `loja_id`, PK composta,
+    bloqueio de exclusão de categoria com produtos e papel master/ativo dos usuários.
+  - `cache.test.ts`: invalidação da raiz e da rota por slug após escrita no admin.
+  - `midia.test.ts`: chaves de mídia por loja e ordem de gravação da logo.
+  - `migrations.test.ts`: toda migration referenciada nos scripts está versionada.
+  - `produto.test.ts`: identificador do produto imutável na edição.
 - `cloudflare:workers` é substituído por stub (`tests/cloudflare-workers-stub.ts`)
   no Vitest; o restante do Workers (KV/D1 reais) só se comporta em `wrangler dev`.
 - **Não há:** E2E/browser automatizado (validado manualmente com `wrangler dev`),

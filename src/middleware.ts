@@ -12,10 +12,10 @@
  */
 import type { APIContext, MiddlewareNext } from 'astro';
 import { defineMiddleware } from 'astro:middleware';
-import { lerUsuario } from './lib/session';
+import { destruirSessao, lerUsuario } from './lib/session';
 import { chaveCardapio } from './lib/cache';
 import { db } from './lib/env';
-import { garantirLojaDoUsuario, ehUsuarioMaster, listarLojasDoUsuario } from './lib/db';
+import { estadoAcesso, garantirLojaDoUsuario, listarLojasDoUsuario } from './lib/db';
 
 // Rotas do painel que funcionam sem login
 const PUBLICAS_ADMIN = new Set([
@@ -168,12 +168,17 @@ async function tratar(ctx: APIContext, next: MiddlewareNext): Promise<Response> 
   const jaLogado = usuario !== null;
 
   if (jaLogado) {
-    const usuarioMaster = await ehUsuarioMaster(db(), usuario.id);
-    ctx.locals.usuarioMaster = usuarioMaster;
+    const acesso = await estadoAcesso(db(), usuario.id);
+    ctx.locals.usuarioMaster = acesso.master;
+
+    if (!acesso.ativo) {
+      await destruirSessao(ctx);
+      return semCache(new Response('Conta desativada.', { status: 401 }));
+    }
 
     // O master administra o sistema, não uma loja: sem loja ativa e sem acesso
     // ao painel de loja. GET volta para /admin; escritas respondem 403.
-    if (usuarioMaster) {
+    if (acesso.master) {
       ctx.locals.loja = null;
       ctx.locals.lojas = [];
       if (rotaDeLoja(caminho)) {

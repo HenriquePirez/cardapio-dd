@@ -69,6 +69,7 @@ export interface Usuario {
   nome: string;
   senha_hash: string;
   criado_em?: string;
+  ativo?: number | null;
 }
 
 /** Binding do D1 — tipagem estrutural mínima (evita depender dos tipos gerados). */
@@ -344,6 +345,26 @@ export async function ehUsuarioMaster(db: D1Like, usuarioId: string): Promise<bo
     .bind(usuarioId)
     .first<{ master: number | null }>();
   return (r?.master ?? 0) === 1;
+}
+
+/** Linhas antigas não tinham a coluna `ativo`; ausência significa ativo. */
+export function usuarioPodeAcessar(usuario: { ativo?: number | null }): boolean {
+  return (usuario.ativo ?? 1) !== 0;
+}
+
+/** Estado de acesso usado pelo middleware em uma única consulta. */
+export async function estadoAcesso(
+  db: D1Like,
+  usuarioId: string,
+): Promise<{ master: boolean; ativo: boolean }> {
+  const r = await db
+    .prepare('SELECT master, ativo FROM usuarios WHERE id = ?')
+    .bind(usuarioId)
+    .first<{ master: number | null; ativo: number | null }>();
+  return {
+    master: (r?.master ?? 0) === 1,
+    ativo: r !== null && usuarioPodeAcessar(r),
+  };
 }
 
 export interface UsuarioResumo {

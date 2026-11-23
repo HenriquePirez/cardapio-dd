@@ -86,16 +86,17 @@ Não existe camada de serviço/domain: a apresentação (páginas/components) ch
   (`lojas`; `loja_id` em categorias/produtos/mídia; PK composta; preço em centavos),
   `0005_aceite_legal.sql` (`usuarios.aceite_em`, `usuarios.aceite_versao`),
   `0006_redefinicao_senha.sql` (`redefinicoes_senha`: só o SHA-256 do token,
-  um link pendente por usuário, expiração em ISO com fuso) e
+  um link pendente por usuário, expiração em ISO com fuso),
   `0007_adiciona_full_webp.sql` (`produto_midia.full_webp`: versão WebP do full,
-  entregue via `<picture>` no cardápio).
+  entregue via `<picture>` no cardápio) e
+  `0008_usuarios_papel_ativo.sql` (`usuarios.master`/`usuarios.ativo`; primeira conta vira master).
   Seed: `migrations/0002_seed.sql`. A 0004 copia os dados existentes para a loja
   `dona-dora` (rebuild das tabelas) — aplicar só com backup (`wrangler d1 export`).
 - **Aplicação manual e explícita** (nunca em build/request):
   `npm run db:apply:local` / `npm run db:apply:remote` (`wrangler d1 execute`).
 - Sem ORM: SQL direto, tipado em `src/lib/db.ts`, com prepared statements e projeções
   explícitas; listagens limitadas.
-- Migração nova = escrever `migrations/0006_*.sql` (ou próximo número) e aplicar no destino apropriado
+- Migração nova = escrever `migrations/0009_*.sql` (ou próximo número) e aplicar no destino apropriado
   (local primeiro). **Produção não é ambiente de teste.**
 
 ## Decisões

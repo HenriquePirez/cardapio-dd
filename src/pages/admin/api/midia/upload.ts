@@ -15,8 +15,9 @@
  * ver /admin/api/midia/upload-video, que recebe corpo bruto.
  */
 import type { APIRoute } from 'astro';
+import { db, kvMidia } from '../../../../lib/env';
+import { chavePertenceALoja } from '../../../../lib/midia';
 import {
-  kvMidia,
   chaveValida,
   nomeSeguro,
   LIMITE_ARQUIVO,
@@ -34,6 +35,9 @@ function json(dados: unknown, status = 200): Response {
 
 export const POST: APIRoute = async (ctx) => {
   if (!mesmaOrigem(ctx.request)) return new Response('Origem inválida.', { status: 403 });
+
+  const loja = ctx.locals.loja;
+  if (!loja) return new Response('Loja ativa não encontrada.', { status: 400 });
 
   let form: FormData;
   try {
@@ -63,6 +67,18 @@ export const POST: APIRoute = async (ctx) => {
   if (typeof chave === 'string' && chave.trim()) {
     const alvo = chave.trim().replace(/^\/+/, '');
     if (!chaveValida(alvo)) return json({ erro: 'Chave inválida.' }, 400);
+    if (!chavePertenceALoja(alvo, loja.id)) {
+      // Vídeos antigos foram gravados sem o id da loja; ainda são nossos se o
+      // D1 da loja ativa referencia a chave.
+      const conhecida = await db()
+        .prepare(
+          `SELECT 1 FROM produto_midia
+           WHERE loja_id = ? AND (url = ? OR full = ? OR full_webp = ? OR poster = ?) LIMIT 1`,
+        )
+        .bind(loja.id, alvo, alvo, alvo, alvo)
+        .first();
+      if (!conhecida) return json({ erro: 'Chave inválida.' }, 400);
+    }
 
     await kv.put(alvo, bytes, { httpMetadata: { contentType: tipo } });
     return json({ url: alvo, full: alvo, alt: String(form.get('alt') ?? '') });
@@ -71,14 +87,14 @@ export const POST: APIRoute = async (ctx) => {
   // --- Caso 2: foto (thumbnail + full) ----------------------------------
   // O navegador já converteu: "arquivo" = WebP, "full" = JPEG.
   const base = `${Date.now()}-${nomeSeguro(arquivo.name).replace(/\.[a-z0-9]+$/i, '')}`;
-  const thumbKey = `fotos/${base}.webp`;
+  const thumbKey = `fotos/${loja.id}/${base}.webp`;
 
   await kv.put(thumbKey, bytes, { httpMetadata: { contentType: 'image/webp' } });
 
   let fullKey = thumbKey;
   const full = form.get('full');
   if (full instanceof File && full.size > 0 && full.size <= LIMITE_ARQUIVO) {
-    fullKey = `fotos/${base}-full.jpg`;
+    fullKey = `fotos/${loja.id}/${base}-full.jpg`;
     // Confia no tipo do cliente só se ele estiver na allowlist de imagens;
     // qualquer outro vira octet-stream (não executável no mesmo origin).
     const tipoImagem =
@@ -93,7 +109,7 @@ export const POST: APIRoute = async (ctx) => {
   let fullWebpKey: string | undefined;
   const fullWebp = form.get('fullWebp');
   if (fullWebp instanceof File && fullWebp.size > 0 && fullWebp.size <= LIMITE_ARQUIVO) {
-    fullWebpKey = `fotos/${base}-full.webp`;
+    fullWebpKey = `fotos/${loja.id}/${base}-full.webp`;
     await kv.put(fullWebpKey, await fullWebp.arrayBuffer(), {
       httpMetadata: { contentType: 'image/webp' },
     });

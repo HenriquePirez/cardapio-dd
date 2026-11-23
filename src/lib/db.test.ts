@@ -4,15 +4,21 @@ import { DatabaseSync } from 'node:sqlite';
 import { describe, expect, it } from 'vitest';
 import type { D1Like } from './db';
 import {
+  alternarUsuarioAtivo,
   criarLoja,
+  ehUsuarioMaster,
+  estadoAcesso,
   listarCategorias,
   listarLojasDoUsuario,
   listarProdutos,
+  listarUsuariosComLojas,
   obterLojaPadrao,
   obterLojaPorSlug,
   obterProduto,
+  obterUsuario,
   salvarCategoria,
   salvarProduto,
+  usuarioPodeAcessar,
   excluirCategoria,
 } from './db';
 
@@ -152,5 +158,37 @@ describe('banco multi-loja', () => {
     const lojas = await listarLojasDoUsuario(db, dono);
     expect(lojas.map((l) => l.slug)).toContain('dona-dora');
     expect(lojas.map((l) => l.slug)).toContain('loja-c');
+  });
+
+  it('marca o primeiro usuário como master e os demais como loja', async () => {
+    const db = bancoLocal();
+    await db
+      .prepare('INSERT INTO usuarios (id, email, nome, senha_hash) VALUES (?, ?, ?, ?)')
+      .bind('segundo-usuario', 'segundo@exemplo.com', 'Segundo', 'hash')
+      .run();
+
+    expect(await ehUsuarioMaster(db, 'dono-teste')).toBe(true);
+    expect(await ehUsuarioMaster(db, 'segundo-usuario')).toBe(false);
+  });
+
+  it('permite desativar um usuário sem afetar os demais', async () => {
+    const db = bancoLocal();
+    await alternarUsuarioAtivo(db, 'dono-teste', false);
+
+    const usuarios = await listarUsuariosComLojas(db);
+    expect(usuarios.find((u) => u.id === 'dono-teste')?.ativo).toBe(0);
+  });
+
+  it('neg acesso a um usuário desativado mantendo o papel de master', async () => {
+    const db = bancoLocal();
+    await alternarUsuarioAtivo(db, 'dono-teste', false);
+
+    expect(await estadoAcesso(db, 'dono-teste')).toEqual({ master: true, ativo: false });
+    expect((await obterUsuario(db, 'dono@exemplo.com'))?.ativo).toBe(0);
+  });
+
+  it('considera ativo um usuário sem valor na coluna', async () => {
+    expect(usuarioPodeAcessar({ ativo: null })).toBe(true);
+    expect(usuarioPodeAcessar({ ativo: 0 })).toBe(false);
   });
 });

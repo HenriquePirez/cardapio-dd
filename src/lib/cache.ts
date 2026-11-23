@@ -21,7 +21,8 @@ export async function invalidarCardapio(request: Request, slug?: string): Promis
     // O tipo DOM de `CacheStorage` não expõe `.default`, por isso o cast.
     const cache = (caches as unknown as { default?: Cache }).default;
     if (!cache) return;
-    await cache.delete(chaveCardapio(request.url));
+    // A requisição vem de /admin/api/*; a chave cacheada é sempre a da raiz.
+    await cache.delete(chaveCardapio(new URL('/', request.url)));
     if (slug) await cache.delete(chaveCardapio(new URL(`/loja/${slug}`, request.url)));
   } catch {
     /* cache é otimização, não crítico — nunca derruba a escrita */

@@ -10,6 +10,43 @@
  */
 import { kvMidia, chaveValida } from './env';
 
+/** Chaves geradas pelo painel sempre levam o id da loja no primeiro segmento. */
+export function chavePertenceALoja(chave: string, lojaId: string): boolean {
+  return ['fotos/', 'videos/', 'lojas/'].some((prefixo) =>
+    chave.startsWith(`${prefixo}${lojaId}/`),
+  );
+}
+
+/**
+ * Valida as chaves enviadas no formulário do produto antes de gravar/apagar.
+ * Chaves antigas são planas (`fotos/<arquivo>`) e só valem se já estiverem no D1
+ * da loja. URLs externas não são chaves do KV e seguem permitidas.
+ */
+export function chavesMidiaPermitidas(
+  chaves: Array<string | null | undefined>,
+  lojaId: string,
+  conhecidas: ReadonlySet<string>,
+): boolean {
+  const legada = /^(fotos|videos)\/[^/]+$/;
+  for (const chave of chaves) {
+    if (!chave || !chaveValida(chave)) continue;
+    if (chavePertenceALoja(chave, lojaId)) continue;
+    if (legada.test(chave) && conhecidas.has(chave)) continue;
+    return false;
+  }
+  return true;
+}
+
+/** Falha no D1: descarta a chave nova. Sucesso: descarta a antiga. */
+export function chaveLogoParaApagar(
+  gravouNoBanco: boolean,
+  chaveNova: string,
+  chaveAnterior: string | null,
+): string | null {
+  if (!gravouNoBanco) return chaveNova;
+  return chaveAnterior?.startsWith('lojas/') ? chaveAnterior : null;
+}
+
 /**
  * Apaga do KV todos os caminhos de mídia informados.
  * Ignora URLs absolutas (conteúdo hospedado fora daqui) e chaves inválidas.

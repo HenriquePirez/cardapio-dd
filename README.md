@@ -295,12 +295,11 @@ Schema em [`migrations/0001_init.sql`](migrations/0001_init.sql), dados de exemp
 | `usuarios`         | Conta única do painel (`senha_hash` = PBKDF2)              |
 | `login_tentativas` | Rate-limit do login                                        |
 
-Para criar uma migration nova:
-
-```bash
-# 1) escreva migrations/0003_*.sql
-npm run db:apply:remote     # ou --local para testar
-```
+Migrations disponíveis: `0001`–`0008`. Aplicação completa: `npm run db:apply:local`
+ou `npm run db:apply:remote` (**só em banco novo**: o seed e o rebuild multi-loja
+regravam dados). Em banco existente, aplique só a pendente, por exemplo
+`npm run db:0008:remote`. A `0008` cria `usuarios.master`/`usuarios.ativo`, usados
+pelo middleware e pelo painel master.
 
 > Os arquivos JSON de exemplo (`src/content/`) foram migrados para o D1 via seed e não existem
 > mais — a fonte de verdade é o banco, editada pelo painel.

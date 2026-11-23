@@ -16,11 +16,12 @@ import {
   atualizarMidia,
   excluirMidia,
 } from '../../../../lib/db';
-import { apagarObjetos, caminhosDaMidia } from '../../../../lib/midia';
+import { apagarObjetos, caminhosDaMidia, chavesMidiaPermitidas } from '../../../../lib/midia';
 import { invalidarCardapio } from '../../../../lib/cache';
 import { lerGaleriaJson } from '../../../../lib/galeria';
 import { normalizarModalidade, urlCompraValida } from '../../../../lib/pedido';
 import { mesmaOrigem } from '../../../../lib/http';
+import { idEdicaoValido } from '../../../../lib/produto';
 
 const SLUG = /^[a-z0-9-]+$/;
 
@@ -57,6 +58,7 @@ export const POST: APIRoute = async (ctx) => {
   const voltarEdicao = idOriginal ? `/admin/produtos/${idOriginal}` : '/admin/produtos/novo';
 
   if (!SLUG.test(idNovo)) return voltar(voltarEdicao + '?msg=erro-slug');
+  if (!idEdicaoValido(idNovo, idOriginal)) return voltar(voltarEdicao + '?msg=erro-id');
   if (!nome) return voltar(voltarEdicao + '?msg=erro-nome');
   if (!precoRaw || !Number.isFinite(preco) || preco < 0) {
     return voltar(voltarEdicao + '?msg=erro-preco');
@@ -77,6 +79,20 @@ export const POST: APIRoute = async (ctx) => {
   const d1 = db();
   const loja = ctx.locals.loja!;
   const precoCentavos = Math.round(preco * 100);
+
+  const atuais = await listarMidiasPorProdutos(d1, loja.id, [idNovo]);
+  const conhecidas = new Set(
+    atuais.flatMap(caminhosDaMidia).filter((c): c is string => Boolean(c)),
+  );
+  const enviadas = galeria.flatMap((item) => [
+    item.url,
+    item.full,
+    item.fullWebp,
+    item.poster,
+  ]);
+  if (!chavesMidiaPermitidas(enviadas, loja.id, conhecidas)) {
+    return voltar(voltarEdicao + '?msg=erro-chave');
+  }
 
   // Valida categoria
   const cat = await d1
@@ -105,7 +121,6 @@ export const POST: APIRoute = async (ctx) => {
   });
 
   // ---- Sincroniza a galeria -------------------------------------------
-  const atuais = await listarMidiasPorProdutos(d1, loja.id, [idNovo]);
   const idsAtuais = new Set(atuais.map((m) => m.id));
 
   // 1) Itens que permanecem (id numérico): atualiza ordem/conteúdo

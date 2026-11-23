@@ -13,10 +13,13 @@
 ```bash
 npm ci                      # instala pelo lockfile
 npm run types               # gera worker-configuration.d.ts (tipos das bindings)
-npm run db:apply:local      # schema + seed no D1 local (.wrangler/)
-npm run db:0003:local       # coluna modalidade (aplicar depois do schema)
+npm run db:apply:local      # aplica 0001-0008 no D1 local (.wrangler/)
 npm run dev                 # http://localhost:4321
 ```
+
+`db:apply:local` já aplica todas as migrações. Para subir só uma migration pendente
+em banco existente, use `npm run db:000N:local` ou `npm run db:000N:remote`
+(ex.: `npm run db:0008:remote`).
 
 Variáveis de ambiente: **`.dev.vars`** (gitignored, já existente localmente) contém
 `AUTH_PEPPER` e `SETUP_TOKEN`. Nunca comite valores; para criar em outra máquina:
@@ -50,6 +53,8 @@ do primeiro acesso; sem ele a criação de conta responde 503.
   `dist/` — rode `npm run build` antes). É o equivalente local da produção.
 - Banco: local em `.wrangler/state` (`npm run db:apply:local`) ou remoto
   (`npm run db:apply:remote`) — **não use a produção como ambiente de teste**.
+  `db:apply:remote` reaplica seed e o rebuild multi-loja: em banco existente rode
+  só a migration pendente (`npm run db:000N:remote`).
 - **Dev remoto (branch `dev`):** worker separado `cardapio-dd-dev` com D1 e KV
   próprios. O manifesto gerado pelo build do Astro (`dist/server/wrangler.json`)
   carrega o nome/bindings de produção; `scripts/deploy-dev.mjs` reescreve só o

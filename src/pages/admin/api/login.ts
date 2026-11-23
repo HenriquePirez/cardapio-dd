@@ -6,7 +6,13 @@
  * - Proteção CSRF: exige Origin da mesma origem
  */
 import type { APIRoute } from 'astro';
-import { obterUsuario, contarUsuarios, trocarSenha, registrarAceite } from '../../../lib/db';
+import {
+  obterUsuario,
+  contarUsuarios,
+  trocarSenha,
+  registrarAceite,
+  usuarioPodeAcessar,
+} from '../../../lib/db';
 import {
   conferirSenha,
   hashSenha,
@@ -63,8 +69,9 @@ export const POST: APIRoute = async (ctx) => {
   // pepper() pode ser null só se a conta foi criada antes de definir o segredo;
   // conferirSenha lança nesse caso (melhor que devolver "senha incorreta").
   const pimenta = pepper() ?? undefined;
-  const ok =
-    usuario !== null && (await conferirSenha(senha, usuario.senha_hash, pimenta));
+  // A senha é conferida antes do bloqueio para manter o mesmo custo de CPU.
+  const senhaOk = usuario !== null && (await conferirSenha(senha, usuario.senha_hash, pimenta));
+  const ok = senhaOk && usuario !== null && usuarioPodeAcessar(usuario);
 
   // `!usuario` junto do `!ok` não muda o comportamento (ok só é true com
   // usuário), mas é o que dá ao TypeScript o narrowing pros blocos seguintes.

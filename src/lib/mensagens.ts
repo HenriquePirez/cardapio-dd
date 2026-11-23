@@ -15,7 +15,9 @@ export const AVISOS_PRODUTO: Record<string, string> = {
   'erro-link': 'Link de compra inválido ou de exemplo. Use a URL real do app, começando com http:// ou https://.',
   'erro-modalidade': 'Escolha uma opção válida de atendimento.',
   'erro-slug-duplicado': 'Já existe outro produto com esse identificador.',
+  'erro-id': 'O identificador do produto não pode mudar ao editar.',
   'erro-galeria': 'A galeria chegou incompleta e nada foi salvo. Recarregue a página e tente de novo.',
+  'erro-chave': 'Uma mídia da galeria não pertence a esta loja. Nada foi salvo.',
 };
 
 export const AVISOS_CATEGORIA: Record<string, string> = {

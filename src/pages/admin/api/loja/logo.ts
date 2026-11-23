@@ -9,6 +9,7 @@ import { salvarLogoLoja } from '../../../../lib/db';
 import { lerUsuario } from '../../../../lib/session';
 import { mesmaOrigem } from '../../../../lib/http';
 import { invalidarCardapio } from '../../../../lib/cache';
+import { chaveLogoParaApagar } from '../../../../lib/midia';
 
 const LIMITE_LOGO = 2 * 1024 * 1024;
 const EXT: Record<string, string> = {
@@ -37,18 +38,17 @@ export const POST: APIRoute = async (ctx) => {
   const d1 = db();
   const anterior = loja.logo_chave;
 
-  async function apagarAnterior(): Promise<void> {
-    if (!anterior?.startsWith('lojas/')) return;
+  async function apagar(chave: string | null): Promise<void> {
+    if (!chave?.startsWith('lojas/')) return;
     try {
-      await kv.delete(anterior);
+      await kv.delete(chave);
     } catch {
       /* objeto órfão é inofensivo */
     }
   }
 
   if (String(form.get('remover') ?? '') === '1') {
-    await salvarLogoLoja(d1, usuario.id, loja.id, null);
-    await apagarAnterior();
+    if (await salvarLogoLoja(d1, usuario.id, loja.id, null)) await apagar(anterior);
     await invalidarCardapio(ctx.request, loja.slug);
     return ctx.redirect('/admin/loja?ok=logo', 303);
   }
@@ -66,8 +66,8 @@ export const POST: APIRoute = async (ctx) => {
   await kv.put(chave, await arquivo.arrayBuffer(), {
     httpMetadata: { contentType: arquivo.type },
   });
-  await salvarLogoLoja(d1, usuario.id, loja.id, chave);
-  await apagarAnterior();
+  const gravou = await salvarLogoLoja(d1, usuario.id, loja.id, chave);
+  await apagar(chaveLogoParaApagar(gravou, chave, anterior));
   await invalidarCardapio(ctx.request, loja.slug);
 
   return ctx.redirect('/admin/loja?ok=logo', 303);

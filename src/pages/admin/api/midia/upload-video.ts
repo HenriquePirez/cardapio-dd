@@ -31,6 +31,9 @@ function json(dados: unknown, status = 200): Response {
 export const POST: APIRoute = async (ctx) => {
   if (!mesmaOrigem(ctx.request)) return new Response('Origem inválida.', { status: 403 });
 
+  const loja = ctx.locals.loja;
+  if (!loja) return new Response('Loja ativa não encontrada.', { status: 400 });
+
   const brutoTipo = ctx.request.headers.get('content-type') ?? '';
   const contentType = (brutoTipo.split(';')[0] ?? '').trim();
   if (!TIPOS_VIDEO.includes(contentType)) {
@@ -62,7 +65,7 @@ export const POST: APIRoute = async (ctx) => {
   }
 
   const extensao = (nomeOriginal.match(/\.[a-z0-9]+$/i)?.[0] || '.mp4').toLowerCase();
-  const chave = `videos/${Date.now()}-${nomeSeguro(nomeOriginal).replace(/\.[a-z0-9]+$/i, '')}${extensao}`;
+  const chave = `videos/${loja.id}/${Date.now()}-${nomeSeguro(nomeOriginal).replace(/\.[a-z0-9]+$/i, '')}${extensao}`;
 
   await kvMidia().put(chave, bytes, { httpMetadata: { contentType } });
 
