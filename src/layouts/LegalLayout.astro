@@ -10,16 +10,12 @@ interface Props {
 }
 
 const { titulo, loja } = Astro.props;
-/// Parâmetro `prox` da URL (definido pelos links do rodapé).
-/// Se presente, o link "Voltar" retorna a essa página; caso contrário,
-/// usa o histórico do navegador para voltar uma etapa.
-const prox = Astro.url.searchParams.get('prox');
 ---
 
 <BaseLayout loja={loja} titulo={titulo}>
   <header class="legal-topo">
     <div class="container legal-topo-inner">
-      <a href={prox ? prox : '#'} onclick={prox ? undefined : 'history.back()'}><span aria-hidden="true">←</span>Voltar</a>
+      <a href="/"><span aria-hidden="true">←</span>Voltar</a>
       <span>{EMPRESA.nome}</span>
     </div>
   </header>

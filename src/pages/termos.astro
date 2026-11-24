@@ -56,7 +56,7 @@ const loja = await obterLojaPadrao(db());
   <p>
     O serviço contém links para sites de terceiros, inclusive o site de pedidos e pagamentos.
     Não controlamos esses sites e não respondemos por preços, prazos, pagamentos, cancelamentos
-    ou atendimento prestados por eles. Consulte a
+    ou atendimento prestados por eles. Consulte a{' '}
     <a href="/reembolso">Política de Reembolso</a>.
   </p>
 
@@ -77,8 +77,8 @@ const loja = await obterLojaPadrao(db());
 
   <h2>9. Alterações e contato</h2>
   <p>
-    Estes termos podem ser atualizados; a versão vigente é identificada no topo. Dúvidas:
-    <a href={`mailto:${EMPRESA.email}`}>{EMPRESA.email}</a> ·
+    Estes termos podem ser atualizados; a versão vigente é identificada no topo. Dúvidas:{' '}
+    <a href={`mailto:${EMPRESA.email}`}>{EMPRESA.email}</a> ·{' '}
     <a href={`tel:${EMPRESA.telefoneLink}`}>{EMPRESA.telefoneExibicao}</a>.
   </p>
 </LegalLayout>
