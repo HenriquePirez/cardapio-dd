@@ -30,8 +30,6 @@ const toastErro: Record<string, string> = {
   id: 'ID do usuário ausente.',
   'nao-encontrado': 'Usuário não encontrado.',
   'proprio-master': 'Você não pode desativar a sua própria conta master.',
-  senha_incoerente: 'As senhas digitadas não são iguais.',
-  senha_fraca: 'A senha é muito curta ou fraca.',
   email_ja_existe: 'Já existe usuário cadastrado com esse e-mail.',
 };
 const okMsg = ok ? (toastOk[ok] ?? null) : null;
@@ -85,6 +83,7 @@ function formatarData(iso: string | null | undefined): string {
 
   <div class="cartao">
     <h2>Cadastrar usuário</h2>
+    <p class="admin-sub">A senha é gerada e enviada por e‑mail ao novo usuário.</p>
     <form method="post" action="/admin/api/usuarios/criar" class="form-cadastro">
       <div class="grade-campos">
         <div class="campo">
@@ -94,16 +93,6 @@ function formatarData(iso: string | null | undefined): string {
         <div class="campo">
           <label for="email-usuario">E‑mail</label>
           <input id="email-usuario" type="email" name="email" required />
-        </div>
-      </div>
-      <div class="grade-campos">
-        <div class="campo">
-          <label for="senha-usuario">Senha</label>
-          <input id="senha-usuario" type="password" name="senha" required />
-        </div>
-        <div class="campo">
-          <label for="senha2-usuario">Confirmar senha</label>
-          <input id="senha2-usuario" type="password" name="senha2" required />
         </div>
       </div>
       <label class="campo-aceite">
