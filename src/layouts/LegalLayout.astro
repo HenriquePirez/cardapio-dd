@@ -19,7 +19,7 @@ const prox = Astro.url.searchParams.get('prox');
 <BaseLayout loja={loja} titulo={titulo}>
   <header class="legal-topo">
     <div class="container legal-topo-inner">
-      <a href={prox ? prox : '#'} onclick={prox ? undefined : 'history.back()'}><span aria-hidden="true">→</span>Voltar</a>
+      <a href={prox ? prox : '#'} onclick={prox ? undefined : 'history.back()'}><span aria-hidden="true">←</span>Voltar</a>
       <span>{EMPRESA.nome}</span>
     </div>
   </header>
@@ -52,10 +52,6 @@ const prox = Astro.url.searchParams.get('prox');
     padding-top: 14px;
     padding-bottom: 14px;
     font-size: 0.85rem;
-  }
-
-  .legal-topo a {
-    text-decoration: underline;
   }
 
   .legal {
@@ -101,7 +97,6 @@ const prox = Astro.url.searchParams.get('prox');
 
   .legal :global(a) {
     color: var(--cor-preco);
-    text-decoration: underline;
   }
 
   .legal :global(.destaque-legal) {
