@@ -4,7 +4,7 @@ import { db } from '../lib/env';
 import { cardapioCompleto, obterLojaPadrao } from '../lib/db';
 
 const loja = await obterLojaPadrao(db());
-if (!loja) return new Response('Cardápio não encontrado.', { status: 404 });
+if (!loja) return new Response('Vitrine não encontrada.', { status: 404 });
 const { categorias, produtos } = await cardapioCompleto(db(), loja.id);
 ---
 

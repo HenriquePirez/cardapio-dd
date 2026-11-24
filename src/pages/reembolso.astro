@@ -9,7 +9,7 @@ const loja = await obterLojaPadrao(db());
 
 <LegalLayout titulo="Política de Reembolso e Cancelamento" loja={loja}>
   <p>
-    Este cardápio é uma vitrine digital. <strong>Nenhum pagamento é processado aqui</strong> e
+    A vitrine é digital. <strong>Nenhum pagamento é processado aqui</strong> e
     nenhuma cobrança é feita por este site. O pedido e o pagamento são concluídos no site
     externo indicado pelo lojista ao tocar em “Comprar”.
   </p>
@@ -33,11 +33,11 @@ const loja = await obterLojaPadrao(db());
   <h2>3. Problemas com o pedido</h2>
   <p>
     Se o pedido não chegou, veio incompleto ou com problema de qualidade, procure primeiro a
-    loja pelo canal informado no site de compra. Se precisar de apoio sobre o cardápio digital,
+    loja pelo canal informado no site de compra. Se precisar de apoio sobre a vitrine digital,
     fale com o responsável:
   </p>
   <p>
-    <a class="destaque-legal" href={`mailto:${EMPRESA.email}?subject=${encodeURIComponent('Reembolso ou cancelamento - cardápio digital')}`}>
+    <a class="destaque-legal" href={`mailto:${EMPRESA.email}?subject=${encodeURIComponent('Reembolso ou cancelamento - vitrine digital')}`}>
       Enviar e-mail para {EMPRESA.email}
     </a>
   </p>
@@ -49,7 +49,7 @@ const loja = await obterLojaPadrao(db());
   <h2>4. Prazos</h2>
   <p>
     Prazos de análise e de devolução seguem as regras do site de pagamento, da operadora do
-    cartão ou do meio de pagamento usado. O cardápio digital não retém valores de compras e,
+    cartão ou do meio de pagamento usado. A vitrine digital não retém valores de compras e,
     por isso, não consegue estornar diretamente uma cobrança feita em outro site.
   </p>
 

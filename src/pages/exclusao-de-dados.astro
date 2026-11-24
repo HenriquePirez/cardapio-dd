@@ -5,7 +5,7 @@ import { db } from '../lib/env';
 import { obterLojaPadrao } from '../lib/db';
 
 const loja = await obterLojaPadrao(db());
-const assunto = encodeURIComponent('Solicitação de exclusão de dados - cardápio digital');
+const assunto = encodeURIComponent('Solicitação de exclusão de dados - vitrine digital');
 const corpo = encodeURIComponent(
   'Olá, quero solicitar a exclusão dos meus dados.\n\nNome:\nE-mail usado na conta:\nLoja(s) relacionada(s):\n\nConfirmo que sou o titular ou representante autorizado.',
 );
