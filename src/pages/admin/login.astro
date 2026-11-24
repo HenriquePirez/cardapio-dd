@@ -38,6 +38,7 @@ const mensagensErro: Record<string, string> = {
   campos: 'Preencha o e-mail e a senha.',
   senha: `E-mail ou senha incorretos.${restam ? ` Tentativas restantes: ${restam}.` : ''}`,
   bloqueado: `Muitas tentativas erradas. Tente novamente em ${min ?? 10} min.`,
+  desativada: 'Conta desativada — o acesso foi bloqueado pelo administrador.',
 };
 const mensagensOk: Record<string, string> = {
   criado: 'Conta criada! Entre com seus dados.',

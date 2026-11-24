@@ -12,6 +12,7 @@
  */
 import type { APIContext, MiddlewareNext } from 'astro';
 import { defineMiddleware } from 'astro:middleware';
+import { marcadorSenha } from './lib/auth';
 import { destruirSessao, lerUsuario } from './lib/session';
 import { chaveCardapio } from './lib/cache';
 import { db } from './lib/env';
@@ -173,7 +174,13 @@ async function tratar(ctx: APIContext, next: MiddlewareNext): Promise<Response> 
 
     if (!acesso.ativo) {
       await destruirSessao(ctx);
-      return semCache(new Response('Conta desativada.', { status: 401 }));
+      return semCache(ctx.redirect('/admin/login?erro=desativada', 302));
+    }
+
+    // Trocar a senha regrava o hash: toda sessão com o marcador antigo morre.
+    if (!usuario.senha || usuario.senha !== marcadorSenha(acesso.senhaHash ?? '')) {
+      await destruirSessao(ctx);
+      return semCache(new Response('Sessão expirada.', { status: 401 }));
     }
 
     // O master administra o sistema, não uma loja: sem loja ativa e sem acesso

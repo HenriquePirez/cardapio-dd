@@ -394,14 +394,14 @@ export async function existeUsuarioComEmail(db: D1Like, email: string): Promise<
   return (results?.length ?? 0) > 0;
 }
 
-/** Insere um novo usuário. */
+/** Insere um novo usuário (id gerado pela aplicação — sessão referencia-o). */
 export async function criarUsuario(
   db: D1Like,
   dados: { email: string; nome: string; senha_hash: string; master?: boolean },
 ): Promise<void> {
   await db
-    .prepare('INSERT INTO usuarios (email, nome, senha_hash, master) VALUES (?, ?, ?, ?)')
-    .bind(dados.email, dados.nome, dados.senha_hash, dados.master ? 1 : 0)
+    .prepare('INSERT INTO usuarios (id, email, nome, senha_hash, master) VALUES (?, ?, ?, ?, ?)')
+    .bind(crypto.randomUUID(), dados.email, dados.nome, dados.senha_hash, dados.master ? 1 : 0)
     .run();
 }
 
