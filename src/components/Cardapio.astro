@@ -109,7 +109,7 @@ function capaDe(p: (typeof produtos)[number]) {
   };
 }
 
-const logoSrc = loja.logo_chave ? urlMidia(loja.logo_chave) : '/logo-donadora.png';
+const logoSrc = loja.logo_chave ? urlMidia(loja.logo_chave) : '/logo-myshelf-180.png';
 const slogan = loja.slogan || 'O sabor que começa pelos olhos';
 ---
 
@@ -147,7 +147,7 @@ const slogan = loja.slogan || 'O sabor que começa pelos olhos';
     {produtos.length === 0 && (
       <div class="vazio">
         <p>
-          <span data-i18n="cardapioVazio">Cardápio em construção. Volte em breve!</span>
+          <span data-i18n="cardapioVazio">Vitrine em construção. Volte em breve!</span>
           <i class="fi-br-burger-alt" aria-hidden="true"></i>
         </p>
       </div>

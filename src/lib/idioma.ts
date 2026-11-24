@@ -8,7 +8,7 @@ export type Idioma = (typeof IDIOMAS)[number];
 const PT = {
   tagline: 'O sabor que começa pelos olhos',
   destaques: 'Destaques',
-  cardapioVazio: 'Cardápio em construção. Volte em breve!',
+  cardapioVazio: 'Vitrine em construção. Volte em breve!',
   midias: '{n} mídias',
   ampliar: 'Ampliar',
   comprar: 'Comprar',
@@ -228,7 +228,7 @@ type Chave = keyof typeof PT;
 const EN: Record<Chave, string> = {
   tagline: 'Flavor begins with your eyes',
   destaques: 'Highlights',
-  cardapioVazio: 'Menu under construction. Check back soon!',
+  cardapioVazio: 'Storefront under construction. Check back soon!',
   midias: '{n} media',
   ampliar: 'Enlarge',
   comprar: 'Order',
