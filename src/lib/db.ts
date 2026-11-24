@@ -356,14 +356,15 @@ export function usuarioPodeAcessar(usuario: { ativo?: number | null }): boolean 
 export async function estadoAcesso(
   db: D1Like,
   usuarioId: string,
-): Promise<{ master: boolean; ativo: boolean }> {
+): Promise<{ master: boolean; ativo: boolean; senhaHash: string | null }> {
   const r = await db
-    .prepare('SELECT master, ativo FROM usuarios WHERE id = ?')
+    .prepare('SELECT master, ativo, senha_hash FROM usuarios WHERE id = ?')
     .bind(usuarioId)
-    .first<{ master: number | null; ativo: number | null }>();
+    .first<{ master: number | null; ativo: number | null; senha_hash: string | null }>();
   return {
     master: (r?.master ?? 0) === 1,
     ativo: r !== null && usuarioPodeAcessar(r),
+    senhaHash: r?.senha_hash ?? null,
   };
 }
 
@@ -382,6 +383,26 @@ export interface UsuarioResumo {
 /** Ativa ou desativa um usuário (soft delete). */
 export async function alternarUsuarioAtivo(db: D1Like, usuarioId: string, ativo: boolean): Promise<void> {
   await db.prepare('UPDATE usuarios SET ativo = ? WHERE id = ?').bind(ativo ? 1 : 0, usuarioId).run();
+}
+
+/** Verifica se já existe usuário com esse e-mail (unique). */
+export async function existeUsuarioComEmail(db: D1Like, email: string): Promise<boolean> {
+  const { results } = await db
+    .prepare('SELECT 1 AS encontrado FROM usuarios WHERE email = ?')
+    .bind(email)
+    .all<{ encontrado: number }>();
+  return (results?.length ?? 0) > 0;
+}
+
+/** Insere um novo usuário. */
+export async function criarUsuario(
+  db: D1Like,
+  dados: { email: string; nome: string; senha_hash: string; master?: boolean },
+): Promise<void> {
+  await db
+    .prepare('INSERT INTO usuarios (email, nome, senha_hash, master) VALUES (?, ?, ?, ?)')
+    .bind(dados.email, dados.nome, dados.senha_hash, dados.master ? 1 : 0)
+    .run();
 }
 
 /** Lista todos os usuários com a quantidade de lojas de cada um. */
