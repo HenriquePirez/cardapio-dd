@@ -16,8 +16,8 @@ const loja = await obterLojaPadrao(db());
 
   <h2>1. Quem é o responsável</h2>
   <p>
-    O responsável pelo tratamento é <strong>{EMPRESA.nome}</strong>, contato
-    <a href={`mailto:${EMPRESA.email}`}>{EMPRESA.email}</a> e telefone
+    O responsável pelo tratamento é <strong>{EMPRESA.nome}</strong>, contato{' '}
+    <a href={`mailto:${EMPRESA.email}`}>{EMPRESA.email}</a> e telefone{' '}
     <a href={`tel:${EMPRESA.telefoneLink}`}>{EMPRESA.telefoneExibicao}</a>.
   </p>
 
@@ -92,8 +92,8 @@ const loja = await obterLojaPadrao(db());
   <h2>8. Seus direitos</h2>
   <p>
     Você pode pedir confirmação de tratamento, acesso, correção, anonimização, portabilidade,
-    eliminação, informação sobre compartilhamento e revogação do consentimento. Use a página
-    <a href="/exclusao-de-dados">Exclusão de dados</a> ou escreva para
+    eliminação, informação sobre compartilhamento e revogação do consentimento. Use a página{' '}
+    <a href="/exclusao-de-dados">Exclusão de dados</a> ou escreva para{' '}
     <a href={`mailto:${EMPRESA.email}`}>{EMPRESA.email}</a>. Responderemos em até 15 dias.
   </p>
 
