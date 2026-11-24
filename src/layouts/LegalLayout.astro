@@ -35,9 +35,8 @@ const { titulo, loja } = Astro.props;
 
 <style>
   .legal-topo {
-    background: var(--verde);
-    color: #fff;
-    
+    background: var(--adm-bg);
+    color: var(--adm-text);
   }
 
   .legal-topo-inner {
@@ -60,20 +59,20 @@ const { titulo, loja } = Astro.props;
     margin: 0 0 4px;
     font-size: 1.5rem;
     font-weight: 500;
-    color: var(--cor-titulo);
+    color: var(--adm-label);
   }
 
   .legal-data {
     margin: 0 0 24px;
     font-size: 0.78rem;
-    color: var(--text-dim);
+    color: var(--adm-dim);
   }
 
   .legal :global(h2) {
     margin: 26px 0 8px;
     font-size: 1.05rem;
     font-weight: 500;
-    color: var(--cor-titulo);
+    color: var(--adm-label);
   }
 
   .legal :global(p),
@@ -92,7 +91,7 @@ const { titulo, loja } = Astro.props;
   }
 
   .legal :global(a) {
-    color: var(--cor-preco);
+    color: var(--adm-label);
   }
 
   .legal :global(.destaque-legal) {
@@ -107,8 +106,8 @@ const { titulo, loja } = Astro.props;
   .legal-rodape {
     margin-top: 40px;
     padding: 22px 0 calc(26px + env(safe-area-inset-bottom));
-    background: var(--bg-card);
-    border-top: 1px solid var(--border);
-    color: var(--text-dim);
+    background: var(--adm-card);
+    border-top: 1px solid var(--adm-border);
+    color: var(--adm-dim);
   }
 </style>
